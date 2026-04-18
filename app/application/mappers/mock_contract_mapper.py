@@ -1,6 +1,8 @@
 
 from app.api.contracts.mocks.items import (
     MatchRuleItem,
+)
+from app.api.contracts.mocks.items import (
     MockResponsePayloadItem as MockResponseItemDTO,
 )
 from app.api.contracts.mocks.requests import (
@@ -8,10 +10,10 @@ from app.api.contracts.mocks.requests import (
     UpdateMockRequest,
 )
 from app.api.contracts.mocks.responses import MockResponseItem
-from app.domain.models.mocks.mock_update import MockUpdate, _MISSING
-from app.domain.models.mocks.match_rule import MatchRule
-from app.domain.models.mocks.mock import Mock
-from app.domain.models.mocks.mock_response import MockResponse
+from app.domain.mocks.models.match_rule import MatchRule
+from app.domain.mocks.models.mock import Mock
+from app.domain.mocks.models.mock_response import MockResponse
+from app.domain.mocks.models.mock_update import _MISSING, MockUpdate
 
 
 class MockContractMapper:

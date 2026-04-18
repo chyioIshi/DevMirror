@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.domain.models.enums import HttpMethod
+from app.domain.shared.enums import HttpMethod
 
 
 class VerifyRequestLogRequest(BaseModel):

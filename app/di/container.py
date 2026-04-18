@@ -1,4 +1,3 @@
-
 from typing import Final, cast
 
 from fastapi import Request
@@ -7,14 +6,14 @@ from app.application.services.mock_management_service import (
     MockManagementService,
 )
 from app.application.services.mock_resolver_service import MockResolverService
-from app.application.services.mock_selection_policy_service import MockSelectionPolicyService
 from app.application.services.request_log_service import RequestLogService
-from app.application.services.request_scope_resolve_service import RequestScopeResolveService
-from app.application.services.rule_matcher_service import RuleMatcherService
 from app.config import Settings
-from app.domain.repositories.mock_repository import MockRepository
-from app.domain.repositories.request_log_repository import RequestLogRepository
-from app.domain.services.scope_resolver import (
+from app.domain.mocks.policies.scope_resolver import ChainedScopeResolver
+from app.domain.mocks.policies.selection_policy import MockSelectionPolicy
+from app.domain.mocks.repository import MockRepository
+from app.domain.mocks.services.rule_matcher import RuleMatcherService
+from app.domain.request_logs.repository import RequestLogRepository
+from app.domain.shared.ports.scope_resolver import (
     ScopeResolutionStrategy,
     ScopeResolver,
 )
@@ -45,7 +44,7 @@ class AppContainer:
         self._request_log_repository: RequestLogRepository | None = None
         self._request_log_service: RequestLogService | None = None
         self._mock_management_service: MockManagementService | None = None
-        self._mock_selection_policy: MockSelectionPolicyService | None = None
+        self._mock_selection_policy: MockSelectionPolicy | None = None
         self._mock_resolver_service: MockResolverService | None = None
         self._mock_response_builder: MockResponseBuilder | None = None
 
@@ -75,12 +74,11 @@ class AppContainer:
             strategies: list[ScopeResolutionStrategy] = [
                 HeaderScopeResolutionStrategy(self.settings.scope_header_name),
                 JsonBodyFieldScopeResolutionStrategy(
-                    request_data_accessor=self.request_data_reader,
                     field_name=self.settings.scope_body_field_name,
                 ),
                 DefaultScopeResolutionStrategy(self.settings.default_scope),
             ]
-            self._scope_resolver = RequestScopeResolveService(strategies=strategies)
+            self._scope_resolver = ChainedScopeResolver(strategies=strategies)
         return self._scope_resolver
 
     @property
@@ -112,9 +110,9 @@ class AppContainer:
         return self._mock_management_service
 
     @property
-    def mock_selection_policy(self) -> MockSelectionPolicyService:
+    def mock_selection_policy(self) -> MockSelectionPolicy:
         if self._mock_selection_policy is None:
-            self._mock_selection_policy = MockSelectionPolicyService()
+            self._mock_selection_policy = MockSelectionPolicy()
         return self._mock_selection_policy
 
     @property
@@ -123,7 +121,6 @@ class AppContainer:
             self._mock_resolver_service = MockResolverService(
                 mock_repository=self.mock_repository,
                 request_log_service=self.request_log_service,
-                request_context_resolver=self.request_context_resolver,
                 scope_resolver=self.scope_resolver,
                 rule_matcher=self.rule_matcher,
                 selection_policy=self.mock_selection_policy,

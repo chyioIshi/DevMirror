@@ -2,8 +2,8 @@
 from datetime import UTC, datetime
 
 from app.application.exceptions import MockNotFoundError
-from app.domain.models.mocks import Mock, MockListFilters, MockUpdate
-from app.domain.repositories.mock_repository import MockRepository
+from app.domain.mocks.models import Mock, MockListFilters, MockUpdate
+from app.domain.mocks.repository import MockRepository
 
 
 class MockManagementService:
@@ -36,12 +36,7 @@ class MockManagementService:
     async def update_mock(self, mock_id: str, update: MockUpdate) -> Mock:
         """Применяет частичное обновление к существующему моку."""
         current_mock = await self.get_mock(mock_id)
-        return await self._mock_repo.update(
-            current_mock.model_copy(
-                update={**update.to_patch_dict(), "updated_at": datetime.now(tz=UTC)},
-                deep=True,
-            )
-        )
+        return await self._mock_repo.update(current_mock.apply_update(update))
 
     async def delete_mock(self, mock_id: str) -> None:
         """Удаляет мок или вызывает исключение, если он не найден."""
