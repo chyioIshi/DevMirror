@@ -1,7 +1,7 @@
 
 from beanie import PydanticObjectId
 
-from app.domain.models.request_logs.request_log_record import RequestLogRecord
+from app.domain.request_logs.models.request_log_record import RequestLogRecord
 from app.infra.db.mongo.documents.request_log_document import RequestLogDocument
 
 

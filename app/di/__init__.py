@@ -4,15 +4,17 @@ from app.di.providers import (
     get_mock_management_service,
     get_mock_resolver_service,
     get_mock_response_builder,
+    get_request_context_resolver,
     get_request_log_service,
 )
 
 __all__ = [
     "AppContainer",
-    "get_container",
     "get_app_settings",
+    "get_container",
     "get_mock_management_service",
     "get_mock_resolver_service",
     "get_mock_response_builder",
+    "get_request_context_resolver",
     "get_request_log_service",
 ]

@@ -5,9 +5,9 @@ from beanie import PydanticObjectId
 from beanie.operators import In
 from pymongo import ASCENDING, DESCENDING
 
-from app.domain.models.enums import HttpMethod
-from app.domain.models.mocks.mock import Mock
-from app.domain.models.mocks.mock_list_filters import MockListFilters
+from app.domain.mocks.models.mock import Mock
+from app.domain.mocks.models.mock_list_filters import MockListFilters
+from app.domain.shared.enums import HttpMethod
 from app.infra.db.mongo.documents.mock_document import MockDocument
 from app.infra.mappers.mock_mapper import MockMapper
 

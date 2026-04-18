@@ -1,12 +1,12 @@
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from beanie import Document
 from pydantic import Field
 from pymongo import DESCENDING
 
-from app.domain.models.context.request_context import RequestContext
-from app.domain.models.request_logs.request_log_record import MatchedMock
+from app.domain.request_contexts.models.request_context import RequestContext
+from app.domain.request_logs.models.matched_mock import MatchedMock
 
 
 class RequestLogDocument(Document):
@@ -16,7 +16,7 @@ class RequestLogDocument(Document):
     matched_mock: MatchedMock | None = None
     scope: str | None = None
     response_status_code: int | None = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
     class Settings:
         """Настройки коллекции Beanie и индексы журнала запросов."""

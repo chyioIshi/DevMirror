@@ -1,13 +1,13 @@
 
-from app.domain.models.context.request_context import RequestContext
-from app.domain.models.mocks.resolution.resolved_mock import ResolvedMock
-from app.domain.models.request_logs import (
+from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
+from app.domain.request_contexts.models.request_context import RequestContext
+from app.domain.request_logs.models import (
     MatchedMock,
     RequestLogRecord,
     RequestLogVerificationExpectation,
     RequestLogVerificationResult,
 )
-from app.domain.repositories.request_log_repository import RequestLogRepository
+from app.domain.request_logs.repository import RequestLogRepository
 
 
 class RequestLogService:
@@ -68,20 +68,9 @@ class RequestLogService:
     ) -> RequestLogVerificationResult:
         """Проверяет, что журнал содержит ожидаемое количество запросов."""
         records = await self._request_log_repository.list_records()
-        matched_records = [
-            record
-            for record in records
-            if record.request_context.path == expectation.path
-            and record.request_context.method == expectation.method
-            and (
-                expectation.matched_mock_id is None
-                or (
-                    record.matched_mock is not None
-                    and record.matched_mock.id == expectation.matched_mock_id
-                )
-            )
-        ]
-        actual_count = len(matched_records)
+        actual_count = sum(
+            1 for record in records if record.matches_expectation(expectation)
+        )
         matched = (
             actual_count > 0
             if expectation.expected_count is None

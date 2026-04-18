@@ -1,11 +1,16 @@
-
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
 from app.application.services.mock_resolver_service import MockResolverService
-from app.domain.models.mocks.resolution.resolved_mock import ResolvedMock
-from app.infra.response.mock_response_builder import MockResponseBuilder
 from app.config import Settings
-from app.di import get_app_settings, get_mock_resolver_service, get_mock_response_builder
+from app.di import (
+    get_app_settings,
+    get_mock_resolver_service,
+    get_mock_response_builder,
+    get_request_context_resolver,
+)
+from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
+from app.infra.context.request_context_resolver import RequestContextResolver
+from app.infra.response.mock_response_builder import MockResponseBuilder
 
 catch_all_router = APIRouter(tags=["catch-all"])
 
@@ -37,13 +42,15 @@ def _is_reserved_path(path: str, settings: Settings) -> bool:
 async def catch_each_request(
     request: Request,
     settings: Settings = Depends(get_app_settings),
+    request_context_resolver: RequestContextResolver = Depends(get_request_context_resolver),
     mock_resolver_service: MockResolverService = Depends(get_mock_resolver_service),
     mock_response_builder: MockResponseBuilder = Depends(get_mock_response_builder),
 ) -> Response:
     if _is_reserved_path(request.url.path, settings):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not this route!!!")
 
-    resolved_mock: ResolvedMock = await mock_resolver_service.resolve(request)
+    request_context = await request_context_resolver.resolve(request)
+    resolved_mock: ResolvedMock | None = await mock_resolver_service.resolve(request_context)
     if resolved_mock is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

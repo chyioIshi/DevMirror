@@ -1,12 +1,12 @@
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from beanie import Document
 from pydantic import BaseModel, Field
 from pymongo import ASCENDING, DESCENDING
 
-from app.domain.models.enums import HttpMethod, MatchOperator, MatchSource
+from app.domain.shared.enums import HttpMethod, MatchOperator, MatchSource
 
 
 class MatchRuleDocument(BaseModel):
@@ -36,8 +36,8 @@ class MockDocument(Document):
     match_rules: list[MatchRuleDocument] = Field(default_factory=list)
     response: MockResponseDocument
     tags: list[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
     class Settings:
         """Настройки коллекции Beanie и индексы для моков."""
