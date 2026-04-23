@@ -1,11 +1,10 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import Self
 
 from app.domain.mocks.exceptions import MockInvariantError
 from app.domain.mocks.models.match_rule import MatchRule
 from app.domain.mocks.models.mock_response import MockResponse
-from app.domain.mocks.models.mock_update import MockUpdate
 from app.domain.shared.enums import HttpMethod
 
 
@@ -64,79 +63,69 @@ class Mock:
         )
 
     def rename(self, name: str) -> None:
-        self.name = name
-        self._ensure_invariants()
+        """Переименовывает мок."""
+        candidate = self._build_candidate(name=name)
+        self.name = candidate.name
         self._touch()
 
     def set_description(self, description: str | None) -> None:
-        self.description = description
+        """Устанавливает описание мока."""
+        candidate = self._build_candidate(description=description)
+        self.description = candidate.description
         self._touch()
 
     def change_route(self, *, path: str, method: HttpMethod) -> None:
-        self.path = path
-        self.method = method
-        self._ensure_invariants()
+        """Меняет маршрут мока. Метод и путь не могут быть пустыми."""
+        candidate = self._build_candidate(path=path, method=method)
+        self.path = candidate.path
+        self.method = candidate.method
         self._touch()
 
     def change_scope(self, scope: str) -> None:
-        self.scope = scope
-        self._ensure_invariants()
+        """Меняет область видимости мока. Не может быть пустой."""
+        candidate = self._build_candidate(scope=scope)
+        self.scope = candidate.scope
         self._touch()
 
     def change_priority(self, priority: int) -> None:
-        self.priority = priority
-        self._ensure_invariants()
+        """Меняет приоритет мока. Не может быть отрицательным."""
+        candidate = self._build_candidate(priority=priority)
+        self.priority = candidate.priority
         self._touch()
 
     def set_tags(self, tags: list[str]) -> None:
-        self.tags = list(tags)
+        """Заменяет теги мока."""
+        candidate = self._build_candidate(tags=list(tags))
+        self.tags = candidate.tags
         self._touch()
 
     def replace_response(self, response: MockResponse) -> None:
-        self.response = response
+        """Заменяет HTTP-ответ мока."""
+        candidate = self._build_candidate(response=response)
+        self.response = candidate.response
         self._touch()
 
     def replace_match_rules(self, match_rules: list[MatchRule]) -> None:
-        self.match_rules = list(match_rules)
+        """Заменяет правила совпадения мока."""
+        candidate = self._build_candidate(match_rules=list(match_rules))
+        self.match_rules = candidate.match_rules
         self._touch()
 
     def activate(self) -> None:
-        """Активирует мок. Готовность гарантирована базовыми инвариантами."""
+        """Активирует мок."""
         if self.active:
             return
-        self.active = True
+        candidate = self._build_candidate(active=True)
+        self.active = candidate.active
         self._touch()
 
     def deactivate(self) -> None:
+        """Деактивирует мок."""
         if not self.active:
             return
-        self.active = False
+        candidate = self._build_candidate(active=False)
+        self.active = candidate.active
         self._touch()
-
-    def apply_update(self, update: MockUpdate) -> None:
-        """Применяет частичный апдейт через методы агрегата."""
-        patch = update.to_patch_dict()
-        if "name" in patch:
-            self.rename(patch["name"])
-        if "description" in patch:
-            self.set_description(patch["description"])
-        if "path" in patch or "method" in patch:
-            self.change_route(
-                path=patch.get("path", self.path),
-                method=patch.get("method", self.method),
-            )
-        if "scope" in patch:
-            self.change_scope(patch["scope"])
-        if "priority" in patch:
-            self.change_priority(patch["priority"])
-        if "tags" in patch:
-            self.set_tags(patch["tags"])
-        if "response" in patch:
-            self.replace_response(patch["response"])
-        if "match_rules" in patch:
-            self.replace_match_rules(patch["match_rules"])
-        if "active" in patch:
-            self.activate() if patch["active"] else self.deactivate()
 
     def conflicts_with(self, other: Self) -> bool:
         """Конфликт по сигнатуре маршрута + одинаковым правилам."""
@@ -149,6 +138,7 @@ class Mock:
         )
 
     def _ensure_invariants(self) -> None:
+        """Проверяет инварианты мока и выбрасывает исключение, если они нарушены."""
         if not self.name or not self.name.strip():
             raise MockInvariantError("Mock name must not be empty")
         if not self.path or not self.path.strip():
@@ -158,5 +148,10 @@ class Mock:
         if not self.scope or not self.scope.strip():
             raise MockInvariantError("Mock scope must not be empty")
 
+    def _build_candidate(self, **changes: object) -> Self:
+        """Строит и валидирует кандидатное состояние, не меняя текущий агрегат."""
+        return replace(self, **changes)
+
     def _touch(self) -> None:
+        """Обновляет updated_at на текущее время."""
         self.updated_at = datetime.now(tz=UTC)

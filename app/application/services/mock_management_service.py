@@ -1,6 +1,8 @@
-from app.application.exceptions import MockNotFoundError, CreateMockError
+from app.application.commands.update_mock_command import UpdateMockCommand
+from app.application.exceptions import CreateMockError, MockNotFoundError
+from app.application.use_cases.update_mock import update_mock as update_mock_use_case
 from app.domain.mocks.exceptions import MockInvariantError
-from app.domain.mocks.models import Mock, MockListFilters, MockUpdate
+from app.domain.mocks.models import Mock, MockListFilters
 from app.domain.mocks.policies.activation_policy import MockActivationPolicy
 from app.domain.mocks.repository import MockRepository
 from app.domain.mocks.services.conflict_service import MockConflictService
@@ -23,8 +25,10 @@ class MockManagementService:
         """Сохраняет новый мок."""
         try:
             return await self._repository.add(mock)
-        except MockInvariantError as e:
-            raise CreateMockError("Can't create the mock: one of one of the mock's invariants was violated")
+        except MockInvariantError as exc:
+            raise CreateMockError(
+                "Can't create the mock: one of one of the mock's invariants was violated",
+            ) from exc
 
     async def get_mock(self, mock_id: str) -> Mock:
         """Возвращает мок по id или вызывает исключение, если он не найден."""
@@ -42,11 +46,9 @@ class MockManagementService:
         """Возвращает список моков, подходящих под заданные фильтры."""
         return await self._repository.list_mocks(filters, limit=limit, offset=offset)
 
-    async def update_mock(self, mock_id: str, update: MockUpdate) -> Mock:
+    async def update_mock(self, cmd: UpdateMockCommand) -> Mock:
         """Применяет частичное обновление к существующему моку."""
-        current_mock = await self.get_mock(mock_id)
-        current_mock.apply_update(update)
-        return await self._repository.save(current_mock)
+        return await update_mock_use_case(cmd, self._repository)
 
     async def delete_mock(self, mock_id: str) -> None:
         """Удаляет мок или вызывает исключение, если он не найден."""

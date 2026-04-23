@@ -1,19 +1,11 @@
-
-from app.api.contracts.mocks.items import (
-    MatchRuleItem,
-)
-from app.api.contracts.mocks.items import (
-    MockResponsePayloadItem as MockResponseItemDTO,
-)
-from app.api.contracts.mocks.requests import (
-    CreateMockRequest,
-    UpdateMockRequest,
-)
+from app.api.contracts.mocks.items import MatchRuleItem
+from app.api.contracts.mocks.items import MockResponsePayloadItem as MockResponseItemDTO
+from app.api.contracts.mocks.requests import CreateMockRequest, UpdateMockRequest
 from app.api.contracts.mocks.responses import MockResponseItem
+from app.application.commands.update_mock_command import UNSET, UpdateMockCommand
 from app.domain.mocks.models.match_rule import MatchRule
 from app.domain.mocks.models.mock import Mock
 from app.domain.mocks.models.mock_response import MockResponse
-from app.domain.mocks.models.mock_update import _MISSING, MockUpdate
 
 
 class MockContractMapper:
@@ -39,28 +31,29 @@ class MockContractMapper:
         )
 
     @staticmethod
-    def to_domain_mock_update_model(request: UpdateMockRequest) -> MockUpdate:
-        """Преобразует REQUEST DTO частичного обновления в доменную модель MockUpdate."""
+    def to_update_mock_command(mock_id: str, request: UpdateMockRequest) -> UpdateMockCommand:
+        """Преобразует REQUEST DTO частичного обновления в модель UpdateMockCommand."""
         set_fields = request.model_fields_set
-        return MockUpdate(
-            name=request.name if "name" in set_fields else _MISSING,
-            description=request.description if "description" in set_fields else _MISSING,
-            path=request.path if "path" in set_fields else _MISSING,
-            method=request.method if "method" in set_fields else _MISSING,
-            priority=request.priority if "priority" in set_fields else _MISSING,
-            active=request.active if "active" in set_fields else _MISSING,
-            scope=request.scope if "scope" in set_fields else _MISSING,
+        return UpdateMockCommand(
+            mock_id=mock_id,
+            name=request.name if "name" in set_fields else UNSET,
+            description=request.description if "description" in set_fields else UNSET,
+            path=request.path if "path" in set_fields else UNSET,
+            method=request.method if "method" in set_fields else UNSET,
+            priority=request.priority if "priority" in set_fields else UNSET,
+            active=request.active if "active" in set_fields else UNSET,
+            scope=request.scope if "scope" in set_fields else UNSET,
             match_rules=(
                 [MockContractMapper.to_domain_match_rule_model(r) for r in request.match_rules]
                 if "match_rules" in set_fields and request.match_rules is not None
-                else _MISSING
+                else UNSET
             ),
             response=(
                 MockContractMapper.to_domain_mock_response_model(request.response)
                 if "response" in set_fields and request.response is not None
-                else _MISSING
+                else UNSET
             ),
-            tags=request.tags if "tags" in set_fields else _MISSING,
+            tags=request.tags if "tags" in set_fields else UNSET,
         )
 
     @staticmethod
