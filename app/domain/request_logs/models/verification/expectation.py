@@ -1,12 +1,11 @@
-from pydantic import BaseModel, ConfigDict
+from dataclasses import dataclass
 
 from app.domain.shared.enums import HttpMethod
 
 
-class RequestLogVerificationExpectation(BaseModel):
+@dataclass(slots=True, frozen=True)
+class RequestLogVerificationExpectation:
     """Описывает ожидания для проверки журнала запросов."""
-
-    model_config = ConfigDict(extra="forbid")
 
     path: str
     method: HttpMethod

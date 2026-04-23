@@ -1,11 +1,11 @@
-
 from dataclasses import dataclass, field
+from typing import Any
 
 from app.domain.mocks.models.match_rule import MatchRule
 from app.domain.mocks.models.mock_response import MockResponse
 from app.domain.shared.enums import HttpMethod
 
-_MISSING = object()
+_MISSING: Any = object()
 
 
 @dataclass(slots=True, frozen=True)
@@ -15,18 +15,18 @@ class MockUpdate:
     Поля со значением ``_MISSING`` считаются не переданными и не применяются.
     """
 
-    name: str | object = field(default=_MISSING)
-    description: str | None | object = field(default=_MISSING)
-    path: str | object = field(default=_MISSING)
-    method: HttpMethod | object = field(default=_MISSING)
-    priority: int | object = field(default=_MISSING)
-    active: bool | object = field(default=_MISSING)
-    scope: str | object = field(default=_MISSING)
-    match_rules: list[MatchRule] | object = field(default=_MISSING)
-    response: MockResponse | object = field(default=_MISSING)
-    tags: list[str] | object = field(default=_MISSING)
+    name: str = field(default=_MISSING)
+    description: str | None = field(default=_MISSING)
+    path: str = field(default=_MISSING)
+    method: HttpMethod = field(default=_MISSING)
+    priority: int = field(default=_MISSING)
+    active: bool = field(default=_MISSING)
+    scope: str = field(default=_MISSING)
+    match_rules: list[MatchRule] = field(default=_MISSING)
+    response: MockResponse = field(default=_MISSING)
+    tags: list[str] = field(default=_MISSING)
 
-    def to_patch_dict(self) -> dict[str, object]:
+    def to_patch_dict(self) -> dict[str, Any]:
         """Возвращает словарь только с явно переданными полями."""
         return {
             f: getattr(self, f)

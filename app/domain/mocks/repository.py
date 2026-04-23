@@ -9,7 +9,7 @@ from app.domain.shared.enums import HttpMethod
 class MockRepository(Protocol):
     """Описывает операции хранения и получения моков."""
 
-    async def create(self, mock: Mock) -> Mock:
+    async def add(self, mock: Mock) -> Mock:
         """Сохраняет новое определение мока."""
         ...
 
@@ -17,18 +17,21 @@ class MockRepository(Protocol):
         """Возвращает мок по идентификатору или ``None``, если он не найден."""
         ...
 
-    async def list_mocks(
-        self, filters: MockListFilters, limit: int = 100, offset: int = 0
-    ) -> list[Mock]:
-        """Возвращает список моков с поддержкой пагинации."""
-        ...
-
-    async def update(self, mock: Mock) -> Mock:
+    async def save(self, mock: Mock) -> Mock:
         """Сохраняет изменения существующего мока."""
         ...
 
-    async def delete(self, mock_id: str) -> bool:
+    async def remove(self, mock_id: str) -> bool:
         """Удаляет мок и сообщает, успешно ли выполнена операция."""
+        ...
+
+    async def list_mocks(
+        self,
+        filters: MockListFilters,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[Mock]:
+        """Возвращает список моков с поддержкой пагинации."""
         ...
 
     async def list_candidates(
@@ -38,8 +41,4 @@ class MockRepository(Protocol):
         scopes: Sequence[str],
     ) -> list[Mock]:
         """Возвращает моки, которые можно рассматривать при резолвинге."""
-        ...
-
-    async def list_active_conflicts(self, mock: Mock) -> list[Mock]:
-        """Возвращает активные моки, конфликтующие с переданным моком."""
         ...

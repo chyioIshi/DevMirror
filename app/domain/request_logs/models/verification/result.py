@@ -1,10 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from dataclasses import dataclass
 
 
-class RequestLogVerificationResult(BaseModel):
+@dataclass(slots=True, frozen=True)
+class RequestLogVerificationResult:
     """Хранит результат проверки журнала запросов."""
-
-    model_config = ConfigDict(extra="forbid")
 
     matched: bool
     actual_count: int

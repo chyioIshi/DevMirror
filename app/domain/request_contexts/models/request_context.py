@@ -1,21 +1,19 @@
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from app.domain.shared.enums import HttpMethod
 
 
-class RequestContext(BaseModel):
+@dataclass(slots=True, frozen=True)
+class RequestContext:
     """Описывает контекст запроса."""
 
-    model_config = ConfigDict(extra="forbid")
-
-    id: str = Field(default_factory=lambda: uuid4().hex)
     method: HttpMethod
     path: str
-    headers: dict[str, str] = Field(default_factory=dict)
-    query_params: dict[str, Any] = Field(default_factory=dict)
-    body: Any = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    id: str = field(default_factory=lambda: uuid4().hex)
+    headers: dict[str, str] = field(default_factory=dict)
+    query_params: dict[str, Any] = field(default_factory=dict)
+    body: Any = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(tz=UTC))

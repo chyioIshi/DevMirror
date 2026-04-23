@@ -1,11 +1,11 @@
-from pydantic import BaseModel, ConfigDict
+from dataclasses import dataclass
 
 from app.domain.shared.enums import HttpMethod
 
 
-class MockListFilters(BaseModel):
+@dataclass(slots=True, frozen=True)
+class MockListFilters:
     """Описывает необязательные фильтры для получения списка моков."""
-    model_config = ConfigDict(extra="forbid")
 
     path: str | None = None
     method: HttpMethod | None = None

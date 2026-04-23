@@ -8,9 +8,11 @@ from app.application.services.mock_management_service import (
 from app.application.services.mock_resolver_service import MockResolverService
 from app.application.services.request_log_service import RequestLogService
 from app.config import Settings
+from app.domain.mocks.policies.activation_policy import MockActivationPolicy
 from app.domain.mocks.policies.scope_resolver import ChainedScopeResolver
 from app.domain.mocks.policies.selection_policy import MockSelectionPolicy
 from app.domain.mocks.repository import MockRepository
+from app.domain.mocks.services.conflict_service import MockConflictService
 from app.domain.mocks.services.rule_matcher import RuleMatcherService
 from app.domain.request_logs.repository import RequestLogRepository
 from app.domain.shared.ports.scope_resolver import (
@@ -41,6 +43,8 @@ class AppContainer:
         self._rule_matcher: RuleMatcherService | None = None
         self._scope_resolver: ScopeResolver | None = None
         self._mock_repository: MockRepository | None = None
+        self._mock_conflict_service: MockConflictService | None = None
+        self._mock_activation_policy: MockActivationPolicy | None = None
         self._request_log_repository: RequestLogRepository | None = None
         self._request_log_service: RequestLogService | None = None
         self._mock_management_service: MockManagementService | None = None
@@ -88,6 +92,18 @@ class AppContainer:
         return self._mock_repository
 
     @property
+    def mock_conflict_service(self) -> MockConflictService:
+        if self._mock_conflict_service is None:
+            self._mock_conflict_service = MockConflictService()
+        return self._mock_conflict_service
+
+    @property
+    def mock_activation_policy(self) -> MockActivationPolicy:
+        if self._mock_activation_policy is None:
+            self._mock_activation_policy = MockActivationPolicy()
+        return self._mock_activation_policy
+
+    @property
     def request_log_repository(self) -> RequestLogRepository:
         if self._request_log_repository is None:
             self._request_log_repository = MongoRequestLogRepository()
@@ -105,7 +121,9 @@ class AppContainer:
     def mock_management_service(self) -> MockManagementService:
         if self._mock_management_service is None:
             self._mock_management_service = MockManagementService(
-                repo=self.mock_repository,
+                repository=self.mock_repository,
+                conflict_service=self.mock_conflict_service,
+                activation_policy=self.mock_activation_policy,
             )
         return self._mock_management_service
 

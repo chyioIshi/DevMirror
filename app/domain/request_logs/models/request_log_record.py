@@ -1,6 +1,5 @@
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
-
-from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.request_contexts.models.request_context import RequestContext
 from app.domain.request_logs.models.matched_mock import MatchedMock
@@ -9,17 +8,16 @@ from app.domain.request_logs.models.verification.expectation import (
 )
 
 
-class RequestLogRecord(BaseModel):
+@dataclass(slots=True)
+class RequestLogRecord:
     """Описывает одну запись журнала входящего запроса."""
 
-    model_config = ConfigDict(extra="forbid")
-
-    id: str | None = None
     request_context: RequestContext
+    id: str | None = None
     matched_mock: MatchedMock | None = None
     scope: str | None = None
     response_status_code: int | None = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
     def matches_expectation(
         self, expectation: RequestLogVerificationExpectation,

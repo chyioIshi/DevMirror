@@ -1,13 +1,13 @@
+from dataclasses import dataclass
 from typing import Any
-
-from pydantic import BaseModel, ConfigDict
 
 from app.domain.shared.enums import HttpMethod
 
 
-class MatchedMock(BaseModel):
+@dataclass(slots=True, frozen=True)
+class MatchedMock:
     """Описывает найденный мок для запроса в журнале."""
-    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     path: str
