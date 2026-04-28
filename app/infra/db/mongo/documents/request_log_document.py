@@ -1,19 +1,43 @@
 
 from datetime import UTC, datetime
+from typing import Any
 
 from beanie import Document
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pymongo import DESCENDING
 
-from app.domain.request_contexts.models.request_context import RequestContext
-from app.domain.request_logs.models.matched_mock import MatchedMock
+from app.domain.shared.enums import HttpMethod
+
+
+class RequestContextDocument(BaseModel):
+    """Вложенный Mongo-документ контекста запроса."""
+
+    id: str
+    method: HttpMethod
+    path: str
+    headers: dict[str, str] = Field(default_factory=dict)
+    query_params: dict[str, Any] = Field(default_factory=dict)
+    body: Any = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+
+
+class MatchedMockDocument(BaseModel):
+    """Вложенный Mongo-документ, описывающий найденный мок в журнале."""
+
+    id: str
+    name: str
+    path: str
+    method: HttpMethod
+    scope: str
+    response_status_code: int
+    response_body: Any | None = None
 
 
 class RequestLogDocument(Document):
     """Mongo-документ для хранения записи журнала запросов."""
 
-    request_context: RequestContext
-    matched_mock: MatchedMock | None = None
+    request_context: RequestContextDocument
+    matched_mock: MatchedMockDocument | None = None
     scope: str | None = None
     response_status_code: int | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))

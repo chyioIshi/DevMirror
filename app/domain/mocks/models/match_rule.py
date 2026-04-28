@@ -1,33 +1,31 @@
+from dataclasses import dataclass
+from typing import Any
 
-from typing import Any, Self
-
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-
+from app.domain.mocks.exceptions import MockInvariantError
 from app.domain.shared.enums import MatchOperator, MatchSource
 
+_KEY_REQUIRED_SOURCES: frozenset[MatchSource] = frozenset({
+    MatchSource.HEADER,
+    MatchSource.QUERY,
+    MatchSource.BODY_JSON,
+})
 
-class MatchRule(BaseModel):
-    """Описывает одно условие, которому должен соответствовать запрос."""
-    model_config = ConfigDict(extra="forbid")
+
+@dataclass(slots=True, frozen=True)
+class MatchRule:
+    """Условие, которому должен соответствовать запрос."""
 
     source: MatchSource
-    key: str = Field(default="")
     operator: MatchOperator
     expected: Any | None = None
+    key: str = ""
 
-    @model_validator(mode="after")
-    def validate_rule(self) -> Self:
-        """Проверяет корректность правила после создания модели."""
-        if self.source in {MatchSource.HEADER, MatchSource.QUERY, MatchSource.BODY_JSON} and not self.key:
-            raise ValueError(f"`key` is required for source `{self.source}`")
+    def __post_init__(self) -> None:
+        if self.source in _KEY_REQUIRED_SOURCES and not self.key:
+            raise MockInvariantError(f"`key` is required for source `{self.source}`")
 
-        if self.expected is None:
-            raise ValueError("`expected` is required for the selected operator")
+        if self.operator != MatchOperator.EXISTS and self.expected is None:
+            raise MockInvariantError("`expected` is required for the selected operator")
 
         if self.operator == MatchOperator.IN and not isinstance(self.expected, list):
-            raise ValueError("`expected` must be a list for operator `in`")
-
-        if self.operator == MatchOperator.EXISTS:
-            return self
-
-        return self
+            raise MockInvariantError("`expected` must be a list for operator `in`")

@@ -68,7 +68,9 @@ async def update_mock(
     """Применяет частичное обновление к существующему моку
     или возвращает 404, если он не найден."""
     try:
-        updated_mock = await mock_managment_service.update_mock(mock_id, MockContractMapper.to_domain_mock_update_model(request))
+        updated_mock = await mock_managment_service.update_mock(
+            MockContractMapper.to_update_mock_command(mock_id, request),
+        )
     except MockNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return MockContractMapper.from_domain_mock_model(updated_mock)
