@@ -3,13 +3,14 @@ from app.application.exceptions import MockNotFoundError
 from app.domain.mocks.models.mock import Mock
 from app.domain.mocks.repository import MockRepository
 
+
 # TODO: временное решение
 async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
     """UseCase обновления мока (вынес в usecase временно, чтобы не раздувать сервис)."""
 
     current_mock = await repo.get_by_id(cmd.mock_id)
     if current_mock is None:
-        raise MockNotFoundError(f"Mock `{cmd.mock_id}` was not found")
+        raise MockNotFoundError(mock_id=cmd.mock_id)
 
     if cmd.name is not UNSET:
         current_mock.rename(cmd.name)

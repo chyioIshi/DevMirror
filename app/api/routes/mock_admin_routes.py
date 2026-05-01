@@ -1,10 +1,9 @@
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, Depends, Query, Response, status
 
 from app.api.contracts.common.pagination_request import PaginationRequest
 from app.api.contracts.mocks.requests import CreateMockRequest, UpdateMockRequest
 from app.api.contracts.mocks.responses import MockListResponse, MockResponseItem
-from app.application.exceptions import MockNotFoundError
 from app.application.mappers.mock_contract_mapper import MockContractMapper
 from app.application.services.mock_management_service import MockManagementService
 from app.di import get_mock_management_service
@@ -32,10 +31,7 @@ async def get_mock(
     mock_managment_service: MockManagementService = Depends(get_mock_management_service),
 ) -> MockResponseItem:
     """Возвращает мок по id или 404, если он не найден."""
-    try:
-        finded_mock = await mock_managment_service.get_mock(mock_id)
-    except MockNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    finded_mock = await mock_managment_service.get_mock(mock_id)
     return MockContractMapper.from_domain_mock_model(finded_mock)
 
 
@@ -67,12 +63,9 @@ async def update_mock(
 ) -> MockResponseItem:
     """Применяет частичное обновление к существующему моку
     или возвращает 404, если он не найден."""
-    try:
-        updated_mock = await mock_managment_service.update_mock(
-            MockContractMapper.to_update_mock_command(mock_id, request),
-        )
-    except MockNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    updated_mock = await mock_managment_service.update_mock(
+        MockContractMapper.to_update_mock_command(mock_id, request),
+    )
     return MockContractMapper.from_domain_mock_model(updated_mock)
 
 
@@ -82,10 +75,7 @@ async def delete_mock(
     mock_managment_service: MockManagementService = Depends(get_mock_management_service),
 ) -> Response:
     """Удаляет мок по id или возвращает 404, если он не найден."""
-    try:
-        await mock_managment_service.delete_mock(mock_id)
-    except MockNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    await mock_managment_service.delete_mock(mock_id)
     return Response(status_code=status.HTTP_200_OK)
 
 
@@ -97,13 +87,10 @@ async def activate_mock(
 ) -> MockResponseItem:
     """Активирует мок по id, при необходимости деактивируя конфликтующие моки,
     или возвращает 404, если он не найден."""
-    try:
-        activated_mock = await mock_managment_service.activate_mock(
-            mock_id,
-            deactivate_conflicting=deactivate_conflicting,
-        )
-    except MockNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    activated_mock = await mock_managment_service.activate_mock(
+        mock_id,
+        deactivate_conflicting=deactivate_conflicting,
+    )
     return MockContractMapper.from_domain_mock_model(activated_mock)
 
 
@@ -113,8 +100,5 @@ async def deactivate_mock(
     mock_managment_service: MockManagementService = Depends(get_mock_management_service),
 ) -> MockResponseItem:
     """Деактивирует мок по id или возвращает 404, если он не найден."""
-    try:
-        deactivated_mock = await mock_managment_service.deactivate_mock(mock_id)
-    except MockNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    deactivated_mock = await mock_managment_service.deactivate_mock(mock_id)
     return MockContractMapper.from_domain_mock_model(deactivated_mock)

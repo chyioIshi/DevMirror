@@ -1,7 +1,6 @@
 from app.application.commands.update_mock_command import UpdateMockCommand
-from app.application.exceptions import CreateMockError, MockNotFoundError
+from app.application.exceptions import MockNotFoundError
 from app.application.use_cases.update_mock import update_mock as update_mock_use_case
-from app.domain.mocks.exceptions import MockInvariantError
 from app.domain.mocks.models import Mock, MockListFilters
 from app.domain.mocks.policies.activation_policy import MockActivationPolicy
 from app.domain.mocks.repository import MockRepository
@@ -23,18 +22,13 @@ class MockManagementService:
 
     async def create_mock(self, mock: Mock) -> Mock:
         """Сохраняет новый мок."""
-        try:
-            return await self._repository.add(mock)
-        except MockInvariantError as exc:
-            raise CreateMockError(
-                "Can't create the mock: one of one of the mock's invariants was violated",
-            ) from exc
+        return await self._repository.add(mock)
 
     async def get_mock(self, mock_id: str) -> Mock:
         """Возвращает мок по id или вызывает исключение, если он не найден."""
         mock = await self._repository.get_by_id(mock_id)
         if mock is None:
-            raise MockNotFoundError(f"Mock `{mock_id}` was not found")
+            raise MockNotFoundError(mock_id=mock_id)
         return mock
 
     async def list_mocks(
