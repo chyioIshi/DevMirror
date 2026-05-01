@@ -25,7 +25,7 @@ class Mock:
     id: str | None = None
     description: str | None = None
     priority: int = 0
-    active: bool = True
+    active: bool = False
     scope: str = "global"
     match_rules: list[MatchRule] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
@@ -45,7 +45,7 @@ class Mock:
         response: MockResponse,
         description: str | None = None,
         priority: int = 0,
-        active: bool = True,
+        active: bool = False,
         scope: str = "global",
         match_rules: list[MatchRule] | None = None,
         tags: list[str] | None = None,

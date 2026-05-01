@@ -20,7 +20,7 @@ class MockContractMapper:
             path=request.path,
             method=request.method,
             priority=request.priority,
-            active=request.active,
+            active=False,
             scope=request.scope,
             match_rules=[
                 MockContractMapper.to_domain_match_rule_model(rule)

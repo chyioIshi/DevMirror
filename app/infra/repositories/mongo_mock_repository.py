@@ -3,13 +3,26 @@ from collections.abc import Sequence
 from beanie import PydanticObjectId
 from beanie.operators import In
 from pymongo import ASCENDING, DESCENDING
+from pymongo.errors import (
+    AutoReconnect,
+    ConnectionFailure,
+    NetworkTimeout,
+    ServerSelectionTimeoutError,
+)
 
 from app.domain.mocks.models.mock import Mock
 from app.domain.mocks.models.mock_list_filters import MockListFilters
 from app.domain.shared.enums import HttpMethod
 from app.infra.db.mongo.documents.mock_document import MockDocument
-from app.infra.exceptions import RepositoryError
+from app.infra.exceptions import DatabaseConnectionError, RepositoryError
 from app.infra.mappers.mock_mapper import MockMapper
+
+_CONNECTION_ERRORS = (
+    AutoReconnect,
+    ConnectionFailure,
+    NetworkTimeout,
+    ServerSelectionTimeoutError,
+)
 
 
 class MongoMockRepository:
@@ -21,6 +34,8 @@ class MongoMockRepository:
             document = MockMapper.to_document(mock)
             await document.insert()
             return MockMapper.to_domain(document)
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(details={"operation": "add"}) from exc
         except Exception as exc:
             raise RepositoryError(details={"operation": "add"}) from exc
 
@@ -37,6 +52,10 @@ class MongoMockRepository:
             if document is None:
                 return None
             return MockMapper.to_domain(document)
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(
+                details={"operation": "get_by_id", "mock_id": mock_id},
+            ) from exc
         except Exception as exc:
             raise RepositoryError(
                 details={"operation": "get_by_id", "mock_id": mock_id},
@@ -48,6 +67,10 @@ class MongoMockRepository:
             document = MockMapper.to_document(mock)
             await document.replace()
             return MockMapper.to_domain(document)
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(
+                details={"operation": "save", "mock_id": mock.id},
+            ) from exc
         except Exception as exc:
             raise RepositoryError(
                 details={"operation": "save", "mock_id": mock.id},
@@ -64,6 +87,10 @@ class MongoMockRepository:
                 return False
             await document.delete()
             return True
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(
+                details={"operation": "remove", "mock_id": mock_id},
+            ) from exc
         except Exception as exc:
             raise RepositoryError(
                 details={"operation": "remove", "mock_id": mock_id},
@@ -97,6 +124,10 @@ class MongoMockRepository:
                 ],
             ).skip(offset).limit(limit).to_list()
             return [MockMapper.to_domain(document) for document in documents]
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(
+                details={"operation": "list_mocks", "limit": limit, "offset": offset},
+            ) from exc
         except Exception as exc:
             raise RepositoryError(
                 details={"operation": "list_mocks", "limit": limit, "offset": offset},
@@ -126,6 +157,15 @@ class MongoMockRepository:
             ).to_list()
 
             return [MockMapper.to_domain(document) for document in documents]
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(
+                details={
+                    "operation": "list_candidates",
+                    "method": str(normalized_method),
+                    "path": path,
+                    "scopes": list(scopes),
+                },
+            ) from exc
         except Exception as exc:
             raise RepositoryError(
                 details={

@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse
 
 from app.application.exceptions import (
     ApplicationError,
-    ConcurrencyConflictError,
     MockNotFoundError,
     OperationNotAllowedError,
     ResourceAlreadyExistsError,
@@ -81,7 +80,7 @@ async def application_error_handler(request: Request, exc: ApplicationError) -> 
 
     if isinstance(exc, ValidationError):
         status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif isinstance(exc, ConcurrencyConflictError | ResourceAlreadyExistsError):
+    elif isinstance(exc, ResourceAlreadyExistsError):
         status_code = status.HTTP_409_CONFLICT
     elif isinstance(exc, OperationNotAllowedError):
         status_code = status.HTTP_409_CONFLICT if exc.conflict else status.HTTP_400_BAD_REQUEST

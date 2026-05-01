@@ -39,3 +39,17 @@ class RepositoryError(InfrastructureError):
             details=details or {},
         )
 
+
+class DatabaseConnectionError(InfrastructureError):
+    """Ошибка подключения к БД."""
+
+    def __init__(
+        self,
+        message: str = "Database connection failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            code=InfrastructureErrorCode.DATABASE_CONNECTION_ERROR,
+            message=message,
+            details=details or {},
+        )

@@ -10,7 +10,6 @@ class ApplicationErrorCode(StrEnum):
     VALIDATION_ERROR = "VALIDATION_ERROR"
     OPERATION_NOT_ALLOWED = "OPERATION_NOT_ALLOWED"
     RESOURCE_ALREADY_EXISTS = "RESOURCE_ALREADY_EXISTS"
-    CONCURRENCY_CONFLICT = "CONCURRENCY_CONFLICT"
 
 
 @dataclass(eq=False)
@@ -88,21 +87,6 @@ class ResourceAlreadyExistsError(ApplicationError):
     ) -> None:
         super().__init__(
             code=ApplicationErrorCode.RESOURCE_ALREADY_EXISTS,
-            message=message,
-            details=details or {},
-        )
-
-
-class ConcurrencyConflictError(ApplicationError):
-    """Ошибка конфликта конкурентного изменения ресурса."""
-
-    def __init__(
-        self,
-        message: str = "Concurrency conflict",
-        details: dict[str, Any] | None = None,
-    ) -> None:
-        super().__init__(
-            code=ApplicationErrorCode.CONCURRENCY_CONFLICT,
             message=message,
             details=details or {},
         )

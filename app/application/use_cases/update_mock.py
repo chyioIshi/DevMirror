@@ -1,5 +1,5 @@
 from app.application.commands.update_mock_command import UNSET, UpdateMockCommand
-from app.application.exceptions import MockNotFoundError
+from app.application.exceptions import MockNotFoundError, ValidationError
 from app.domain.mocks.models.mock import Mock
 from app.domain.mocks.repository import MockRepository
 
@@ -7,6 +7,11 @@ from app.domain.mocks.repository import MockRepository
 # TODO: временное решение
 async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
     """UseCase обновления мока (вынес в usecase временно, чтобы не раздувать сервис)."""
+    if not cmd.has_changes():
+        raise ValidationError(
+            "Update command must contain at least one field",
+            details={"mock_id": cmd.mock_id},
+        )
 
     current_mock = await repo.get_by_id(cmd.mock_id)
     if current_mock is None:

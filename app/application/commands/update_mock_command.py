@@ -23,3 +23,21 @@ class UpdateMockCommand:
     match_rules: list[MatchRule] | object = field(default=UNSET)
     response: MockResponse | object = field(default=UNSET)
     tags: list[str] | object = field(default=UNSET)
+
+    def has_changes(self) -> bool:
+        """Проверяет, содержит ли команда хотя бы одно изменяемое поле."""
+        return any(
+            value is not UNSET
+            for value in (
+                self.name,
+                self.description,
+                self.path,
+                self.method,
+                self.priority,
+                self.active,
+                self.scope,
+                self.match_rules,
+                self.response,
+                self.tags,
+            )
+        )
