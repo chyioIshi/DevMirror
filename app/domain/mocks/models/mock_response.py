@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.domain.mocks.exceptions import MockInvariantError
+from app.domain.mocks.exceptions import InvalidMockResponseError
 
 
 @dataclass(slots=True, frozen=True)
@@ -14,4 +14,4 @@ class MockResponse:
 
     def __post_init__(self) -> None:
         if not 100 <= self.status_code <= 599:
-            raise MockInvariantError("MockResponse status_code must be in [100, 599]")
+            raise InvalidMockResponseError("MockResponse status_code must be in [100, 599]")

@@ -31,7 +31,7 @@ class MockDocument(Document):
     path: str
     method: HttpMethod
     priority: int = 0
-    active: bool = True
+    active: bool = False
     scope: str = "global"
     match_rules: list[MatchRuleDocument] = Field(default_factory=list)
     response: MockResponseDocument
@@ -43,7 +43,12 @@ class MockDocument(Document):
         """Настройки коллекции Beanie и индексы для моков."""
         name: str = "mocks"
         indexes: list[list[tuple[str, int]]] = [
-            [("path", ASCENDING), ("method", ASCENDING), ("scope", ASCENDING), ("active", ASCENDING)],
+            [
+                ("path", ASCENDING),
+                ("method", ASCENDING),
+                ("scope", ASCENDING),
+                ("active", ASCENDING),
+            ],
             [("active", ASCENDING), ("updated_at", DESCENDING)],
             [("tags", ASCENDING)],
         ]

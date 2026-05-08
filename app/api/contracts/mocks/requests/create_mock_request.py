@@ -19,7 +19,6 @@ class CreateMockRequest(BaseModel):
     path: str = Field(min_length=1, max_length=1024, examples=["/hello"])
     method: HttpMethod = Field(examples=["GET"])
     priority: int = Field(default=0, examples=[100])
-    active: bool = Field(default=True, examples=[True])
     scope: str = Field(
         default="global",
         min_length=1,

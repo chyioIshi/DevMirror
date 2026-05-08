@@ -30,7 +30,7 @@ services:
       APP_VERSION: 0.1.0
       DEFAULT_SCOPE: global
       SCOPE_HEADER_NAME: user-id
-      SCOPE_BODY_FIELD_NAME: pinEq
+      SCOPE_BODY_FIELD_NAME: userId
       ADMIN_PREFIX: /_admin/mocks
       HEALTH_PREFIX: /_health
     ports:

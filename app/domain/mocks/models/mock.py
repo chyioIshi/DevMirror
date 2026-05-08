@@ -2,7 +2,12 @@ from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import Self
 
-from app.domain.mocks.exceptions import MockInvariantError
+from app.domain.mocks.exceptions import (
+    InvalidMockRouteError,
+    InvalidMockStateError,
+    InvalidScopeError,
+    MockInvariantError,
+)
 from app.domain.mocks.models.match_rule import MatchRule
 from app.domain.mocks.models.mock_response import MockResponse
 from app.domain.shared.enums import HttpMethod
@@ -20,7 +25,7 @@ class Mock:
     id: str | None = None
     description: str | None = None
     priority: int = 0
-    active: bool = True
+    active: bool = False
     scope: str = "global"
     match_rules: list[MatchRule] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
@@ -40,7 +45,7 @@ class Mock:
         response: MockResponse,
         description: str | None = None,
         priority: int = 0,
-        active: bool = True,
+        active: bool = False,
         scope: str = "global",
         match_rules: list[MatchRule] | None = None,
         tags: list[str] | None = None,
@@ -140,13 +145,13 @@ class Mock:
     def _ensure_invariants(self) -> None:
         """Проверяет инварианты мока и выбрасывает исключение, если они нарушены."""
         if not self.name or not self.name.strip():
-            raise MockInvariantError("Mock name must not be empty")
+            raise InvalidMockStateError("Mock name must not be empty")
         if not self.path or not self.path.strip():
-            raise MockInvariantError("Mock path must not be empty")
+            raise InvalidMockRouteError("Mock path must not be empty")
         if self.priority < 0:
             raise MockInvariantError("Mock priority must be non-negative")
         if not self.scope or not self.scope.strip():
-            raise MockInvariantError("Mock scope must not be empty")
+            raise InvalidScopeError("Mock scope must not be empty")
 
     def _build_candidate(self, **changes: object) -> Self:
         """Строит и валидирует кандидатное состояние, не меняя текущий агрегат."""

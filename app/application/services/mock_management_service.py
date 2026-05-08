@@ -1,7 +1,10 @@
 from app.application.commands.update_mock_command import UpdateMockCommand
-from app.application.exceptions import CreateMockError, MockNotFoundError
+from app.application.exceptions import (
+    MockNotFoundError,
+    OperationNotAllowedError,
+)
 from app.application.use_cases.update_mock import update_mock as update_mock_use_case
-from app.domain.mocks.exceptions import MockInvariantError
+from app.domain.mocks.exceptions import MockConflictError
 from app.domain.mocks.models import Mock, MockListFilters
 from app.domain.mocks.policies.activation_policy import MockActivationPolicy
 from app.domain.mocks.repository import MockRepository
@@ -23,18 +26,23 @@ class MockManagementService:
 
     async def create_mock(self, mock: Mock) -> Mock:
         """Сохраняет новый мок."""
-        try:
-            return await self._repository.add(mock)
-        except MockInvariantError as exc:
-            raise CreateMockError(
-                "Can't create the mock: one of one of the mock's invariants was violated",
-            ) from exc
+        if mock.active:
+            raise OperationNotAllowedError(
+                "Active mocks cannot be created directly",
+                details={
+                    "path": mock.path,
+                    "method": str(mock.method),
+                    "scope": mock.scope,
+                },
+            )
+
+        return await self._repository.add(mock)
 
     async def get_mock(self, mock_id: str) -> Mock:
         """Возвращает мок по id или вызывает исключение, если он не найден."""
         mock = await self._repository.get_by_id(mock_id)
         if mock is None:
-            raise MockNotFoundError(f"Mock `{mock_id}` was not found")
+            raise MockNotFoundError(mock_id=mock_id)
         return mock
 
     async def list_mocks(
@@ -64,16 +72,32 @@ class MockManagementService:
         """Активирует мок и при необходимости деактивирует конфликтующие."""
         current_mock = await self.get_mock(mock_id)
 
+        if current_mock.active:
+            raise OperationNotAllowedError(
+                "Mock is already active",
+                details={"mock_id": current_mock.id},
+            )
+
+        candidates = await self._repository.list_candidates(
+            method=current_mock.method,
+            path=current_mock.path,
+            scopes=[current_mock.scope],
+        )
+        conflicts = self._conflict_service.find_conflicts(
+            target=current_mock,
+            candidates=candidates,
+        )
+
+        if conflicts and not deactivate_conflicting:
+            raise MockConflictError(
+                "Mock conflicts with active mocks",
+                details={
+                    "mock_id": current_mock.id,
+                    "conflicting_mock_ids": [conflict.id for conflict in conflicts],
+                },
+            )
+
         if deactivate_conflicting:
-            candidates = await self._repository.list_candidates(
-                method=current_mock.method,
-                path=current_mock.path,
-                scopes=[current_mock.scope],
-            )
-            conflicts = self._conflict_service.find_conflicts(
-                target=current_mock,
-                candidates=candidates,
-            )
             mocks_to_deactivate = self._activation_policy.resolve_conflicts(
                 target=current_mock,
                 conflicts=conflicts,
@@ -94,5 +118,10 @@ class MockManagementService:
     async def deactivate_mock(self, mock_id: str) -> Mock:
         """Деактивирует указанный мок."""
         current_mock = await self.get_mock(mock_id)
+        if not current_mock.active:
+            raise OperationNotAllowedError(
+                "Mock is already inactive",
+                details={"mock_id": current_mock.id},
+            )
         current_mock.deactivate()
         return await self._repository.save(current_mock)
