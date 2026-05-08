@@ -1,4 +1,3 @@
-
 from pymongo import DESCENDING
 
 from app.domain.request_logs.models.request_log_record import RequestLogRecord

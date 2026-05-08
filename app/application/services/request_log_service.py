@@ -1,3 +1,4 @@
+import logging
 
 from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
 from app.domain.request_contexts.models.request_context import RequestContext
@@ -8,6 +9,8 @@ from app.domain.request_logs.models import (
     RequestLogVerificationResult,
 )
 from app.domain.request_logs.repository import RequestLogRepository
+
+logger = logging.getLogger(__name__)
 
 
 class RequestLogService:
@@ -49,18 +52,33 @@ class RequestLogService:
                 response_status_code=response_status_code,
             ),
         )
+        logger.debug(
+            f"Запись журнала создана для запроса {request_context.method} {request_context.path} в scope {scope} с моком {matched_mock.name if matched_mock else None}",
+            extra={
+                "method": str(request_context.method),
+                "path": request_context.path,
+                "scope": scope,
+                "matched_mock_id": matched_mock.id if matched_mock else None,
+            },
+        )
 
     async def list_records(
         self, limit: int = 100, offset: int = 0,
     ) -> list[RequestLogRecord]:
         """Возвращает записи журнала запросов с поддержкой пагинации."""
-        return await self._request_log_repository.list_records(
+        records = await self._request_log_repository.list_records(
             limit=limit, offset=offset,
         )
+        logger.debug(
+            f"Получено {len(records)} записей журнала запросов с limit={limit} и offset={offset}",
+            extra={"count": len(records), "limit": limit, "offset": offset},
+        )
+        return records
 
     async def clear(self) -> None:
         """Полностью очищает журнал запросов."""
         await self._request_log_repository.clear()
+        logger.info("Журнал запросов очищен")
 
     async def verify(
         self,
@@ -76,7 +94,16 @@ class RequestLogService:
             if expectation.expected_count is None
             else actual_count == expectation.expected_count
         )
-        return RequestLogVerificationResult(
+        result = RequestLogVerificationResult(
             matched=matched,
             actual_count=actual_count,
         )
+        logger.info(
+            f"Проверка журнала запросов завершена: matched={result.matched}, actual_count={result.actual_count}, expected_count={expectation.expected_count}",
+            extra={
+                "matched": result.matched,
+                "actual_count": result.actual_count,
+                "expected_count": expectation.expected_count,
+            },
+        )
+        return result

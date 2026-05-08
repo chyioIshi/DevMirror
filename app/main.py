@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.error_handlers import register_exception_handlers
+from app.api.middleware.logging_middleware import RequestLoggingMiddleware
 from app.api.routes.catch_all_routes import catch_all_router
 from app.api.routes.health_routes import health_router
 from app.api.routes.mock_admin_routes import mock_admin_router
@@ -20,16 +21,17 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    configure_logging()
     settings = get_settings()
     container = AppContainer(settings=settings)
     app.state.container = container
     mongo_client = await init_mongo(settings)
     app.state.mongo_client = mongo_client
     logger.info(
-        "DevMirror started (mongo_dsn=%s, db=%s)",
-        settings.mongo_dsn,
-        settings.mongo_database,
+        "DevMirror started",
+        extra={
+            "mongo_dsn": str(settings.mongo_dsn),
+            "db": settings.mongo_database,
+        },
     )
     try:
         yield
@@ -40,11 +42,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    configure_logging(settings)
 
     app = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
         lifespan=lifespan,
+    )
+    app.add_middleware(
+        RequestLoggingMiddleware,
     )
 
     register_exception_handlers(app)
