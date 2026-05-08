@@ -1,3 +1,5 @@
+import logging
+
 from app.application.commands.update_mock_command import UpdateMockCommand
 from app.application.exceptions import (
     MockNotFoundError,
@@ -9,6 +11,8 @@ from app.domain.mocks.models import Mock, MockListFilters
 from app.domain.mocks.policies.activation_policy import MockActivationPolicy
 from app.domain.mocks.repository import MockRepository
 from app.domain.mocks.services.conflict_service import MockConflictService
+
+logger = logging.getLogger(__name__)
 
 
 class MockManagementService:
@@ -36,13 +40,25 @@ class MockManagementService:
                 },
             )
 
-        return await self._repository.add(mock)
+        created_mock = await self._repository.add(mock)
+        logger.info(
+            f"Создан мок {created_mock.name} с id={created_mock.id}, path={created_mock.path}, method={created_mock.method}",
+            extra={
+                "mock_id": created_mock.id,
+                "name": created_mock.name,
+                "path": created_mock.path,
+                "method": str(created_mock.method),
+                "scope": created_mock.scope,
+            },
+        )
+        return created_mock
 
     async def get_mock(self, mock_id: str) -> Mock:
         """Возвращает мок по id или вызывает исключение, если он не найден."""
         mock = await self._repository.get_by_id(mock_id)
         if mock is None:
             raise MockNotFoundError(mock_id=mock_id)
+        logger.debug(f"Получен мок с id={mock_id} (get_mock)", extra={"mock_id": mock_id})
         return mock
 
     async def list_mocks(
@@ -52,16 +68,32 @@ class MockManagementService:
         offset: int = 0,
     ) -> list[Mock]:
         """Возвращает список моков, подходящих под заданные фильтры."""
-        return await self._repository.list_mocks(filters, limit=limit, offset=offset)
+        mocks = await self._repository.list_mocks(filters, limit=limit, offset=offset)
+        logger.debug(
+            f"Получено {len(mocks)} моков (list_mocks)",
+            extra={"count": len(mocks), "limit": limit, "offset": offset},
+        )
+        return mocks
 
     async def update_mock(self, cmd: UpdateMockCommand) -> Mock:
         """Применяет частичное обновление к существующему моку."""
-        return await update_mock_use_case(cmd, self._repository)
+        updated_mock = await update_mock_use_case(cmd, self._repository)
+        logger.info(
+            f"Обновлен мок {updated_mock.name} с id={updated_mock.id}, path={updated_mock.path}, method={updated_mock.method}",
+            extra={
+                "mock_id": updated_mock.id,
+                "path": updated_mock.path,
+                "method": str(updated_mock.method),
+                "scope": updated_mock.scope,
+            },
+        )
+        return updated_mock
 
     async def delete_mock(self, mock_id: str) -> None:
         """Удаляет мок или вызывает исключение, если он не найден."""
         await self.get_mock(mock_id)
         await self._repository.remove(mock_id)
+        logger.info(f"Удален мок с id={mock_id} (delete_mock)", extra={"mock_id": mock_id})
 
     async def activate_mock(
         self,
@@ -97,11 +129,13 @@ class MockManagementService:
                 },
             )
 
+        deactivated_conflicting_count = 0
         if deactivate_conflicting:
             mocks_to_deactivate = self._activation_policy.resolve_conflicts(
                 target=current_mock,
                 conflicts=conflicts,
             )
+            deactivated_conflicting_count = len(mocks_to_deactivate)
 
             for conflict in mocks_to_deactivate:
                 conflict.deactivate()
@@ -113,7 +147,15 @@ class MockManagementService:
         else:
             current_mock.activate()
 
-        return await self._repository.save(current_mock)
+        activated_mock = await self._repository.save(current_mock)
+        logger.info(
+            f"Активирован мок {activated_mock.name} с id={activated_mock.id}, path={activated_mock.path}, method={activated_mock.method}",
+            extra={
+                "mock_id": activated_mock.id,
+                "deactivated_conflicting_count": deactivated_conflicting_count,
+            },
+        )
+        return activated_mock
 
     async def deactivate_mock(self, mock_id: str) -> Mock:
         """Деактивирует указанный мок."""
@@ -124,4 +166,6 @@ class MockManagementService:
                 details={"mock_id": current_mock.id},
             )
         current_mock.deactivate()
-        return await self._repository.save(current_mock)
+        deactivated_mock = await self._repository.save(current_mock)
+        logger.info(f"Деактивирован мок {deactivated_mock.name} с id={deactivated_mock.id}", extra={"mock_id": deactivated_mock.id})
+        return deactivated_mock

@@ -1,3 +1,4 @@
+import logging
 from typing import Final
 
 from app.application.services.request_log_service import RequestLogService
@@ -8,6 +9,8 @@ from app.domain.mocks.repository import MockRepository
 from app.domain.mocks.services.rule_matcher import RuleMatcherService
 from app.domain.request_contexts.models.request_context import RequestContext
 from app.domain.shared.ports.scope_resolver import ScopeResolver
+
+logger = logging.getLogger(__name__)
 
 
 class MockResolverService:
@@ -42,6 +45,15 @@ class MockResolverService:
             path=request_context.path,
             scopes=candidate_scopes,
         )
+        logger.debug(
+            f"Получено {len(candidates)} кандидатов для запроса {request_context.method} {request_context.path} в scope {scope}",
+            extra={
+                "method": str(request_context.method),
+                "path": request_context.path,
+                "scope": scope,
+                "candidate_count": len(candidates),
+            },
+        )
 
         ranked_matches: list[tuple[CandidateRank, ResolvedMock]] = []
 
@@ -73,6 +85,14 @@ class MockResolverService:
                 scope=scope,
                 resolved_mock=None,
             )
+            logger.debug(
+                f"Мок не найден для запроса {request_context.method} {request_context.path} в scope {scope}",
+                extra={
+                    "method": str(request_context.method),
+                    "path": request_context.path,
+                    "scope": scope,
+                },
+            )
             return None
 
         ranked_matches.sort(
@@ -84,5 +104,15 @@ class MockResolverService:
             request_context=request_context,
             scope=scope,
             resolved_mock=resolved_mock,
+        )
+        logger.debug(
+            f"Найден мок {resolved_mock.mock.name} с id={resolved_mock.mock.id} для запроса {request_context.method} {request_context.path} в scope {scope}",
+            extra={
+                "mock_id": resolved_mock.mock.id,
+                "method": str(request_context.method),
+                "path": request_context.path,
+                "scope": scope,
+                "matched_count": len(ranked_matches),
+            },
         )
         return resolved_mock
