@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     admin_prefix: str = "/_admin/mocks"
     request_log_prefix: str = "/_admin/request-logs"
     health_prefix: str = "/_health"
+    log_level: str = "INFO"
 
     model_config = SettingsConfigDict(
         env_file=".env",
