@@ -31,8 +31,9 @@ services:
       DEFAULT_SCOPE: global
       SCOPE_HEADER_NAME: user-id
       SCOPE_BODY_FIELD_NAME: userId
-      ADMIN_PREFIX: /_admin/mocks
-      HEALTH_PREFIX: /_health
+      ADMIN_PREFIX: /admin/mocks
+      REQUEST_LOG_PREFIX: /admin/request-logs
+      HEALTH_PREFIX: /health
     ports:
       - "8000:8000"
 
