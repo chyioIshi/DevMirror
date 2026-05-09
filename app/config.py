@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     default_scope: str = "global"
     scope_header_name: str = "x-test-user"
     scope_body_field_name: str = "testUser"
-    admin_prefix: str = "/_admin/mocks"
-    request_log_prefix: str = "/_admin/request-logs"
-    health_prefix: str = "/_health"
+    admin_prefix: str = "/admin/mocks"
+    request_log_prefix: str = "/admin/request-logs"
+    health_prefix: str = "/health"
     log_level: str = "INFO"
 
     model_config = SettingsConfigDict(
