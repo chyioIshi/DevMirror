@@ -1,10 +1,7 @@
 
-from app.api.contracts.request_logs.requests import VerifyRequestLogRequest
-from app.api.contracts.request_logs.responses import VerifyRequestLogResponse
-from app.domain.request_logs.models.verification.expectation import (
+from app.api.contracts.request_logs import VerifyRequestLogRequest, VerifyRequestLogResponse
+from app.domain.request_logs.models.verification import (
     RequestLogVerificationExpectation,
-)
-from app.domain.request_logs.models.verification.result import (
     RequestLogVerificationResult,
 )
 

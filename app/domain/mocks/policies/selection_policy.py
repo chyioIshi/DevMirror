@@ -1,6 +1,5 @@
-from app.domain.mocks.models.mock import Mock
-from app.domain.mocks.models.resolution.candidate_rank import CandidateRank
-from app.domain.mocks.models.resolution.rule_match_result import RuleMatchResult
+from app.domain.mocks.models import Mock
+from app.domain.mocks.models.resolution import CandidateRank, RuleMatchResult
 
 
 class MockSelectionPolicy:

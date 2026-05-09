@@ -3,7 +3,7 @@ from typing import Protocol
 
 from app.domain.mocks.models.mock import Mock
 from app.domain.mocks.models.mock_list_filters import MockListFilters
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 class MockRepository(Protocol):

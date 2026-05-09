@@ -1,11 +1,8 @@
+from app.api.contracts.mocks import CreateMockRequest, MockResponseItem, UpdateMockRequest
 from app.api.contracts.mocks.items import MatchRuleItem
 from app.api.contracts.mocks.items import MockResponsePayloadItem as MockResponseItemDTO
-from app.api.contracts.mocks.requests import CreateMockRequest, UpdateMockRequest
-from app.api.contracts.mocks.responses import MockResponseItem
-from app.application.commands.update_mock_command import UNSET, UpdateMockCommand
-from app.domain.mocks.models.match_rule import MatchRule
-from app.domain.mocks.models.mock import Mock
-from app.domain.mocks.models.mock_response import MockResponse
+from app.application.commands import UNSET, UpdateMockCommand
+from app.domain.mocks.models import MatchRule, Mock, MockResponse
 
 
 class MockContractMapper:

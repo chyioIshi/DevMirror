@@ -1,10 +1,9 @@
 
 from beanie import PydanticObjectId
 
-from app.domain.request_contexts.models.request_context import RequestContext
-from app.domain.request_logs.models.matched_mock import MatchedMock
-from app.domain.request_logs.models.request_log_record import RequestLogRecord
-from app.infra.db.mongo.documents.request_log_document import (
+from app.domain.request_contexts import RequestContext
+from app.domain.request_logs.models import MatchedMock, RequestLogRecord
+from app.infra.db.mongo.documents import (
     MatchedMockDocument,
     RequestContextDocument,
     RequestLogDocument,

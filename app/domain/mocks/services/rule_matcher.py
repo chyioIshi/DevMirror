@@ -1,13 +1,13 @@
 from collections.abc import Callable
 from typing import Any
 
-from app.domain.mocks.models.match_rule import MatchRule
-from app.domain.mocks.models.resolution.rule_match_result import (
+from app.domain.mocks.models import MatchRule
+from app.domain.mocks.models.resolution import (
     RuleEvaluation,
     RuleMatchResult,
 )
-from app.domain.request_contexts.models.request_context import RequestContext
-from app.domain.shared.enums import MatchOperator, MatchSource
+from app.domain.request_contexts import RequestContext
+from app.domain.shared import MatchOperator, MatchSource
 
 OperatorHandler = Callable[[Any, Any], bool]
 ValueExtractor = Callable[[RequestContext, MatchRule], Any | None]

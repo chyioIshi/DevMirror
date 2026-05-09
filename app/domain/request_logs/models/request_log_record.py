@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from app.domain.request_contexts.models.request_context import RequestContext
+from app.domain.request_contexts import RequestContext
 from app.domain.request_logs.models.matched_mock import MatchedMock
 from app.domain.request_logs.models.verification.expectation import (
     RequestLogVerificationExpectation,

@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.domain.shared.enums import MatchOperator, MatchSource
+from app.domain.shared import MatchOperator, MatchSource
 
 
 class MatchRuleItem(BaseModel):

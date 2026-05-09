@@ -3,8 +3,7 @@ from beanie import init_beanie
 from pymongo import AsyncMongoClient
 
 from app.config import Settings
-from app.infra.db.mongo.documents.mock_document import MockDocument
-from app.infra.db.mongo.documents.request_log_document import RequestLogDocument
+from app.infra.db.mongo.documents import MockDocument, RequestLogDocument
 
 
 async def init_mongo(settings: Settings) -> AsyncMongoClient:

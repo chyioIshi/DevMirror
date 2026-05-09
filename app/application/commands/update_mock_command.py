@@ -1,9 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Final
 
-from app.domain.mocks.models.match_rule import MatchRule
-from app.domain.mocks.models.mock_response import MockResponse
-from app.domain.shared.enums import HttpMethod
+from app.domain.mocks.models import MatchRule, MockResponse
+from app.domain.shared import HttpMethod
 
 UNSET: Final = object()
 

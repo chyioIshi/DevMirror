@@ -2,7 +2,7 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 class UpdateMockRequest(BaseModel):

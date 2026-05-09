@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.application.services.mock_resolver_service import MockResolverService
+from app.application.services import MockResolverService
 from app.config import Settings
 from app.di import (
     get_app_settings,
@@ -8,9 +8,9 @@ from app.di import (
     get_mock_response_builder,
     get_request_context_resolver,
 )
-from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
-from app.infra.context.request_context_resolver import RequestContextResolver
-from app.infra.response.mock_response_builder import MockResponseBuilder
+from app.domain.mocks.models.resolution import ResolvedMock
+from app.infra.context import RequestContextResolver
+from app.infra.response import MockResponseBuilder
 
 catch_all_router = APIRouter(tags=["catch-all"])
 

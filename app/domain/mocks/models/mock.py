@@ -10,7 +10,7 @@ from app.domain.mocks.exceptions import (
 )
 from app.domain.mocks.models.match_rule import MatchRule
 from app.domain.mocks.models.mock_response import MockResponse
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 @dataclass(slots=True)

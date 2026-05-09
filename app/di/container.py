@@ -2,31 +2,32 @@ from typing import Final, cast
 
 from fastapi import Request
 
-from app.application.services.mock_management_service import (
+from app.application.services import (
     MockManagementService,
+    MockResolverService,
+    RequestLogService,
 )
-from app.application.services.mock_resolver_service import MockResolverService
-from app.application.services.request_log_service import RequestLogService
 from app.config import Settings
-from app.domain.mocks.policies.activation_policy import MockActivationPolicy
-from app.domain.mocks.policies.scope_resolver import ChainedScopeResolver
-from app.domain.mocks.policies.selection_policy import MockSelectionPolicy
-from app.domain.mocks.repository import MockRepository
-from app.domain.mocks.services.conflict_service import MockConflictService
-from app.domain.mocks.services.rule_matcher import RuleMatcherService
-from app.domain.request_logs.repository import RequestLogRepository
-from app.domain.shared.ports.scope_resolver import (
+from app.domain.mocks import MockRepository
+from app.domain.mocks.policies import (
+    ChainedScopeResolver,
+    MockActivationPolicy,
+    MockSelectionPolicy,
+)
+from app.domain.mocks.services import MockConflictService, RuleMatcherService
+from app.domain.request_logs import RequestLogRepository
+from app.domain.shared.ports import (
     ScopeResolutionStrategy,
     ScopeResolver,
 )
-from app.infra.context.request_context_resolver import RequestContextResolver
-from app.infra.repositories.mongo_mock_repository import MongoMockRepository
-from app.infra.repositories.mongo_request_log_repository import (
+from app.infra.context import RequestContextResolver
+from app.infra.repositories import (
+    MongoMockRepository,
     MongoRequestLogRepository,
 )
-from app.infra.request.request_data_reader import RequestDataReader
-from app.infra.response.mock_response_builder import MockResponseBuilder
-from app.infra.scope_resolution.strategies import (
+from app.infra.request import RequestDataReader
+from app.infra.response import MockResponseBuilder
+from app.infra.scope_resolution import (
     DefaultScopeResolutionStrategy,
     HeaderScopeResolutionStrategy,
     JsonBodyFieldScopeResolutionStrategy,

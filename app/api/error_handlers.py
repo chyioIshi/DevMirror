@@ -11,7 +11,7 @@ from app.application.exceptions import (
     ResourceAlreadyExistsError,
     ValidationError,
 )
-from app.domain.mocks.exceptions import DomainError, MockConflictError
+from app.domain.mocks import DomainError, MockConflictError
 from app.infra.exceptions import InfrastructureError
 
 logger = logging.getLogger(__name__)

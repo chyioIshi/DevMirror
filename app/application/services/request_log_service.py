@@ -1,14 +1,14 @@
 import logging
 
-from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
-from app.domain.request_contexts.models.request_context import RequestContext
+from app.domain.mocks.models.resolution import ResolvedMock
+from app.domain.request_contexts import RequestContext
+from app.domain.request_logs import RequestLogRepository
 from app.domain.request_logs.models import (
     MatchedMock,
     RequestLogRecord,
     RequestLogVerificationExpectation,
     RequestLogVerificationResult,
 )
-from app.domain.request_logs.repository import RequestLogRepository
 
 logger = logging.getLogger(__name__)
 

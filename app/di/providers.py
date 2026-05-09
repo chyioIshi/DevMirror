@@ -2,13 +2,15 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.application.services.mock_management_service import MockManagementService
-from app.application.services.mock_resolver_service import MockResolverService
-from app.application.services.request_log_service import RequestLogService
+from app.application.services import (
+    MockManagementService,
+    MockResolverService,
+    RequestLogService,
+)
 from app.config import Settings
 from app.di.container import AppContainer, get_container
-from app.infra.context.request_context_resolver import RequestContextResolver
-from app.infra.response.mock_response_builder import MockResponseBuilder
+from app.infra.context import RequestContextResolver
+from app.infra.response import MockResponseBuilder
 
 ContainerDep = Annotated[AppContainer, Depends(get_container)]
 

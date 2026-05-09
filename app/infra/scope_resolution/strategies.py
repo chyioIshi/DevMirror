@@ -1,4 +1,4 @@
-from app.domain.request_contexts.models.request_context import RequestContext
+from app.domain.request_contexts import RequestContext
 
 
 class HeaderScopeResolutionStrategy:
