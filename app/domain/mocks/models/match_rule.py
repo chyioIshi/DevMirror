@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.domain.mocks.exceptions import InvalidMatchRuleError
-from app.domain.shared.enums import MatchOperator, MatchSource
+from app.domain.shared import MatchOperator, MatchSource
 
 _KEY_REQUIRED_SOURCES: frozenset[MatchSource] = frozenset({
     MatchSource.HEADER,

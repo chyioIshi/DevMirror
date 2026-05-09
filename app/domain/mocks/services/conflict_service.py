@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from app.domain.mocks.models.mock import Mock
+from app.domain.mocks.models import Mock
 
 
 class MockConflictService:

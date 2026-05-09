@@ -10,12 +10,11 @@ from pymongo.errors import (
     ServerSelectionTimeoutError,
 )
 
-from app.domain.mocks.models.mock import Mock
-from app.domain.mocks.models.mock_list_filters import MockListFilters
-from app.domain.shared.enums import HttpMethod
-from app.infra.db.mongo.documents.mock_document import MockDocument
+from app.domain.mocks.models import Mock, MockListFilters
+from app.domain.shared import HttpMethod
+from app.infra.db.mongo.documents import MockDocument
 from app.infra.exceptions import DatabaseConnectionError, RepositoryError
-from app.infra.mappers.mock_mapper import MockMapper
+from app.infra.mappers import MockMapper
 
 _CONNECTION_ERRORS = (
     AutoReconnect,

@@ -6,7 +6,7 @@ from beanie import Document
 from pydantic import BaseModel, Field
 from pymongo import DESCENDING
 
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 class RequestContextDocument(BaseModel):

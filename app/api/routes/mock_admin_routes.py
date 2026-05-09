@@ -1,14 +1,18 @@
 
 from fastapi import APIRouter, Body, Depends, Query, Response, status
 
-from app.api.contracts.common.pagination_request import PaginationRequest
-from app.api.contracts.mocks.requests import CreateMockRequest, UpdateMockRequest
-from app.api.contracts.mocks.responses import MockListResponse, MockResponseItem
-from app.application.mappers.mock_contract_mapper import MockContractMapper
-from app.application.services.mock_management_service import MockManagementService
+from app.api.contracts.common import PaginationRequest
+from app.api.contracts.mocks import (
+    CreateMockRequest,
+    MockListResponse,
+    MockResponseItem,
+    UpdateMockRequest,
+)
+from app.application.mappers import MockContractMapper
+from app.application.services import MockManagementService
 from app.di import get_mock_management_service
-from app.domain.mocks.models.mock_list_filters import MockListFilters
-from app.domain.shared.enums import HttpMethod
+from app.domain.mocks.models import MockListFilters
+from app.domain.shared import HttpMethod
 
 mock_admin_router = APIRouter(tags=["mock-admin"])
 

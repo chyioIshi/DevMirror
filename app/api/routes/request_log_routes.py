@@ -1,19 +1,17 @@
 
 from fastapi import APIRouter, Body, Depends, Response, status
 
-from app.api.contracts.common.pagination_request import PaginationRequest
-from app.api.contracts.request_logs.requests import VerifyRequestLogRequest
-from app.api.contracts.request_logs.responses import (
+from app.api.contracts.common import PaginationRequest
+from app.api.contracts.request_logs import (
     RequestLogListResponse,
+    VerifyRequestLogRequest,
     VerifyRequestLogResponse,
 )
-from app.application.mappers.request_log_record_contract_mapper import (
+from app.application.mappers import (
     RequestLogRecordContractMapper,
-)
-from app.application.mappers.request_log_verification_contract_mapper import (
     RequestLogVerificationContractMapper,
 )
-from app.application.services.request_log_service import RequestLogService
+from app.application.services import RequestLogService
 from app.di import get_request_log_service
 
 request_log_router = APIRouter(tags=["request-logs"])

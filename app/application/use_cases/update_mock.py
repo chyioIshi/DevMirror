@@ -1,9 +1,9 @@
 import logging
 
-from app.application.commands.update_mock_command import UNSET, UpdateMockCommand
+from app.application.commands import UNSET, UpdateMockCommand
 from app.application.exceptions import MockNotFoundError, ValidationError
-from app.domain.mocks.models.mock import Mock
-from app.domain.mocks.repository import MockRepository
+from app.domain.mocks import MockRepository
+from app.domain.mocks.models import Mock
 
 logger = logging.getLogger(__name__)
 

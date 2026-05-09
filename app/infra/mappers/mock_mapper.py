@@ -1,10 +1,8 @@
 
 from beanie import PydanticObjectId
 
-from app.domain.mocks.models.match_rule import MatchRule
-from app.domain.mocks.models.mock import Mock
-from app.domain.mocks.models.mock_response import MockResponse
-from app.infra.db.mongo.documents.mock_document import (
+from app.domain.mocks.models import MatchRule, Mock, MockResponse
+from app.infra.db.mongo.documents import (
     MatchRuleDocument,
     MockDocument,
     MockResponseDocument,

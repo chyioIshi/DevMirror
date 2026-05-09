@@ -7,13 +7,15 @@ from fastapi import FastAPI
 
 from app.api.error_handlers import register_exception_handlers
 from app.api.middleware.logging_middleware import RequestLoggingMiddleware
-from app.api.routes.catch_all_routes import catch_all_router
-from app.api.routes.health_routes import health_router
-from app.api.routes.mock_admin_routes import mock_admin_router
-from app.api.routes.request_log_routes import request_log_router
+from app.api.routes import (
+    catch_all_router,
+    health_router,
+    mock_admin_router,
+    request_log_router,
+)
 from app.config import get_settings
 from app.di import AppContainer
-from app.infra.db.mongo.bootstrap import init_mongo
+from app.infra.db.mongo import init_mongo
 from app.infra.logging import configure_logging
 
 logger = logging.getLogger(__name__)

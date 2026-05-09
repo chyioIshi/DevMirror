@@ -2,13 +2,12 @@ import logging
 from typing import Final
 
 from app.application.services.request_log_service import RequestLogService
-from app.domain.mocks.models.resolution import CandidateRank, RuleMatchResult
-from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
-from app.domain.mocks.policies.selection_policy import MockSelectionPolicy
-from app.domain.mocks.repository import MockRepository
-from app.domain.mocks.services.rule_matcher import RuleMatcherService
-from app.domain.request_contexts.models.request_context import RequestContext
-from app.domain.shared.ports.scope_resolver import ScopeResolver
+from app.domain.mocks import MockRepository
+from app.domain.mocks.models.resolution import CandidateRank, ResolvedMock, RuleMatchResult
+from app.domain.mocks.policies import MockSelectionPolicy
+from app.domain.mocks.services import RuleMatcherService
+from app.domain.request_contexts import RequestContext
+from app.domain.shared.ports import ScopeResolver
 
 logger = logging.getLogger(__name__)
 

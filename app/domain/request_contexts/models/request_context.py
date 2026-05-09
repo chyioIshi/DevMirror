@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 @dataclass(slots=True, frozen=True)

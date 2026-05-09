@@ -9,7 +9,7 @@ from app.api.contracts.mocks.items import (
 from app.api.contracts.mocks.items import (
     MockResponsePayloadItem as MockResponsePayloadItem,
 )
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 class MockResponseItem(BaseModel):

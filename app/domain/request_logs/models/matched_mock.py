@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from app.domain.shared.enums import HttpMethod
+from app.domain.shared import HttpMethod
 
 
 @dataclass(slots=True, frozen=True)

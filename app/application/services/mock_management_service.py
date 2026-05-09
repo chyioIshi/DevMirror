@@ -1,16 +1,15 @@
 import logging
 
-from app.application.commands.update_mock_command import UpdateMockCommand
+from app.application.commands import UpdateMockCommand
 from app.application.exceptions import (
     MockNotFoundError,
     OperationNotAllowedError,
 )
-from app.application.use_cases.update_mock import update_mock as update_mock_use_case
-from app.domain.mocks.exceptions import MockConflictError
+from app.application.use_cases import update_mock as update_mock_use_case
+from app.domain.mocks import MockConflictError, MockRepository
 from app.domain.mocks.models import Mock, MockListFilters
-from app.domain.mocks.policies.activation_policy import MockActivationPolicy
-from app.domain.mocks.repository import MockRepository
-from app.domain.mocks.services.conflict_service import MockConflictService
+from app.domain.mocks.policies import MockActivationPolicy
+from app.domain.mocks.services import MockConflictService
 
 logger = logging.getLogger(__name__)
 

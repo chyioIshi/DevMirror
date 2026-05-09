@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from app.domain.request_logs.models.request_log_record import RequestLogRecord
+from app.domain.request_logs.models import RequestLogRecord
 
 
 class RequestLogRepository(Protocol):

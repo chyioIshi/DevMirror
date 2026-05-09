@@ -6,7 +6,7 @@ from beanie import Document
 from pydantic import BaseModel, Field
 from pymongo import ASCENDING, DESCENDING
 
-from app.domain.shared.enums import HttpMethod, MatchOperator, MatchSource
+from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
 class MatchRuleDocument(BaseModel):

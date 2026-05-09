@@ -1,9 +1,9 @@
 
 from fastapi import Request
 
-from app.domain.request_contexts.models.request_context import RequestContext
-from app.domain.shared.enums import HttpMethod
-from app.infra.request.request_data_accessor import RequestDataAccessor
+from app.domain.request_contexts import RequestContext
+from app.domain.shared import HttpMethod
+from app.infra.request import RequestDataAccessor
 
 
 class RequestContextResolver:

@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from typing import Final
 
-from app.domain.request_contexts.models.request_context import RequestContext
-from app.domain.shared.ports.scope_resolver import ScopeResolutionStrategy
+from app.domain.request_contexts import RequestContext
+from app.domain.shared.ports import ScopeResolutionStrategy
 
 
 class ChainedScopeResolver:
