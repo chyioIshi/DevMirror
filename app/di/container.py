@@ -14,7 +14,11 @@ from app.domain.mocks.policies import (
     MockActivationPolicy,
     MockSelectionPolicy,
 )
-from app.domain.mocks.services import MockConflictService, RuleMatcherService
+from app.domain.mocks.services import (
+    MockConflictService,
+    MockResolutionService,
+    RuleMatcherService,
+)
 from app.domain.request_logs import RequestLogRepository
 from app.domain.shared.ports import (
     ScopeResolutionStrategy,
@@ -45,6 +49,7 @@ class AppContainer:
         self._scope_resolver: ScopeResolver | None = None
         self._mock_repository: MockRepository | None = None
         self._mock_conflict_service: MockConflictService | None = None
+        self._mock_resolution_service: MockResolutionService | None = None
         self._mock_activation_policy: MockActivationPolicy | None = None
         self._request_log_repository: RequestLogRepository | None = None
         self._request_log_service: RequestLogService | None = None
@@ -99,6 +104,15 @@ class AppContainer:
         return self._mock_conflict_service
 
     @property
+    def mock_resolution_service(self) -> MockResolutionService:
+        if self._mock_resolution_service is None:
+            self._mock_resolution_service = MockResolutionService(
+                rule_matcher=self.rule_matcher,
+                selection_policy=self.mock_selection_policy,
+            )
+        return self._mock_resolution_service
+
+    @property
     def mock_activation_policy(self) -> MockActivationPolicy:
         if self._mock_activation_policy is None:
             self._mock_activation_policy = MockActivationPolicy()
@@ -141,8 +155,7 @@ class AppContainer:
                 mock_repository=self.mock_repository,
                 request_log_service=self.request_log_service,
                 scope_resolver=self.scope_resolver,
-                rule_matcher=self.rule_matcher,
-                selection_policy=self.mock_selection_policy,
+                mock_resolution_service=self.mock_resolution_service,
                 default_scope=self.settings.default_scope,
             )
         return self._mock_resolver_service
