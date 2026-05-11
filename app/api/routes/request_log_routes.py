@@ -7,7 +7,7 @@ from app.api.contracts.request_logs import (
     VerifyRequestLogRequest,
     VerifyRequestLogResponse,
 )
-from app.application.mappers import (
+from app.api.mappers import (
     RequestLogRecordContractMapper,
     RequestLogVerificationContractMapper,
 )
