@@ -3,7 +3,6 @@ import pytest
 from app.application.services import MockResolverService, RequestLogService
 from app.domain.mocks.policies import MockSelectionPolicy
 from app.domain.mocks.services import MockResolutionService, RuleMatcherService
-from tests.testkit.factories import MockFactory, RequestFactory
 from tests.testkit.fakes import (
     FakeMockRepository,
     FakeRequestLogRepository,
@@ -48,13 +47,3 @@ def mock_resolver_service(
             selection_policy=MockSelectionPolicy(),
         ),
     )
-
-
-@pytest.fixture
-def request_factory() -> RequestFactory:
-    return RequestFactory()
-
-
-@pytest.fixture
-def mock_factory() -> MockFactory:
-    return MockFactory()

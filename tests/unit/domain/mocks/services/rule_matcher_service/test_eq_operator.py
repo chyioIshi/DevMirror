@@ -29,7 +29,7 @@ class TestEqOperator:
             source=MatchSource.HEADER,
             operator=MatchOperator.EQ,
             expected=expected,
-            key="x-user",
+            key="user",
         )
         result = await matcher.match_rules(
             request_factory.create_request_context(
