@@ -8,9 +8,7 @@ type ListCandidatesCall = tuple[HttpMethod, str, tuple[str, ...]]
 
 
 class FakeMockRepository:
-    """In-memory fake MockRepository для тестов.
-    Хранит моки в словаре и позволяет выполнять операции CRUD и фильтрацию.
-    """
+    """In-memory fake MockRepository для application-тестов."""
 
     def __init__(self, mocks: Iterable[Mock] | None = None) -> None:
         self._store: dict[str, Mock] = {}
@@ -22,24 +20,24 @@ class FakeMockRepository:
             self._store[saved.id] = saved
 
     async def add(self, mock: Mock) -> Mock:
-        """Добавляет новый Mock в репозиторий и возвращает его с присвоенным id."""
+        """Добавляет Mock и возвращает его с id."""
         saved = replace(mock, id=self._next_id())
         self._store[saved.id] = saved
         return saved
 
     async def get_by_id(self, mock_id: str) -> Mock | None:
-        """Возвращает Mock по id или None, если не найден."""
+        """Возвращает Mock по id."""
         return self._store.get(mock_id)
 
     async def save(self, mock: Mock) -> Mock:
-        """Сохраняет существующий Mock в репозитории. Если id не указан, присваивает новый."""
+        """Сохраняет Mock."""
         if mock.id is None:
             mock = replace(mock, id=self._next_id())
         self._store[mock.id] = mock
         return mock
 
     async def remove(self, mock_id: str) -> bool:
-        """Удаляет Mock по id. Возвращает True, если удаление произошло, иначе False."""
+        """Удаляет Mock по id."""
         return self._store.pop(mock_id, None) is not None
 
     async def list_mocks(
@@ -48,7 +46,7 @@ class FakeMockRepository:
         limit: int = 100,
         offset: int = 0,
     ) -> list[Mock]:
-        """Возвращает список Mock, отфильтрованных по заданным критериям, с поддержкой пагинации."""
+        """Возвращает Mock с фильтрацией и пагинацией."""
         results = list(self._store.values())
 
         if filters.path is not None:
@@ -68,7 +66,7 @@ class FakeMockRepository:
         path: str,
         scopes: Sequence[str],
     ) -> list[Mock]:
-        """Возвращает список кандидатов на обработку запроса."""
+        """Возвращает активных кандидатов для запроса."""
         self.list_candidates_calls.append((method, path, tuple(scopes)))
         return [
             mock
@@ -80,10 +78,10 @@ class FakeMockRepository:
         ]
 
     def persisted(self) -> list[Mock]:
-        """Возвращает все сохраненные Mock в репозитории."""
+        """Возвращает сохраненные Mock."""
         return list(self._store.values())
 
     def _next_id(self) -> str:
-        """Генерирует новый уникальный id для Mock."""
         self._counter += 1
         return f"{self._counter:024x}"
+

@@ -4,9 +4,7 @@ type ListRecordsCall = tuple[int, int]
 
 
 class FakeRequestLogRepository:
-    """In-memory fake RequestLogRepository для тестов.
-    Хранит записи журнала в списке и позволяет выполнять операции записи, чтения и очистки.
-    """
+    """In-memory fake RequestLogRepository для application-тестов."""
 
     def __init__(self, records: list[RequestLogRecord] | None = None) -> None:
         self.records: list[RequestLogRecord] = list(records or [])
@@ -33,3 +31,4 @@ class FakeRequestLogRepository:
         """Очищает записи журнала."""
         self.clear_calls += 1
         self.records.clear()
+

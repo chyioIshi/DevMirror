@@ -12,3 +12,4 @@ class FakeScopeResolver:
         """Возвращает заданный scope."""
         self.resolved_contexts.append(request_context)
         return self.scope
+
