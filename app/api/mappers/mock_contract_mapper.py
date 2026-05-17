@@ -38,7 +38,6 @@ class MockContractMapper:
             path=request.path if "path" in set_fields else UNSET,
             method=request.method if "method" in set_fields else UNSET,
             priority=request.priority if "priority" in set_fields else UNSET,
-            active=request.active if "active" in set_fields else UNSET,
             scope=request.scope if "scope" in set_fields else UNSET,
             match_rules=(
                 [MockContractMapper.to_domain_match_rule_model(r) for r in request.match_rules]

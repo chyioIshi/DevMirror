@@ -3,13 +3,7 @@ import pytest
 from app.application.services import MockManagementService
 from app.domain.mocks.policies import MockActivationPolicy
 from app.domain.mocks.services import MockConflictService
-from tests.testkit.factories import CommandFactory
 from tests.testkit.fakes import FakeMockRepository
-
-
-@pytest.fixture
-def fake_mock_repository() -> FakeMockRepository:
-    return FakeMockRepository()
 
 
 @pytest.fixture
@@ -21,8 +15,3 @@ def fake_mock_service(
         conflict_service=MockConflictService(),
         activation_policy=MockActivationPolicy(),
     )
-
-
-@pytest.fixture
-def command_factory() -> CommandFactory:
-    return CommandFactory()

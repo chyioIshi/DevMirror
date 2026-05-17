@@ -11,11 +11,6 @@ from tests.testkit.fakes import (
 
 
 @pytest.fixture
-def fake_mock_repository() -> FakeMockRepository:
-    return FakeMockRepository()
-
-
-@pytest.fixture
 def fake_request_log_repository() -> FakeRequestLogRepository:
     return FakeRequestLogRepository()
 

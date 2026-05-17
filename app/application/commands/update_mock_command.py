@@ -17,7 +17,6 @@ class UpdateMockCommand:
     path: str | object = field(default=UNSET)
     method: HttpMethod | object = field(default=UNSET)
     priority: int | object = field(default=UNSET)
-    active: bool | object = field(default=UNSET)
     scope: str | object = field(default=UNSET)
     match_rules: list[MatchRule] | object = field(default=UNSET)
     response: MockResponse | object = field(default=UNSET)
@@ -33,7 +32,6 @@ class UpdateMockCommand:
                 self.path,
                 self.method,
                 self.priority,
-                self.active,
                 self.scope,
                 self.match_rules,
                 self.response,

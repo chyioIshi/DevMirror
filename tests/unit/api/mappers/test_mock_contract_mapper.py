@@ -1,6 +1,7 @@
-from app.api.contracts.mocks import CreateMockRequest
+from app.api.contracts.mocks import CreateMockRequest, UpdateMockRequest
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem
 from app.api.mappers import MockContractMapper
+from app.application.commands import UNSET
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
@@ -52,3 +53,93 @@ class TestMockContractMapper:
         assert mock.response.body == {"id": 1}
         assert mock.tags == ["users"]
 
+    def test_update_request_maps_only_provided_fields(self) -> None:
+        """Проверяет маппинг только переданных полей update request."""
+        request = UpdateMockRequest(name="new-name", priority=10)
+
+        command = MockContractMapper.to_update_mock_command("mock-1", request)
+
+        assert command.mock_id == "mock-1"
+        assert command.name == "new-name"
+        assert command.priority == 10
+        assert command.description is UNSET
+        assert command.path is UNSET
+        assert command.method is UNSET
+        assert command.scope is UNSET
+        assert command.match_rules is UNSET
+        assert command.response is UNSET
+        assert command.tags is UNSET
+
+    def test_update_request_maps_nested_fields(self) -> None:
+        """Проверяет маппинг вложенных полей update request."""
+        request = UpdateMockRequest(
+            match_rules=[
+                MatchRuleItem(
+                    source=MatchSource.QUERY,
+                    key="mode",
+                    operator=MatchOperator.EQ,
+                    expected="test",
+                ),
+            ],
+            response=MockResponsePayloadItem(
+                status_code=202,
+                headers={"x-response": "accepted"},
+                body={"accepted": True},
+            ),
+        )
+
+        command = MockContractMapper.to_update_mock_command("mock-1", request)
+
+        assert command.match_rules is not UNSET
+        assert command.match_rules[0].source == MatchSource.QUERY
+        assert command.match_rules[0].key == "mode"
+        assert command.match_rules[0].operator == MatchOperator.EQ
+        assert command.match_rules[0].expected == "test"
+        assert command.response is not UNSET
+        assert command.response.status_code == 202
+        assert command.response.headers == {"x-response": "accepted"}
+        assert command.response.body == {"accepted": True}
+
+    def test_domain_mock_maps_to_response_item(self, mock_factory) -> None:
+        """Проверяет маппинг domain mock в response dto."""
+        mock = mock_factory.create_mock(
+            mock_id="mock-1",
+            name="test",
+            description="description",
+            path="/test",
+            method=HttpMethod.POST,
+            priority=10,
+            active=True,
+            scope="user_name",
+            match_rules=[
+                mock_factory.match_rule(
+                    source=MatchSource.HEADER,
+                    key="x-user",
+                    operator=MatchOperator.EQ,
+                    expected="user1",
+                ),
+            ],
+            response_status_code=201,
+            response_headers={"x-response": "ok"},
+            response_body={"id": 1},
+            tags=["users"],
+        )
+
+        item = MockContractMapper.from_domain_mock_model(mock)
+
+        assert item.id == "mock-1"
+        assert item.name == "test"
+        assert item.description == "description"
+        assert item.path == "/test"
+        assert item.method == HttpMethod.POST
+        assert item.priority == 10
+        assert item.active is True
+        assert item.scope == "user_name"
+        assert item.match_rules[0].source == MatchSource.HEADER
+        assert item.match_rules[0].key == "x-user"
+        assert item.match_rules[0].operator == MatchOperator.EQ
+        assert item.match_rules[0].expected == "user1"
+        assert item.response.status_code == 201
+        assert item.response.headers == {"x-response": "ok"}
+        assert item.response.body == {"id": 1}
+        assert item.tags == ["users"]

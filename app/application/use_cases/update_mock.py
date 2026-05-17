@@ -48,16 +48,15 @@ async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
         current_mock.replace_response(cmd.response)
     if cmd.match_rules is not UNSET:
         current_mock.replace_match_rules(cmd.match_rules)
-    if cmd.active is not UNSET:
-        current_mock.activate() if cmd.active else current_mock.deactivate()
-
     logger.debug(
         f"Применено обновление к моку {current_mock.name} с id={current_mock.id}",
         extra={
             "mock_id": current_mock.id,
             "updated_fields": {
-                field: value for field, value in UpdateMockCommand.__dict__.items() if value is not UNSET
-            }
-        }
-     )
+                field: value
+                for field, value in UpdateMockCommand.__dict__.items()
+                if value is not UNSET
+            },
+        },
+    )
     return await repo.save(current_mock)
