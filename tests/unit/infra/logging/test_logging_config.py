@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from app.config import Settings
+from app.config import AppSettings
 from app.infra.logging.config import _build_logging_config, configure_logging
 
 
@@ -12,7 +12,7 @@ class TestLoggingConfig:
 
     def test_build_logging_config_uses_uppercase_log_level(self) -> None:
         """Проверяет нормализацию уровня логирования."""
-        config = _build_logging_config(Settings(log_level="debug"))
+        config = _build_logging_config(AppSettings(log_level="debug"))
 
         assert config["root"]["level"] == "DEBUG"
         assert config["loggers"]["app"]["level"] == "DEBUG"
@@ -20,7 +20,7 @@ class TestLoggingConfig:
 
     def test_build_logging_config_registers_formatter_filter_and_handler(self) -> None:
         """Проверяет основные элементы logging config."""
-        config = _build_logging_config(Settings())
+        config = _build_logging_config(AppSettings())
 
         assert config["filters"]["request_context"]["()"] == (
             "app.infra.logging.filters.RequestContextFilter"
@@ -43,6 +43,6 @@ class TestLoggingConfig:
 
         monkeypatch.setattr(logging.config, "dictConfig", fake_dict_config)
 
-        configure_logging(Settings(log_level="error"))
+        configure_logging(AppSettings(log_level="error"))
 
         assert captured_config["root"]["level"] == "ERROR"

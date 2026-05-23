@@ -1,7 +1,9 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
 from app.application.services import MockResolverService
-from app.config import Settings
+from app.config import AppSettings
 from app.di import (
     get_app_settings,
     get_mock_resolver_service,
@@ -14,7 +16,7 @@ from app.infra.response import MockResponseBuilder
 
 catch_all_router = APIRouter(tags=["catch-all"])
 
-def _reserved_paths(settings: Settings) -> tuple[str, ...]:
+def _reserved_paths(settings: AppSettings) -> tuple[str, ...]:
     """Возвращает набор служебных роутов, которые не должен перехватывать catch-all."""
     return (
         settings.admin_prefix,
@@ -27,7 +29,7 @@ def _reserved_paths(settings: Settings) -> tuple[str, ...]:
     )
 
 
-def _is_reserved_path(path: str, settings: Settings) -> bool:
+def _is_reserved_path(path: str, settings: AppSettings) -> bool:
     """Проверяет, относится ли путь к служебным роутам."""
     reserved_paths = _reserved_paths(settings)
     if path in reserved_paths:
@@ -41,10 +43,19 @@ def _is_reserved_path(path: str, settings: Settings) -> bool:
 )
 async def catch_each_request(
     request: Request,
-    settings: Settings = Depends(get_app_settings),
-    request_context_resolver: RequestContextResolver = Depends(get_request_context_resolver),
-    mock_resolver_service: MockResolverService = Depends(get_mock_resolver_service),
-    mock_response_builder: MockResponseBuilder = Depends(get_mock_response_builder),
+    settings: Annotated[AppSettings, Depends(get_app_settings)],
+    request_context_resolver: Annotated[
+        RequestContextResolver,
+        Depends(get_request_context_resolver),
+    ],
+    mock_resolver_service: Annotated[
+        MockResolverService,
+        Depends(get_mock_resolver_service),
+    ],
+    mock_response_builder: Annotated[
+        MockResponseBuilder,
+        Depends(get_mock_response_builder),
+    ],
 ) -> Response:
     if _is_reserved_path(request.url.path, settings):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not this route!!!")

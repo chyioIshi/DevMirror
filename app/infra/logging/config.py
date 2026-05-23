@@ -1,14 +1,14 @@
 import logging.config
 from typing import Any
 
-from app.config import Settings
+from app.config import AppSettings
 
 
-def configure_logging(settings: Settings) -> None:
+def configure_logging(settings: AppSettings) -> None:
     logging.config.dictConfig(_build_logging_config(settings))
 
 
-def _build_logging_config(settings: Settings) -> dict[str, Any]:
+def _build_logging_config(settings: AppSettings) -> dict[str, Any]:
     log_level = settings.log_level.upper()
 
     return {

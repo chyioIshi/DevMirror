@@ -9,7 +9,7 @@ import app.config as config_module
 import app.infra.logging as logging_module
 from app.api.middleware.logging_middleware import RequestLoggingMiddleware
 from app.application.exceptions import MockNotFoundError
-from app.config import Settings
+from app.config import AppSettings
 from tests.testkit.fakes import FakeMongoClient
 
 
@@ -26,16 +26,16 @@ class TestMainApp:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Проверяет основную конфигурацию приложения."""
-        settings = Settings(
+        settings = AppSettings(
             app_name="Test DevMirror",
             app_version="1.2.3",
             admin_prefix="/admin/mocks",
             request_log_prefix="/admin/request-logs",
             health_prefix="/health",
         )
-        configured_settings: list[Settings] = []
+        configured_settings: list[AppSettings] = []
 
-        def fake_configure_logging(value: Settings) -> None:
+        def fake_configure_logging(value: AppSettings) -> None:
             configured_settings.append(value)
 
         monkeypatch.setattr(config_module, "get_settings", lambda: settings)
@@ -61,10 +61,10 @@ class TestMainApp:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Проверяет startup и shutdown lifecycle."""
-        settings = Settings(mongo_database="test-db")
+        settings = AppSettings(mongo_database="test-db")
         mongo_client = FakeMongoClient()
 
-        async def fake_init_mongo(value: Settings) -> FakeMongoClient:
+        async def fake_init_mongo(value: AppSettings) -> FakeMongoClient:
             assert value is settings
             return mongo_client
 
@@ -86,7 +86,7 @@ class TestMainApp:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Проверяет, что созданное приложение обрабатывает health route."""
-        monkeypatch.setattr(config_module, "get_settings", lambda: Settings())
+        monkeypatch.setattr(config_module, "get_settings", lambda: AppSettings())
         monkeypatch.setattr(logging_module, "configure_logging", lambda _: None)
         main = _import_main()
         app = main.create_app()
