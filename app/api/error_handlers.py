@@ -43,7 +43,7 @@ async def domain_error_handler(request: Request, exc: DomainError) -> JSONRespon
 
 async def application_error_handler(request: Request, exc: ApplicationError) -> JSONResponse:
     if isinstance(exc, ValidationError):
-        status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
     elif isinstance(exc, ResourceAlreadyExistsError):
         status_code = status.HTTP_409_CONFLICT
     elif isinstance(exc, OperationNotAllowedError):

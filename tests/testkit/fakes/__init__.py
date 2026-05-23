@@ -1,3 +1,9 @@
+from tests.testkit.fakes.api import (
+    FakeMockManagementService,
+    FakeMockResolverService,
+    FakeRequestContextResolver,
+    FakeRequestLogService,
+)
 from tests.testkit.fakes.application import (
     FakeMockRepository,
     FakeRequestLogRepository,
@@ -5,6 +11,8 @@ from tests.testkit.fakes.application import (
 )
 from tests.testkit.fakes.infra import (
     FakeCandidateMockDocument,
+    FakeListMockDocument,
+    FakeMongoClient,
     FakeMongoMockDocument,
     FakeMongoMockMapper,
     FakeMongoMockQuery,
@@ -15,13 +23,19 @@ from tests.testkit.fakes.infra import (
 
 __all__ = [
     "FakeCandidateMockDocument",
+    "FakeListMockDocument",
+    "FakeMockManagementService",
     "FakeMockRepository",
+    "FakeMockResolverService",
+    "FakeMongoClient",
     "FakeMongoMockDocument",
     "FakeMongoMockMapper",
     "FakeMongoMockQuery",
+    "FakeRequestContextResolver",
     "FakeMongoRequestLogDocument",
     "FakeMongoRequestLogMapper",
     "FakeMongoRequestLogQuery",
+    "FakeRequestLogService",
     "FakeRequestLogRepository",
     "FakeScopeResolver",
 ]
