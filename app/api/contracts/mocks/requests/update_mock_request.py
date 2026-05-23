@@ -29,7 +29,6 @@ class UpdateMockRequest(BaseModel):
     )
     method: HttpMethod | None = Field(default=None, examples=["POST"])
     priority: int | None = Field(default=None, examples=[150])
-    active: bool | None = Field(default=None, examples=[True])
     scope: str | None = Field(
         default=None,
         min_length=1,

@@ -1,0 +1,289 @@
+import pytest
+from pymongo.errors import NetworkTimeout
+
+from app.infra.exceptions import DatabaseConnectionError
+from app.infra.repositories import mongo_mock_repository
+from app.infra.repositories.mongo_mock_repository import MongoMockRepository
+from tests.testkit.fakes import (
+    FakeCandidateMockDocument,
+    FakeListMockDocument,
+    FakeMongoMockDocument,
+    FakeMongoMockMapper,
+    FakeMongoMockQuery,
+)
+
+
+class TestMongoMockRepository:
+    """Проверяет MongoMockRepository."""
+
+    async def test_add_inserts_document_and_returns_domain_mock(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет сохранение нового мока."""
+        mock = mock_factory.create_mock()
+        saved_mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.document = FakeMongoMockDocument()
+        mapper.domain_mock = saved_mock
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        result = await MongoMockRepository().add(mock)
+
+        assert mapper.document.insert_called is True
+        assert result is saved_mock
+
+    async def test_add_wraps_connection_errors(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет обертку ошибок подключения при создании мока."""
+        mock = mock_factory.create_mock()
+        mapper = FakeMongoMockMapper
+        mapper.document = FakeMongoMockDocument(insert_error=NetworkTimeout("timeout"))
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().add(mock)
+
+        assert error.value.details == {"operation": "add"}
+
+    async def test_get_by_id_returns_none_for_invalid_id(self) -> None:
+        """Проверяет None для некорректного id."""
+        result = await MongoMockRepository().get_by_id("not-object-id")
+
+        assert result is None
+
+    async def test_get_by_id_maps_existing_document(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет получение найденного документа."""
+        saved_mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.domain_mock = saved_mock
+        document = object()
+
+        async def fake_get(_: object) -> object:
+            return document
+
+        monkeypatch.setattr(mongo_mock_repository.MockDocument, "get", fake_get)
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        result = await MongoMockRepository().get_by_id("000000000000000000000001")
+
+        assert result is saved_mock
+
+    async def test_get_by_id_wraps_connection_errors(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет обертку ошибок подключения к Mongo."""
+
+        async def fake_get(_: object) -> object:
+            raise NetworkTimeout("timeout")
+
+        monkeypatch.setattr(mongo_mock_repository.MockDocument, "get", fake_get)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().get_by_id("000000000000000000000001")
+
+        assert error.value.details == {
+            "operation": "get_by_id",
+            "mock_id": "000000000000000000000001",
+        }
+
+    async def test_save_replaces_document_and_returns_domain_mock(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет замену существующего документа."""
+        mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.document = FakeMongoMockDocument()
+        mapper.domain_mock = mock
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        result = await MongoMockRepository().save(mock)
+
+        assert mapper.document.replace_called is True
+        assert result is mock
+
+    async def test_save_wraps_connection_errors(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет обертку ошибок подключения при сохранении мока."""
+        mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.document = FakeMongoMockDocument(replace_error=NetworkTimeout("timeout"))
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().save(mock)
+
+        assert error.value.details == {
+            "operation": "save",
+            "mock_id": "000000000000000000000001",
+        }
+
+    async def test_remove_deletes_existing_document(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет удаление найденного документа."""
+        document = FakeMongoMockDocument()
+
+        async def fake_get(_: object) -> FakeMongoMockDocument:
+            return document
+
+        monkeypatch.setattr(mongo_mock_repository.MockDocument, "get", fake_get)
+
+        result = await MongoMockRepository().remove("000000000000000000000001")
+
+        assert result is True
+        assert document.delete_called is True
+
+    async def test_remove_returns_false_for_missing_document(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет False при отсутствии документа."""
+
+        async def fake_get(_: object) -> None:
+            return None
+
+        monkeypatch.setattr(mongo_mock_repository.MockDocument, "get", fake_get)
+
+        result = await MongoMockRepository().remove("000000000000000000000001")
+
+        assert result is False
+
+    async def test_remove_returns_false_for_invalid_id(self) -> None:
+        """Проверяет False при удалении с некорректным id."""
+        result = await MongoMockRepository().remove("not-object-id")
+
+        assert result is False
+
+    async def test_remove_wraps_connection_errors(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет обертку ошибок подключения при удалении мока."""
+
+        async def fake_get(_: object) -> object:
+            raise NetworkTimeout("timeout")
+
+        monkeypatch.setattr(mongo_mock_repository.MockDocument, "get", fake_get)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().remove("000000000000000000000001")
+
+        assert error.value.details == {
+            "operation": "remove",
+            "mock_id": "000000000000000000000001",
+        }
+
+    async def test_list_mocks_applies_filters_pagination_and_maps_documents(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет фильтрацию, пагинацию и маппинг списка моков."""
+        saved_mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.domain_mock = saved_mock
+        query = FakeMongoMockQuery(documents=[object()])
+        FakeListMockDocument.query = query
+
+        monkeypatch.setattr(mongo_mock_repository, "MockDocument", FakeListMockDocument)
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        result = await MongoMockRepository().list_mocks(
+            filters=mongo_mock_repository.MockListFilters(
+                path="/users",
+                method=mongo_mock_repository.HttpMethod.GET,
+                active=True,
+                scope="global",
+            ),
+            limit=10,
+            offset=5,
+        )
+
+        assert result == [saved_mock]
+        assert len(query.find_calls) == 4
+        assert query.sort_called is True
+        assert query.skip_value == 5
+        assert query.limit_value == 10
+
+    async def test_list_mocks_wraps_connection_errors(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет обертку ошибок подключения при списке моков."""
+
+        def fake_find_all() -> object:
+            raise NetworkTimeout("timeout")
+
+        monkeypatch.setattr(mongo_mock_repository.MockDocument, "find_all", fake_find_all)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().list_mocks(
+                filters=mongo_mock_repository.MockListFilters(),
+                limit=10,
+                offset=5,
+            )
+
+        assert error.value.details == {
+            "operation": "list_mocks",
+            "limit": 10,
+            "offset": 5,
+        }
+
+    async def test_list_candidates_normalizes_method_and_maps_documents(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет поиск кандидатов и маппинг документов."""
+        saved_mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.domain_mock = saved_mock
+        query = FakeMongoMockQuery(documents=[object()])
+        FakeCandidateMockDocument.query = query
+
+        monkeypatch.setattr(mongo_mock_repository, "MockDocument", FakeCandidateMockDocument)
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        result = await MongoMockRepository().list_candidates("GET", "/users", ["global"])
+
+        assert result == [saved_mock]
+        assert len(FakeCandidateMockDocument.captured_args) == 4
+        assert query.sort_called is True
+
+    async def test_list_candidates_wraps_connection_errors(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Проверяет обертку ошибок подключения при поиске кандидатов."""
+
+        def fake_find(*_: object) -> object:
+            raise NetworkTimeout("timeout")
+
+        monkeypatch.setattr(FakeCandidateMockDocument, "find", fake_find)
+        monkeypatch.setattr(mongo_mock_repository, "MockDocument", FakeCandidateMockDocument)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().list_candidates("GET", "/users", ["global"])
+
+        assert error.value.details == {
+            "operation": "list_candidates",
+            "method": "GET",
+            "path": "/users",
+            "scopes": ["global"],
+        }
