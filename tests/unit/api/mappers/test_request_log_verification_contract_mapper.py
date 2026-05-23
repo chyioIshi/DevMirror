@@ -18,9 +18,8 @@ class TestRequestLogVerificationContractMapper:
             matched_mock_id="mock-1",
         )
 
-        expectation = (
-            RequestLogVerificationContractMapper
-            .to_domain_request_log_verification_model(request)
+        expectation = RequestLogVerificationContractMapper.to_domain_request_log_verification_model(
+            request
         )
 
         assert expectation.path == "/users"
@@ -32,11 +31,9 @@ class TestRequestLogVerificationContractMapper:
         """Проверяет маппинг domain model в API dto."""
         result = RequestLogVerificationResult(matched=True, actual_count=3)
 
-        response = (
-            RequestLogVerificationContractMapper
-            .from_domain_request_log_verification_model(result)
+        response = RequestLogVerificationContractMapper.from_domain_request_log_verification_model(
+            result
         )
 
         assert response.matched is True
         assert response.actual_count == 3
-

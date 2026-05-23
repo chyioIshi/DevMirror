@@ -17,10 +17,10 @@ class MockResolutionResult:
     @property
     def candidate_count(self) -> int:
         """Возвращает количество оцененных кандидатов.
-        
+
         Args:
             None
-            
+
         Returns:
             Количество оцененных кандидатов.
         """
@@ -29,7 +29,7 @@ class MockResolutionResult:
     @property
     def matched_count(self) -> int:
         """Возвращает количество кандидатов, соответствующих правилам запроса.
-        
+
         Args:
             None
 

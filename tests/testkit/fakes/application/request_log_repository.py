@@ -31,4 +31,3 @@ class FakeRequestLogRepository:
         """Очищает записи журнала."""
         self.clear_calls += 1
         self.records.clear()
-

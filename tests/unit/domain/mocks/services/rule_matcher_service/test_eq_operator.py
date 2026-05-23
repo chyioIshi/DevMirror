@@ -32,9 +32,7 @@ class TestEqOperator:
             key="user",
         )
         result = await matcher.match_rules(
-            request_factory.create_request_context(
-                headers={"user": header_value}
-            ),
+            request_factory.create_request_context(headers={"user": header_value}),
             [rule],
         )
 

@@ -29,7 +29,7 @@ class TestRequestLogRoutes:
         fake_request_log_service: FakeRequestLogService,
     ) -> None:
         """Проверяет роут verify: проверку того,
-         что передаваемый в теле запрос к сервису был."""
+        что передаваемый в теле запрос к сервису был."""
         response = await api_client.post(
             "/admin/request-logs/verify",
             json={

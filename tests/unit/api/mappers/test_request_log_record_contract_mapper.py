@@ -57,4 +57,3 @@ class TestRequestLogRecordContractMapper:
 
         assert item.id == ""
         assert item.matched_mock is None
-

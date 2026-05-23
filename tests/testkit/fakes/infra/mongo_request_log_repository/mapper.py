@@ -17,4 +17,3 @@ class FakeMongoRequestLogMapper:
     @classmethod
     def to_domain(cls, _: object) -> RequestLogRecord:
         return cls.domain_record
-

@@ -37,4 +37,3 @@ class TestUpdateMockValidation:
             await update_mock(command, fake_mock_repository)
 
         assert error.value.details == {"mock_id": "000000000000000000000001"}
-

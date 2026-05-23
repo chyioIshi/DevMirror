@@ -30,9 +30,7 @@ class TestResolveBest:
         )
 
         result = await mock_resolution_service.resolve_best(
-            request_context=request_factory.create_request_context(
-                path="/users"
-            ),
+            request_context=request_factory.create_request_context(path="/users"),
             candidates=[low_priority, high_priority],
             requested_scope="global",
         )
@@ -66,9 +64,7 @@ class TestResolveBest:
         )
 
         result = await mock_resolution_service.resolve_best(
-            request_context=request_factory.create_request_context(
-                path="/users"
-            ),
+            request_context=request_factory.create_request_context(path="/users"),
             candidates=[fallback, scoped],
             requested_scope="user-a",
         )

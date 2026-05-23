@@ -66,15 +66,9 @@ def api_app(
     app.include_router(request_log_router, prefix="/admin/request-logs")
     app.include_router(catch_all_router)
     app.dependency_overrides[get_app_settings] = lambda: api_settings
-    app.dependency_overrides[get_mock_management_service] = (
-        lambda: fake_mock_management_service
-    )
-    app.dependency_overrides[get_mock_resolver_service] = (
-        lambda: fake_mock_resolver_service
-    )
-    app.dependency_overrides[get_request_context_resolver] = (
-        lambda: fake_request_context_resolver
-    )
+    app.dependency_overrides[get_mock_management_service] = lambda: fake_mock_management_service
+    app.dependency_overrides[get_mock_resolver_service] = lambda: fake_mock_resolver_service
+    app.dependency_overrides[get_request_context_resolver] = lambda: fake_request_context_resolver
     app.dependency_overrides[get_mock_response_builder] = lambda: MockResponseBuilder()
     app.dependency_overrides[get_request_log_service] = lambda: fake_request_log_service
     return app

@@ -19,4 +19,3 @@ class TestCreateMockRequest:
                 active=True,
                 response=MockResponsePayloadItem(status_code=200),
             )
-

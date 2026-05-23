@@ -9,7 +9,6 @@ class RequestContextFilter(logging.Filter):
     в запись текущие значения request_id и correlation_id из контекста.
     """
 
-
     def filter(self, record: logging.LogRecord) -> bool:
         record.request_id = get_request_id()
         record.correlation_id = get_correlation_id()

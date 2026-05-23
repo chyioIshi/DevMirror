@@ -26,9 +26,12 @@ class TestChainedScopeResolver:
             ],
         )
 
-        assert await resolver.resolve_scope(
-            request_factory.create_request_context(),
-        ) == "user_id"
+        assert (
+            await resolver.resolve_scope(
+                request_factory.create_request_context(),
+            )
+            == "user_id"
+        )
 
     @pytest.mark.asyncio
     async def test_skips_empty_string_scope(self, request_factory) -> None:
@@ -37,9 +40,12 @@ class TestChainedScopeResolver:
             strategies=[_StaticStrategy(""), _StaticStrategy("global")],
         )
 
-        assert await resolver.resolve_scope(
-            request_factory.create_request_context(),
-        ) == "global"
+        assert (
+            await resolver.resolve_scope(
+                request_factory.create_request_context(),
+            )
+            == "global"
+        )
 
     @pytest.mark.asyncio
     async def test_raises_when_no_strategy_returns_scope(self, request_factory) -> None:

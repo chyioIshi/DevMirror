@@ -1,4 +1,3 @@
-
 from beanie import PydanticObjectId
 
 from app.domain.request_contexts import RequestContext

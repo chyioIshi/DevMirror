@@ -18,4 +18,3 @@ class FakeCandidateMockDocument:
     def find(cls, *args: object) -> FakeMongoMockQuery:
         cls.captured_args = list(args)
         return cls.query
-

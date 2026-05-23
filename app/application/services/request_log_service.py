@@ -17,7 +17,8 @@ class RequestLogService:
     """Предоставляет операции чтения, очистки и проверки журнала запросов."""
 
     def __init__(
-        self, request_log_repository: RequestLogRepository,
+        self,
+        request_log_repository: RequestLogRepository,
     ) -> None:
         """Инициализирует сервис репозиторием журнала запросов."""
         self._request_log_repository = request_log_repository
@@ -52,8 +53,12 @@ class RequestLogService:
                 response_status_code=response_status_code,
             ),
         )
+        matched_mock_name = matched_mock.name if matched_mock else None
         logger.debug(
-            f"Запись журнала создана для запроса {request_context.method} {request_context.path} в scope {scope} с моком {matched_mock.name if matched_mock else None}",
+            (
+                f"Запись журнала создана для запроса {request_context.method} "
+                f"{request_context.path} в scope {scope} с моком {matched_mock_name}"
+            ),
             extra={
                 "method": str(request_context.method),
                 "path": request_context.path,
@@ -63,11 +68,14 @@ class RequestLogService:
         )
 
     async def list_records(
-        self, limit: int = 100, offset: int = 0,
+        self,
+        limit: int = 100,
+        offset: int = 0,
     ) -> list[RequestLogRecord]:
         """Возвращает записи журнала запросов с поддержкой пагинации."""
         records = await self._request_log_repository.list_records(
-            limit=limit, offset=offset,
+            limit=limit,
+            offset=offset,
         )
         logger.debug(
             f"Получено {len(records)} записей журнала запросов с limit={limit} и offset={offset}",
@@ -86,9 +94,7 @@ class RequestLogService:
     ) -> RequestLogVerificationResult:
         """Проверяет, что журнал содержит ожидаемое количество запросов."""
         records = await self._request_log_repository.list_records()
-        actual_count = sum(
-            1 for record in records if record.matches_expectation(expectation)
-        )
+        actual_count = sum(1 for record in records if record.matches_expectation(expectation))
         matched = (
             actual_count > 0
             if expectation.expected_count is None
@@ -99,7 +105,11 @@ class RequestLogService:
             actual_count=actual_count,
         )
         logger.info(
-            f"Проверка журнала запросов завершена: matched={result.matched}, actual_count={result.actual_count}, expected_count={expectation.expected_count}",
+            (
+                f"Проверка журнала запросов завершена: matched={result.matched}, "
+                f"actual_count={result.actual_count}, "
+                f"expected_count={expectation.expected_count}"
+            ),
             extra={
                 "matched": result.matched,
                 "actual_count": result.actual_count,

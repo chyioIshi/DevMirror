@@ -12,4 +12,3 @@ def fake_mock_repository() -> FakeMockRepository:
 @pytest.fixture
 def command_factory() -> CommandFactory:
     return CommandFactory()
-

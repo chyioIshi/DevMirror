@@ -1,3 +1,4 @@
+from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Query, Response, status
 
@@ -15,12 +16,16 @@ from app.domain.mocks.models import MockListFilters
 from app.domain.shared import HttpMethod
 
 mock_admin_router = APIRouter(tags=["mock-admin"])
+MockManagementServiceDep = Annotated[
+    MockManagementService,
+    Depends(get_mock_management_service),
+]
 
 
 @mock_admin_router.post("", response_model=MockResponseItem, status_code=status.HTTP_201_CREATED)
 async def create_mock(
     request: CreateMockRequest,
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
     """Создает новый мок на основе данных из запроса."""
     created_mock = await mock_managment_service.create_mock(
@@ -32,7 +37,7 @@ async def create_mock(
 @mock_admin_router.get("/{mock_id}", response_model=MockResponseItem)
 async def get_mock(
     mock_id: str,
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
     """Возвращает мок по id или 404, если он не найден."""
     finded_mock = await mock_managment_service.get_mock(mock_id)
@@ -41,15 +46,16 @@ async def get_mock(
 
 @mock_admin_router.get("", response_model=MockListResponse)
 async def list_mocks(
-    path: str | None = Query(default=None),
-    method: HttpMethod | None = Query(default=None),
-    active: bool | None = Query(default=None),
-    scope: str | None = Query(default=None),
-    pagination: PaginationRequest = Body(default=PaginationRequest()),
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
+    path: Annotated[str | None, Query()] = None,
+    method: Annotated[HttpMethod | None, Query()] = None,
+    active: Annotated[bool | None, Query()] = None,
+    scope: Annotated[str | None, Query()] = None,
+    pagination: Annotated[PaginationRequest | None, Body()] = None,
 ) -> MockListResponse:
     """Возвращает список моков, подходящих под заданные фильтры,
     с учетом пагинации."""
+    pagination = pagination or PaginationRequest()
     items = await mock_managment_service.list_mocks(
         MockListFilters(path=path, method=method, active=active, scope=scope),
         limit=pagination.limit,
@@ -63,7 +69,7 @@ async def list_mocks(
 async def update_mock(
     mock_id: str,
     request: UpdateMockRequest,
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
     """Применяет частичное обновление к существующему моку
     или возвращает 404, если он не найден."""
@@ -76,7 +82,7 @@ async def update_mock(
 @mock_admin_router.delete("/{mock_id}", status_code=status.HTTP_200_OK)
 async def delete_mock(
     mock_id: str,
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
 ) -> Response:
     """Удаляет мок по id или возвращает 404, если он не найден."""
     await mock_managment_service.delete_mock(mock_id)
@@ -86,8 +92,8 @@ async def delete_mock(
 @mock_admin_router.post("/{mock_id}/activate", response_model=MockResponseItem)
 async def activate_mock(
     mock_id: str,
-    deactivate_conflicting: bool = Query(default=False),
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
+    deactivate_conflicting: Annotated[bool, Query()] = False,
 ) -> MockResponseItem:
     """Активирует мок по id, при необходимости деактивируя конфликтующие моки,
     или возвращает 404, если он не найден."""
@@ -101,7 +107,7 @@ async def activate_mock(
 @mock_admin_router.post("/{mock_id}/deactivate", response_model=MockResponseItem)
 async def deactivate_mock(
     mock_id: str,
-    mock_managment_service: MockManagementService = Depends(get_mock_management_service),
+    mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
     """Деактивирует мок по id или возвращает 404, если он не найден."""
     deactivated_mock = await mock_managment_service.deactivate_mock(mock_id)

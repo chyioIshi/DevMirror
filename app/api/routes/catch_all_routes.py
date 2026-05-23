@@ -16,6 +16,7 @@ from app.infra.response import MockResponseBuilder
 
 catch_all_router = APIRouter(tags=["catch-all"])
 
+
 def _reserved_paths(settings: AppSettings) -> tuple[str, ...]:
     """Возвращает набор служебных роутов, которые не должен перехватывать catch-all."""
     return (
