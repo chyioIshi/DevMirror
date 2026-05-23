@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass, field
 
 from app.domain.mocks.models.match_rule import MatchRule

@@ -16,7 +16,7 @@ from app.domain.shared import HttpMethod
 @dataclass(slots=True)
 class Mock:
     """Aggregate root: описывает мок и инкапсулирует его поведение
-      и инварианты."""
+    и инварианты."""
 
     name: str
     path: str

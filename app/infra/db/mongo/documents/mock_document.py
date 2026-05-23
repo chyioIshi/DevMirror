@@ -1,4 +1,3 @@
-
 from datetime import UTC, datetime
 from typing import Any
 
@@ -11,6 +10,7 @@ from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 class MatchRuleDocument(BaseModel):
     """Вложенный Mongo-документ, описывающий одно правило сопоставления запроса."""
+
     source: MatchSource
     key: str = ""
     operator: MatchOperator
@@ -19,6 +19,7 @@ class MatchRuleDocument(BaseModel):
 
 class MockResponseDocument(BaseModel):
     """Вложенный Mongo-документ, описывающий подставляемый HTTP-ответ."""
+
     status_code: int
     headers: dict[str, str] = Field(default_factory=dict)
     body: Any | None = None
@@ -26,6 +27,7 @@ class MockResponseDocument(BaseModel):
 
 class MockDocument(Document):
     """Основной Mongo-документ для хранения определений моков."""
+
     name: str
     description: str | None = None
     path: str
@@ -41,6 +43,7 @@ class MockDocument(Document):
 
     class Settings:
         """Настройки коллекции Beanie и индексы для моков."""
+
         name: str = "mocks"
         indexes: list[list[tuple[str, int]]] = [
             [

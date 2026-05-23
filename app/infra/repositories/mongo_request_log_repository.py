@@ -16,9 +16,15 @@ class MongoRequestLogRepository:
 
     async def list_records(self, limit: int = 100, offset: int = 0) -> list[RequestLogRecord]:
         """Возвращает записи журнала в порядке от новых к старым с поддержкой пагинации."""
-        documents = await RequestLogDocument.find_all().sort(
-            [("created_at", DESCENDING)],
-        ).skip(offset).limit(limit).to_list()
+        documents = (
+            await RequestLogDocument.find_all()
+            .sort(
+                [("created_at", DESCENDING)],
+            )
+            .skip(offset)
+            .limit(limit)
+            .to_list()
+        )
         return [RequestLogMapper.to_domain(document) for document in documents]
 
     async def clear(self) -> None:

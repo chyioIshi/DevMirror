@@ -20,7 +20,8 @@ class RequestLogRecord:
     created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
     def matches_expectation(
-        self, expectation: RequestLogVerificationExpectation,
+        self,
+        expectation: RequestLogVerificationExpectation,
     ) -> bool:
         """Проверяет, соответствует ли запись ожиданиям."""
         if self.request_context.path != expectation.path:

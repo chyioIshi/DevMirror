@@ -1,4 +1,3 @@
-
 from beanie import PydanticObjectId
 
 from app.domain.mocks.models import MatchRule, Mock, MockResponse

@@ -76,9 +76,7 @@ class TestContainsOperator:
             key="roles",
         )
         result = await matcher.match_rules(
-            request_factory.create_request_context(
-                body={"roles": ["admin", "viewer"]}
-            ),
+            request_factory.create_request_context(body={"roles": ["admin", "viewer"]}),
             [rule],
         )
 
@@ -101,7 +99,6 @@ class TestContainsOperator:
         result = await matcher.match_rules(
             request_factory.create_request_context(
                 headers={"user-agent": "chrome v1"},
-
             ),
             [rule],
         )

@@ -74,4 +74,3 @@ class TestJsonLogFormatter:
         assert payload["exception_type"] == "RuntimeError"
         assert payload["exception_message"] == "boom"
         assert "RuntimeError: boom" in payload["stacktrace"]
-

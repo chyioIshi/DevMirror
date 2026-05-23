@@ -124,4 +124,3 @@ class TestMockAdminRoutes:
         assert response.status_code == 200
         assert response.json()["active"] is False
         assert fake_mock_management_service.deactivate_mock_calls == ["mock-1"]
-

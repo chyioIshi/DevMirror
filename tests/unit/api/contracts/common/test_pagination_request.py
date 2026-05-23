@@ -28,4 +28,3 @@ class TestPaginationRequest:
         """Проверяет запрет лишних полей."""
         with pytest.raises(ValidationError):
             PaginationRequest(limit=10, unknown=True)
-

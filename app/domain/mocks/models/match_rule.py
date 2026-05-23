@@ -4,11 +4,13 @@ from typing import Any
 from app.domain.mocks.exceptions import InvalidMatchRuleError
 from app.domain.shared import MatchOperator, MatchSource
 
-_KEY_REQUIRED_SOURCES: frozenset[MatchSource] = frozenset({
-    MatchSource.HEADER,
-    MatchSource.QUERY,
-    MatchSource.BODY_JSON,
-})
+_KEY_REQUIRED_SOURCES: frozenset[MatchSource] = frozenset(
+    {
+        MatchSource.HEADER,
+        MatchSource.QUERY,
+        MatchSource.BODY_JSON,
+    }
+)
 
 
 @dataclass(slots=True, frozen=True)

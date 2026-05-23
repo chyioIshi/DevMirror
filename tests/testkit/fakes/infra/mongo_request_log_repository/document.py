@@ -6,4 +6,3 @@ class FakeMongoRequestLogDocument:
 
     async def insert(self) -> None:
         self.insert_called = True
-

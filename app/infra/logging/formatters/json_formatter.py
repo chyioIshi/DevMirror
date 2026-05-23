@@ -12,8 +12,8 @@ class JsonLogFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(record.created, UTC)
-                .isoformat()
-                .replace("+00:00", "Z"),
+            .isoformat()
+            .replace("+00:00", "Z"),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -59,7 +59,6 @@ class JsonLogFormatter(logging.Formatter):
                 payload[key] = value
 
         return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str)
-
 
     def _get_log_record_extra_fields(self, record: logging.LogRecord) -> dict[str, Any]:
         return {

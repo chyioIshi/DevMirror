@@ -117,4 +117,3 @@ class TestUpdateMockFields:
         assert updated_mock.response.headers == {"x-response": "ok"}
         assert updated_mock.response.body == {"ok": True}
         assert updated_mock.match_rules == new_rules
-

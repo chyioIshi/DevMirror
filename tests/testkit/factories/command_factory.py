@@ -21,7 +21,7 @@ class CommandFactory:
         tags: list[str] | object = UNSET,
     ) -> UpdateMockCommand:
         """Создает UpdateMockCommand с указанными полями или значениями по умолчанию."""
-        
+
         return UpdateMockCommand(
             mock_id=mock_id,
             name=name,

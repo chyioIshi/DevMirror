@@ -1,4 +1,3 @@
-
 from fastapi import Request
 
 from app.domain.request_contexts import RequestContext

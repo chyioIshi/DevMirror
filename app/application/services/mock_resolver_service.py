@@ -26,20 +26,19 @@ class MockResolverService:
         self._mock_repository: Final[MockRepository] = mock_repository
         self._request_log_service: Final[RequestLogService] = request_log_service
         self._scope_resolver: Final[ScopeResolver] = scope_resolver
-        self._mock_resolution_service: Final[MockResolutionService] = (
-            mock_resolution_service
-        )
+        self._mock_resolution_service: Final[MockResolutionService] = mock_resolution_service
         self._default_scope: Final[str] = default_scope
 
     async def resolve(self, request_context: RequestContext) -> ResolvedMock | None:
         """Оркестратор резолва мока, включающий в себя:
-        
+
         1. получение кандидатов из репозитория,
         2. резолвинг мока,
         3. создание записи в журнале запросов.
-        
+
         Args:
-            request_context: Контекст входящего запроса, содержащий метод, путь и другие данные запроса.
+            request_context: Контекст входящего запроса, содержащий метод, путь и другие
+                данные запроса.
 
         Returns:
             Наиболее подходящий мок-кандидат, или None, если подходящих кандидатов нет.
@@ -67,12 +66,10 @@ class MockResolverService:
             },
         )
 
-        resolution_result: MockResolutionResult = (
-            await self._mock_resolution_service.resolve_best(
-                request_context=request_context,
-                candidates=candidates,
-                requested_scope=scope,
-            )
+        resolution_result: MockResolutionResult = await self._mock_resolution_service.resolve_best(
+            request_context=request_context,
+            candidates=candidates,
+            requested_scope=scope,
         )
 
         if resolution_result.resolved_mock is None:

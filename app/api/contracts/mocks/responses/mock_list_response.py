@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.contracts.mocks.responses.mock_response_item import MockResponseItem

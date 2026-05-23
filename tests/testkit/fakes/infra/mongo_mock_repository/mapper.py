@@ -17,4 +17,3 @@ class FakeMongoMockMapper:
     @classmethod
     def to_domain(cls, _: object) -> Mock:
         return cls.domain_mock
-

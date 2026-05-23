@@ -18,19 +18,19 @@ class MockResolutionService:
     """Резолвит наиболее подходящий мок из доступных кандидатов."""
 
     def __init__(
-            self,
-            rule_matcher: RuleMatcherService,
-            selection_policy: MockSelectionPolicy,
+        self,
+        rule_matcher: RuleMatcherService,
+        selection_policy: MockSelectionPolicy,
     ) -> None:
         self._rule_matcher: Final[RuleMatcherService] = rule_matcher
         self._selection_policy: Final[MockSelectionPolicy] = selection_policy
 
     async def resolve_best(
-            self,
-            request_context: RequestContext,
-            candidates: Sequence[Mock],
-            *,
-            requested_scope: str,
+        self,
+        request_context: RequestContext,
+        candidates: Sequence[Mock],
+        *,
+        requested_scope: str,
     ) -> MockResolutionResult:
         """Оценивает кандидатов на соответствие запросу и возвращает наиболее
         подходящий мок.
@@ -62,11 +62,11 @@ class MockResolutionService:
         )
 
     async def evaluate_candidates(
-            self,
-            request_context: RequestContext,
-            candidates: Sequence[Mock],
-            *,
-            requested_scope: str,
+        self,
+        request_context: RequestContext,
+        candidates: Sequence[Mock],
+        *,
+        requested_scope: str,
     ) -> list[CandidateEvaluation]:
         """Матчит каждого кандидата с запросом
         и ранжирует подходящие кандидаты по приоритету и прецедентности scope.
@@ -95,10 +95,10 @@ class MockResolutionService:
         return evaluations
 
     def select_best_candidate(
-            self,
-            evaluations: Sequence[CandidateEvaluation],
-            *,
-            requested_scope: str,
+        self,
+        evaluations: Sequence[CandidateEvaluation],
+        *,
+        requested_scope: str,
     ) -> ResolvedMock | None:
         """Выбирает наиболее подходящего кандидата путем ранжирования.
 
@@ -127,17 +127,18 @@ class MockResolutionService:
         )
 
     async def _evaluate_candidate(
-            self,
-            *,
-            request_context: RequestContext,
-            candidate: Mock,
-            requested_scope: str,
+        self,
+        *,
+        request_context: RequestContext,
+        candidate: Mock,
+        requested_scope: str,
     ) -> CandidateEvaluation:
         """Матчит одного кандидата с запросом и определяет его ранг на основании
         метода rank_candidate класса MockSelectionPolicy.
 
         Args:
-            request_context: Контекст входящего запроса, содержащий метод, путь и другие данные запроса.
+            request_context: Контекст входящего запроса, содержащий метод, путь и другие
+                данные запроса.
             candidate: Кандидат на мок, который соответствует методу, пути и scope.
             requested_scope: Scope, для которого выполняется разрешение.
 

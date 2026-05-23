@@ -6,6 +6,7 @@ from fastapi import Request
 
 class RequestDataReader:
     """Кэширует разные представления тела входящего запроса."""
+
     _JSON_NOT_PARSED: object = object()
 
     async def get_body_bytes(self, request: Request) -> bytes:

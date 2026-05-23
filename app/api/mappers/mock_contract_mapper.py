@@ -20,8 +20,7 @@ class MockContractMapper:
             active=False,
             scope=request.scope,
             match_rules=[
-                MockContractMapper.to_domain_match_rule_model(rule)
-                for rule in request.match_rules
+                MockContractMapper.to_domain_match_rule_model(rule) for rule in request.match_rules
             ],
             response=MockContractMapper.to_domain_mock_response_model(request.response),
             tags=request.tags,
@@ -65,8 +64,7 @@ class MockContractMapper:
             active=mock.active,
             scope=mock.scope,
             match_rules=[
-                MockContractMapper.from_domain_match_rule_model(rule)
-                for rule in mock.match_rules
+                MockContractMapper.from_domain_match_rule_model(rule) for rule in mock.match_rules
             ],
             response=MockContractMapper.from_domain_mock_response_model(mock.response),
             tags=mock.tags,

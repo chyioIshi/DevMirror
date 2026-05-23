@@ -20,7 +20,6 @@ class RequestFactory:
         query_params: dict[str, Any] | None = None,
         body: Any = None,
     ) -> RequestContext:
-        
         return RequestContext(
             method=HttpMethod(method.upper()),
             path=path,
@@ -39,8 +38,7 @@ class RequestFactory:
     ) -> Request:
         """Создает Starlette Request с указанными полями или значениями по умолчанию."""
         raw_headers = [
-            (key.lower().encode(), value.encode())
-            for key, value in (headers or {}).items()
+            (key.lower().encode(), value.encode()) for key, value in (headers or {}).items()
         ]
         scope: dict[str, Any] = {
             "type": "http",
@@ -55,7 +53,5 @@ class RequestFactory:
         """Преобразует строку запроса в словарь параметров."""
         params_raw = parse_qs(query_string)
         return {
-            key: values[0] if len(values) == 1 else values
-            for key, values in params_raw.items()
+            key: values[0] if len(values) == 1 else values for key, values in params_raw.items()
         }
-

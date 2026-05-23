@@ -25,4 +25,3 @@ class FakeMongoRequestLogQuery:
 
     async def delete(self) -> None:
         self.delete_called = True
-

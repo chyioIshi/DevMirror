@@ -33,9 +33,7 @@ class MockFactory:
     ) -> Mock:
         """Создает Mock с указанными полями или значениями по умолчанию."""
         rules = (
-            list(match_rules)
-            if match_rules is not None
-            else self.match_rules(match_rules_count)
+            list(match_rules) if match_rules is not None else self.match_rules(match_rules_count)
         )
         mock = Mock.create_new(
             name=name,

@@ -61,28 +61,38 @@ class RuleMatcherService:
         for match_rule in match_rules:
             actual = self._extract_actual_value(request_context, match_rule)
             matched = self._operator_handlers[match_rule.operator](
-                actual, match_rule.expected,
+                actual,
+                match_rule.expected,
             )
             score = self._calculate_rule_score(match_rule) if matched else 0
             evaluations.append(
                 RuleEvaluation(
-                    rule=match_rule, matched=matched, score=score, actual=actual,
+                    rule=match_rule,
+                    matched=matched,
+                    score=score,
+                    actual=actual,
                 ),
             )
 
             if not matched:
                 return RuleMatchResult(
-                    matched=False, score=0, evaluations=evaluations,
+                    matched=False,
+                    score=0,
+                    evaluations=evaluations,
                 )
 
             total_score += score
 
         return RuleMatchResult(
-            matched=True, score=total_score, evaluations=evaluations,
+            matched=True,
+            score=total_score,
+            evaluations=evaluations,
         )
 
     def _extract_actual_value(
-        self, request_context: RequestContext, rule: MatchRule,
+        self,
+        request_context: RequestContext,
+        rule: MatchRule,
     ) -> Any | None:
         """Извлекает из контекста запроса фактическое значение для правила."""
         extractor = self._value_extractors[rule.source]
@@ -90,34 +100,36 @@ class RuleMatcherService:
 
     def _calculate_rule_score(self, rule: MatchRule) -> int:
         """Вычисляет вклад matched rule в итоговый score."""
-        return (
-            self._SOURCE_SCORE[rule.source] + self._OPERATOR_SCORE[rule.operator]
-        )
+        return self._SOURCE_SCORE[rule.source] + self._OPERATOR_SCORE[rule.operator]
 
     @staticmethod
     def _extract_header_value(
-        request_context: RequestContext, rule: MatchRule,
+        request_context: RequestContext,
+        rule: MatchRule,
     ) -> Any | None:
         """Извлекает значение заголовка по ключу из контекста запроса."""
         return request_context.headers.get(rule.key)
 
     @staticmethod
     def _extract_query_value(
-        request_context: RequestContext, rule: MatchRule,
+        request_context: RequestContext,
+        rule: MatchRule,
     ) -> Any | None:
         """Извлекает query-значение для ключа правила из контекста запроса."""
         return request_context.query_params.get(rule.key)
 
     @staticmethod
     def _extract_path_value(
-        request_context: RequestContext, rule: MatchRule,  # noqa: ARG004
+        request_context: RequestContext,
+        rule: MatchRule,  # noqa: ARG004
     ) -> Any | None:
         """Возвращает путь запроса из контекста."""
         return request_context.path
 
     @staticmethod
     def _extract_body_json_value(
-        request_context: RequestContext, rule: MatchRule,
+        request_context: RequestContext,
+        rule: MatchRule,
     ) -> Any | None:
         """Извлекает значение поля из JSON-тела запроса."""
         if isinstance(request_context.body, dict):
@@ -139,7 +151,7 @@ class RuleMatcherService:
         """Проверяет, содержит ли фактическое значение ожидаемое."""
         if actual is None:
             return False
-        if isinstance(actual, (list, tuple, set)):
+        if isinstance(actual, list | tuple | set):
             return expected in actual
         if isinstance(actual, dict):
             return expected in actual

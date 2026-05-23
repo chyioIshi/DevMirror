@@ -17,4 +17,3 @@ class TestHealthResponse:
         """Проверяет запрет лишних полей."""
         with pytest.raises(ValidationError):
             HealthResponse(status="ok", details={})
-

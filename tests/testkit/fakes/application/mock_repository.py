@@ -71,10 +71,7 @@ class FakeMockRepository:
         return [
             mock
             for mock in self._store.values()
-            if mock.active
-            and mock.method == method
-            and mock.path == path
-            and mock.scope in scopes
+            if mock.active and mock.method == method and mock.path == path and mock.scope in scopes
         ]
 
     def persisted(self) -> list[Mock]:
@@ -84,4 +81,3 @@ class FakeMockRepository:
     def _next_id(self) -> str:
         self._counter += 1
         return f"{self._counter:024x}"
-

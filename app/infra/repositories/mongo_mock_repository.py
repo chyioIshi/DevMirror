@@ -114,14 +114,19 @@ class MongoMockRepository:
             if filters.scope is not None:
                 query = query.find(MockDocument.scope == filters.scope)
 
-            documents = await query.sort(
-                [
-                    (MockDocument.path, ASCENDING),
-                    (MockDocument.method, ASCENDING),
-                    (MockDocument.priority, DESCENDING),
-                    (MockDocument.updated_at, DESCENDING),
-                ],
-            ).skip(offset).limit(limit).to_list()
+            documents = (
+                await query.sort(
+                    [
+                        (MockDocument.path, ASCENDING),
+                        (MockDocument.method, ASCENDING),
+                        (MockDocument.priority, DESCENDING),
+                        (MockDocument.updated_at, DESCENDING),
+                    ],
+                )
+                .skip(offset)
+                .limit(limit)
+                .to_list()
+            )
             return [MockMapper.to_domain(document) for document in documents]
         except _CONNECTION_ERRORS as exc:
             raise DatabaseConnectionError(
@@ -142,18 +147,22 @@ class MongoMockRepository:
         normalized_method = method if isinstance(method, HttpMethod) else HttpMethod(method)
 
         try:
-            documents = await MockDocument.find(
-                MockDocument.method == normalized_method,
-                MockDocument.path == path,
-                MockDocument.active == True,  # noqa: E712
-                In(MockDocument.scope, list(scopes)),
-            ).sort(
-                [
-                    (MockDocument.priority, DESCENDING),
-                    (MockDocument.updated_at, DESCENDING),
-                    (MockDocument.created_at, DESCENDING),
-                ],
-            ).to_list()
+            documents = (
+                await MockDocument.find(
+                    MockDocument.method == normalized_method,
+                    MockDocument.path == path,
+                    MockDocument.active == True,  # noqa: E712
+                    In(MockDocument.scope, list(scopes)),
+                )
+                .sort(
+                    [
+                        (MockDocument.priority, DESCENDING),
+                        (MockDocument.updated_at, DESCENDING),
+                        (MockDocument.created_at, DESCENDING),
+                    ],
+                )
+                .to_list()
+            )
 
             return [MockMapper.to_domain(document) for document in documents]
         except _CONNECTION_ERRORS as exc:
