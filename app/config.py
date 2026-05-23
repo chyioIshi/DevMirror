@@ -5,7 +5,7 @@ from pydantic import MongoDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class AppSettings(BaseSettings):
     """Хранит конфигурацию приложения из окружения и значений по умолчанию."""
 
     app_name: str = "DevMirror Mock Service"
@@ -27,5 +27,5 @@ class Settings(BaseSettings):
 
 
 @lru_cache
-def get_settings() -> Settings:
-    return Settings()
+def get_settings() -> AppSettings:
+    return AppSettings()

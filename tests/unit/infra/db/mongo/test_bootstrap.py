@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from app.config import Settings
+from app.config import AppSettings
 from app.infra.db.mongo import bootstrap
 from app.infra.db.mongo.documents import MockDocument, RequestLogDocument
 
@@ -38,7 +38,7 @@ class TestMongoBootstrap:
 
         monkeypatch.setattr(bootstrap, "AsyncMongoClient", fake_client)
         monkeypatch.setattr(bootstrap, "init_beanie", fake_init_beanie)
-        settings = Settings(
+        settings = AppSettings(
             mongo_dsn="mongodb://localhost:27017",
             mongo_database="devmirror_test",
         )

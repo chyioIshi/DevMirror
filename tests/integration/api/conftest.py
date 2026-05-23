@@ -11,7 +11,7 @@ from app.api.routes import (
     mock_admin_router,
     request_log_router,
 )
-from app.config import Settings
+from app.config import AppSettings
 from app.di import (
     get_app_settings,
     get_mock_management_service,
@@ -43,8 +43,8 @@ def request_factory() -> RequestFactory:
 
 
 @pytest.fixture
-def api_settings() -> Settings:
-    return Settings(
+def api_settings() -> AppSettings:
+    return AppSettings(
         admin_prefix="/admin/mocks",
         request_log_prefix="/admin/request-logs",
         health_prefix="/health",
@@ -53,7 +53,7 @@ def api_settings() -> Settings:
 
 @pytest.fixture
 def api_app(
-    api_settings: Settings,
+    api_settings: AppSettings,
     fake_mock_management_service: FakeMockManagementService,
     fake_mock_resolver_service: FakeMockResolverService,
     fake_request_context_resolver: FakeRequestContextResolver,

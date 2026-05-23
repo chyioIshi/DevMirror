@@ -7,7 +7,7 @@ from app.application.services import (
     MockResolverService,
     RequestLogService,
 )
-from app.config import Settings
+from app.config import AppSettings
 from app.domain.mocks import MockRepository
 from app.domain.mocks.policies import (
     ChainedScopeResolver,
@@ -41,8 +41,8 @@ from app.infra.scope_resolution import (
 class AppContainer:
     """DI-контейнер приложения."""
 
-    def __init__(self, settings: Settings) -> None:
-        self.settings: Final[Settings] = settings
+    def __init__(self, settings: AppSettings) -> None:
+        self.settings: Final[AppSettings] = settings
         self._request_data_reader: RequestDataReader | None = None
         self._request_context_resolver: RequestContextResolver | None = None
         self._rule_matcher: RuleMatcherService | None = None

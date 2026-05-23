@@ -7,7 +7,7 @@ from app.application.services import (
     MockResolverService,
     RequestLogService,
 )
-from app.config import Settings
+from app.config import AppSettings
 from app.di.container import AppContainer, get_container
 from app.infra.context import RequestContextResolver
 from app.infra.response import MockResponseBuilder
@@ -15,7 +15,7 @@ from app.infra.response import MockResponseBuilder
 ContainerDep = Annotated[AppContainer, Depends(get_container)]
 
 
-def get_app_settings(container: ContainerDep) -> Settings:
+def get_app_settings(container: ContainerDep) -> AppSettings:
     """Возвращает настройки приложения из контейнера."""
     return container.settings
 
