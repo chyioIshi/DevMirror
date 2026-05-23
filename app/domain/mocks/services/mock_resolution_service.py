@@ -44,8 +44,7 @@ class MockResolutionService:
 
         Returns:
             Результат резолва, включающий запрошенный scope, найденный мок
-            (или None, если подходящих кандидатов нет) и подробности оценки
-            всех кандидатов.
+            (или None, если подходящих кандидатов нет) и подробности оценки всех кандидатов.
         """
         evaluations = await self.evaluate_candidates(
             request_context=request_context,
