@@ -15,7 +15,7 @@ class ChainedScopeResolver:
         """Возвращает первый доступный scope, найденный стратегиями."""
         for strategy in self._strategies:
             scope = await strategy.resolve(request_context)
-            if scope not in (None, ""):
+            if scope is not None and scope != "":
                 return scope
 
         raise RuntimeError(

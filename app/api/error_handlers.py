@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, cast
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -26,38 +26,43 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(Exception, unknown_error_handler)
 
 
-async def mock_not_found_handler(request: Request, exc: MockNotFoundError) -> JSONResponse:
-    _log_handled_exception(logging.INFO, request, exc, status.HTTP_404_NOT_FOUND)
-    return _error_response(status.HTTP_404_NOT_FOUND, exc)
+async def mock_not_found_handler(request: Request, exc: Exception) -> JSONResponse:
+    error = cast(MockNotFoundError, exc)
+    _log_handled_exception(logging.INFO, request, error, status.HTTP_404_NOT_FOUND)
+    return _error_response(status.HTTP_404_NOT_FOUND, error)
 
 
-async def mock_conflict_handler(request: Request, exc: MockConflictError) -> JSONResponse:
-    _log_handled_exception(logging.WARNING, request, exc, status.HTTP_409_CONFLICT)
-    return _error_response(status.HTTP_409_CONFLICT, exc)
+async def mock_conflict_handler(request: Request, exc: Exception) -> JSONResponse:
+    error = cast(MockConflictError, exc)
+    _log_handled_exception(logging.WARNING, request, error, status.HTTP_409_CONFLICT)
+    return _error_response(status.HTTP_409_CONFLICT, error)
 
 
-async def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:
-    _log_handled_exception(logging.WARNING, request, exc, status.HTTP_400_BAD_REQUEST)
-    return _error_response(status.HTTP_400_BAD_REQUEST, exc)
+async def domain_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    error = cast(DomainError, exc)
+    _log_handled_exception(logging.WARNING, request, error, status.HTTP_400_BAD_REQUEST)
+    return _error_response(status.HTTP_400_BAD_REQUEST, error)
 
 
-async def application_error_handler(request: Request, exc: ApplicationError) -> JSONResponse:
-    if isinstance(exc, ValidationError):
+async def application_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    error = cast(ApplicationError, exc)
+    if isinstance(error, ValidationError):
         status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
-    elif isinstance(exc, ResourceAlreadyExistsError):
+    elif isinstance(error, ResourceAlreadyExistsError):
         status_code = status.HTTP_409_CONFLICT
-    elif isinstance(exc, OperationNotAllowedError):
-        status_code = status.HTTP_409_CONFLICT if exc.conflict else status.HTTP_400_BAD_REQUEST
+    elif isinstance(error, OperationNotAllowedError):
+        status_code = status.HTTP_409_CONFLICT if error.conflict else status.HTTP_400_BAD_REQUEST
     else:
         status_code = status.HTTP_400_BAD_REQUEST
 
-    _log_handled_exception(logging.WARNING, request, exc, status_code)
-    return _error_response(status_code, exc)
+    _log_handled_exception(logging.WARNING, request, error, status_code)
+    return _error_response(status_code, error)
 
 
-async def infrastructure_error_handler(request: Request, exc: InfrastructureError) -> JSONResponse:
-    _log_handled_exception(logging.ERROR, request, exc, status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return _error_response(status.HTTP_500_INTERNAL_SERVER_ERROR, exc)
+async def infrastructure_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    error = cast(InfrastructureError, exc)
+    _log_handled_exception(logging.ERROR, request, error, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return _error_response(status.HTTP_500_INTERNAL_SERVER_ERROR, error)
 
 
 async def unknown_error_handler(request: Request, exc: Exception) -> JSONResponse:

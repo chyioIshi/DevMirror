@@ -1,4 +1,4 @@
-from pymongo import DESCENDING
+from beanie import SortDirection
 
 from app.domain.request_logs.models import RequestLogRecord
 from app.infra.db.mongo.documents import RequestLogDocument
@@ -19,7 +19,7 @@ class MongoRequestLogRepository:
         documents = (
             await RequestLogDocument.find_all()
             .sort(
-                [("created_at", DESCENDING)],
+                [("created_at", SortDirection.DESCENDING)],
             )
             .skip(offset)
             .limit(limit)

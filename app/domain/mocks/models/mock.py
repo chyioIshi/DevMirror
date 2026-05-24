@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
-from typing import Self
+from typing import Any, Self
 
 from app.domain.mocks.exceptions import (
     InvalidMockRouteError,
@@ -153,7 +153,7 @@ class Mock:
         if not self.scope or not self.scope.strip():
             raise InvalidScopeError("Mock scope must not be empty")
 
-    def _build_candidate(self, **changes: object) -> Self:
+    def _build_candidate(self, **changes: Any) -> Self:
         """Строит и валидирует кандидатное состояние, не меняя текущий агрегат."""
         return replace(self, **changes)
 

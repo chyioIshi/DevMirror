@@ -1,8 +1,7 @@
 from collections.abc import Sequence
 
-from beanie import PydanticObjectId
+from beanie import PydanticObjectId, SortDirection
 from beanie.operators import In
-from pymongo import ASCENDING, DESCENDING
 from pymongo.errors import (
     AutoReconnect,
     ConnectionFailure,
@@ -117,10 +116,10 @@ class MongoMockRepository:
             documents = (
                 await query.sort(
                     [
-                        (MockDocument.path, ASCENDING),
-                        (MockDocument.method, ASCENDING),
-                        (MockDocument.priority, DESCENDING),
-                        (MockDocument.updated_at, DESCENDING),
+                        ("path", SortDirection.ASCENDING),
+                        ("method", SortDirection.ASCENDING),
+                        ("priority", SortDirection.DESCENDING),
+                        ("updated_at", SortDirection.DESCENDING),
                     ],
                 )
                 .skip(offset)
@@ -156,9 +155,9 @@ class MongoMockRepository:
                 )
                 .sort(
                     [
-                        (MockDocument.priority, DESCENDING),
-                        (MockDocument.updated_at, DESCENDING),
-                        (MockDocument.created_at, DESCENDING),
+                        ("priority", SortDirection.DESCENDING),
+                        ("updated_at", SortDirection.DESCENDING),
+                        ("created_at", SortDirection.DESCENDING),
                     ],
                 )
                 .to_list()
