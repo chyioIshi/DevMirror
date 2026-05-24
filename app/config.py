@@ -9,7 +9,7 @@ class AppSettings(BaseSettings):
 
     app_name: str = "DevMirror Mock Service"
     app_version: str = "0.1.0"
-    mongo_dsn: MongoDsn = "mongodb://localhost:27017"
+    mongo_dsn: MongoDsn = MongoDsn("mongodb://localhost:27017")
     mongo_database: str = "devmirror"
     default_scope: str = "global"
     scope_header_name: str = "x-test-user"

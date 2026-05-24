@@ -14,7 +14,7 @@ from app.api.routes import (
 )
 from app.config import get_settings
 from app.di import AppContainer
-from app.infra.db.mongo import init_mongo
+from app.infra.db.mongo import close_mongo, init_mongo
 from app.infra.logging import configure_logging
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
-        mongo_client.close()
+        await close_mongo(mongo_client)
         logger.info("DevMirror stopped")
 
 

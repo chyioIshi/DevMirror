@@ -4,7 +4,12 @@ from typing import Final
 from app.domain.mocks.models import MatchRule, MockResponse
 from app.domain.shared import HttpMethod
 
-UNSET: Final = object()
+
+class UnsetType:
+    __slots__ = ()
+
+
+UNSET: Final = UnsetType()
 
 
 @dataclass(slots=True, frozen=True)
@@ -12,15 +17,15 @@ class UpdateMockCommand:
     """Команда частичного обновления мока."""
 
     mock_id: str
-    name: str | object = field(default=UNSET)
-    description: str | None | object = field(default=UNSET)
-    path: str | object = field(default=UNSET)
-    method: HttpMethod | object = field(default=UNSET)
-    priority: int | object = field(default=UNSET)
-    scope: str | object = field(default=UNSET)
-    match_rules: list[MatchRule] | object = field(default=UNSET)
-    response: MockResponse | object = field(default=UNSET)
-    tags: list[str] | object = field(default=UNSET)
+    name: str | UnsetType = field(default=UNSET)
+    description: str | None | UnsetType = field(default=UNSET)
+    path: str | UnsetType = field(default=UNSET)
+    method: HttpMethod | UnsetType = field(default=UNSET)
+    priority: int | UnsetType = field(default=UNSET)
+    scope: str | UnsetType = field(default=UNSET)
+    match_rules: list[MatchRule] | UnsetType = field(default=UNSET)
+    response: MockResponse | UnsetType = field(default=UNSET)
+    tags: list[str] | UnsetType = field(default=UNSET)
 
     def has_changes(self) -> bool:
         """Проверяет, содержит ли команда хотя бы одно изменяемое поле."""

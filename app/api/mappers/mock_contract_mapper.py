@@ -32,12 +32,18 @@ class MockContractMapper:
         set_fields = request.model_fields_set
         return UpdateMockCommand(
             mock_id=mock_id,
-            name=request.name if "name" in set_fields else UNSET,
+            name=request.name if "name" in set_fields and request.name is not None else UNSET,
             description=request.description if "description" in set_fields else UNSET,
-            path=request.path if "path" in set_fields else UNSET,
-            method=request.method if "method" in set_fields else UNSET,
-            priority=request.priority if "priority" in set_fields else UNSET,
-            scope=request.scope if "scope" in set_fields else UNSET,
+            path=request.path if "path" in set_fields and request.path is not None else UNSET,
+            method=request.method
+            if "method" in set_fields and request.method is not None
+            else UNSET,
+            priority=(
+                request.priority
+                if "priority" in set_fields and request.priority is not None
+                else UNSET
+            ),
+            scope=request.scope if "scope" in set_fields and request.scope is not None else UNSET,
             match_rules=(
                 [MockContractMapper.to_domain_match_rule_model(r) for r in request.match_rules]
                 if "match_rules" in set_fields and request.match_rules is not None
@@ -48,7 +54,7 @@ class MockContractMapper:
                 if "response" in set_fields and request.response is not None
                 else UNSET
             ),
-            tags=request.tags if "tags" in set_fields else UNSET,
+            tags=request.tags if "tags" in set_fields and request.tags is not None else UNSET,
         )
 
     @staticmethod
