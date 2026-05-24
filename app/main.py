@@ -12,7 +12,7 @@ from app.api.routes import (
     mock_admin_router,
     request_log_router,
 )
-from app.config import get_settings
+from app.config import get_app_settings
 from app.di import AppContainer
 from app.infra.db.mongo import close_mongo, init_mongo
 from app.infra.logging import configure_logging
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    settings = get_settings()
+    settings = get_app_settings()
     container = AppContainer(settings=settings)
     app.state.container = container
     mongo_client = await init_mongo(settings)
@@ -42,12 +42,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    settings = get_settings()
-    configure_logging(settings)
+    app_settings = get_app_settings()
+    configure_logging(app_settings)
 
     app = FastAPI(
-        title=settings.app_name,
-        version=settings.app_version,
+        title=app_settings.app_name,
+        version=app_settings.app_version,
         lifespan=lifespan,
     )
     app.add_middleware(
@@ -56,9 +56,9 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
-    app.include_router(health_router, prefix=settings.health_prefix)
-    app.include_router(mock_admin_router, prefix=settings.admin_prefix)
-    app.include_router(request_log_router, prefix=settings.request_log_prefix)
+    app.include_router(health_router, prefix=app_settings.health_prefix)
+    app.include_router(mock_admin_router, prefix=app_settings.admin_prefix)
+    app.include_router(request_log_router, prefix=app_settings.request_log_prefix)
     app.include_router(catch_all_router)
     return app
 

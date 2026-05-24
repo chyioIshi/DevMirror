@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, cast
+from typing import cast
 
 from app.application.commands import UNSET, UnsetType, UpdateMockCommand
 from app.application.exceptions import MockNotFoundError, ValidationError
@@ -7,7 +7,6 @@ from app.domain.mocks import MockRepository
 from app.domain.mocks.models import Mock
 
 logger = logging.getLogger(__name__)
-T = TypeVar("T")
 
 
 # TODO: временное решение
@@ -64,7 +63,7 @@ async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
     return await repo.save(current_mock)
 
 
-def _set_value(value: T | UnsetType) -> T:
+def _set_value[T](value: T | UnsetType) -> T:
     if value is UNSET:
         raise AssertionError("Update field value is unset")
     return cast(T, value)
