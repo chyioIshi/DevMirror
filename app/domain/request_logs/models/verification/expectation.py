@@ -1,3 +1,5 @@
+"""Модель ожидания для проверки журнала запросов."""
+
 from dataclasses import dataclass
 
 from app.domain.shared import HttpMethod

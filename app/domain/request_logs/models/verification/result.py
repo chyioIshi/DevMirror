@@ -1,3 +1,5 @@
+"""Модель результата проверки журнала запросов."""
+
 from dataclasses import dataclass
 
 

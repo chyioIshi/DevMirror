@@ -1,3 +1,5 @@
+"""Enums для доменной модели."""
+
 from enum import StrEnum
 
 

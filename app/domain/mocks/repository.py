@@ -1,3 +1,5 @@
+"""Порт репозитория моков."""
+
 from collections.abc import Sequence
 from typing import Protocol
 

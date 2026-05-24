@@ -1,3 +1,5 @@
+"""Модель доменного контекста входящего запроса."""
+
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any

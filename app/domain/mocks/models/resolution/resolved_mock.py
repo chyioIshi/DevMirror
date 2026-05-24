@@ -1,3 +1,5 @@
+"""Модель выбранного мока и метаданных разрешения."""
+
 from dataclasses import dataclass
 
 from app.domain.mocks.models.mock import Mock

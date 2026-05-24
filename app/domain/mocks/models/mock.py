@@ -1,3 +1,5 @@
+"""Агрегат мока и его доменное поведение."""
+
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import Any, Self
@@ -33,6 +35,7 @@ class Mock:
     updated_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
     def __post_init__(self) -> None:
+        """Проверяет инварианты агрегата после создания объекта."""
         self._ensure_invariants()
 
     @classmethod

@@ -1,3 +1,5 @@
+"""Доменный сервис сопоставления правил мока с контекстом запроса."""
+
 from collections.abc import Callable
 from typing import Any
 

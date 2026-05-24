@@ -1,3 +1,5 @@
+"""Модель оценки одного кандидата при разрешении мока."""
+
 from dataclasses import dataclass
 
 from app.domain.mocks.models.mock import Mock

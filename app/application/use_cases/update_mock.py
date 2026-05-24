@@ -1,3 +1,9 @@
+"""UseCase для обновления мока.
+
+Модуль содержит временно вынесенную функцию обновления мока, которая
+координирует загрузку агрегата, применение изменений и сохранение результата.
+"""
+
 import logging
 from typing import cast
 
@@ -11,7 +17,19 @@ logger = logging.getLogger(__name__)
 
 # TODO: временное решение
 async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
-    """UseCase обновления мока (вынес в usecase временно, чтобы не раздувать сервис)."""
+    """Обновляет существующий мок.
+
+    Args:
+        cmd: Команда с идентификатором мока и полями, которые нужно изменить.
+        repo: Репозиторий моков.
+
+    Returns:
+        Обновленный мок после сохранения в репозитории.
+
+    Raises:
+        ValidationError: Если команда не содержит ни одного изменяемого поля.
+        MockNotFoundError: Если мок с указанным идентификатором не найден.
+    """
     if not cmd.has_changes():
         raise ValidationError(
             "Update command must contain at least one field",
@@ -64,6 +82,17 @@ async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
 
 
 def _set_value[T](value: T | UnsetType) -> T:
+    """Возвращает заданное значение обновляемого поля.
+
+    Args:
+        value: Значение поля команды обновления.
+
+    Returns:
+        Значение поля без маркера `UNSET`.
+
+    Raises:
+        AssertionError: Если helper вызван для поля без заданного значения.
+    """
     if value is UNSET:
         raise AssertionError("Update field value is unset")
     return cast(T, value)

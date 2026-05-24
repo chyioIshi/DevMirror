@@ -1,3 +1,5 @@
+"""Модель итогового результата разрешения мока для запроса."""
+
 from dataclasses import dataclass, field
 
 from app.domain.mocks.models.resolution.candidate_evaluation import (

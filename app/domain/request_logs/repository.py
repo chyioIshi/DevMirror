@@ -1,3 +1,5 @@
+"""Порт репозитория журнала входящих запросов."""
+
 from typing import Protocol
 
 from app.domain.request_logs.models import RequestLogRecord

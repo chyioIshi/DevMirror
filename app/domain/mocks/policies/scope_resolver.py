@@ -1,3 +1,5 @@
+"""Политика последовательного разрешения scope запроса."""
+
 from collections.abc import Sequence
 from typing import Final
 
@@ -9,6 +11,11 @@ class ChainedScopeResolver:
     """Запускает несколько стратегий, пока одна из них не вернёт непустой scope."""
 
     def __init__(self, strategies: Sequence[ScopeResolutionStrategy]) -> None:
+        """Инициализирует resolver набором стратегий.
+
+        Args:
+            strategies: Стратегии разрешения scope в порядке применения.
+        """
         self._strategies: Final[list[ScopeResolutionStrategy]] = list(strategies)
 
     async def resolve_scope(self, request_context: RequestContext) -> str:

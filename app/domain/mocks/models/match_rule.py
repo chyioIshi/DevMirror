@@ -1,3 +1,5 @@
+"""Модель правила сопоставления входящего запроса."""
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -23,6 +25,12 @@ class MatchRule:
     key: str = ""
 
     def __post_init__(self) -> None:
+        """Проверяет инварианты правила сопоставления.
+
+        Raises:
+            InvalidMatchRuleError: Если источник требует ключ, оператор требует expected
+                или оператор `in` получил значение неподходящего типа.
+        """
         if self.source in _KEY_REQUIRED_SOURCES and not self.key:
             raise InvalidMatchRuleError(f"`key` is required for source `{self.source}`")
 

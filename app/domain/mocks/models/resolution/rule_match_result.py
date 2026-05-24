@@ -1,3 +1,5 @@
+"""Модели результата сопоставления правил с входящим запросом."""
+
 from dataclasses import dataclass, field
 
 from app.domain.mocks.models.match_rule import MatchRule

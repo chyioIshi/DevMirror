@@ -1,3 +1,5 @@
+"""Порты разрешения scope для входящего запроса."""
+
 from typing import Protocol
 
 from app.domain.request_contexts import RequestContext

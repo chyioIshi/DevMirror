@@ -1,3 +1,5 @@
+"""Доменный сервис выбора наиболее подходящего мока для запроса."""
+
 from collections.abc import Sequence
 from typing import Final
 
@@ -22,6 +24,12 @@ class MockResolutionService:
         rule_matcher: RuleMatcherService,
         selection_policy: MockSelectionPolicy,
     ) -> None:
+        """Инициализирует сервис зависимостями разрешения мока.
+
+        Args:
+            rule_matcher: Сервис сопоставления правил мока с запросом.
+            selection_policy: Политика ранжирования подходящих кандидатов.
+        """
         self._rule_matcher: Final[RuleMatcherService] = rule_matcher
         self._selection_policy: Final[MockSelectionPolicy] = selection_policy
 

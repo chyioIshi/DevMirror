@@ -1,3 +1,5 @@
+"""Модель с информацией о моке, зарезолвленным для запроса."""
+
 from dataclasses import dataclass
 from typing import Any
 

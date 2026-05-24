@@ -1,3 +1,5 @@
+"""Модель записи журнала входящего запроса."""
+
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 

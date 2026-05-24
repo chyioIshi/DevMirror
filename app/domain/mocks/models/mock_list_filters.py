@@ -1,3 +1,5 @@
+"""Модель фильтров для получения списка моков."""
+
 from dataclasses import dataclass
 
 from app.domain.shared import HttpMethod

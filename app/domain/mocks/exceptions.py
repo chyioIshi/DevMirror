@@ -1,3 +1,5 @@
+"""Доменные исключения и коды ошибок для моков."""
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -24,6 +26,7 @@ class DomainError(Exception):
     details: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Инициализирует базовый `Exception` сообщением доменной ошибки."""
         Exception.__init__(self, self.message)
 
 
@@ -37,6 +40,13 @@ class MockInvariantError(DomainError):
         *,
         code: DomainErrorCode = DomainErrorCode.MOCK_INVARIANT_ERROR,
     ) -> None:
+        """Создает ошибку нарушения инварианта мока.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+            code: Код доменной ошибки.
+        """
         super().__init__(code=code, message=message, details=details or {})
 
 
@@ -48,6 +58,12 @@ class InvalidMockRouteError(MockInvariantError):
         message: str = "Mock route is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Создает ошибку некорректного маршрута мока.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+        """
         super().__init__(
             message=message,
             details=details,
@@ -63,6 +79,12 @@ class InvalidMockStateError(MockInvariantError):
         message: str = "Mock state is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Создает ошибку некорректного состояния мока.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+        """
         super().__init__(
             message=message,
             details=details,
@@ -78,6 +100,12 @@ class InvalidMatchRuleError(MockInvariantError):
         message: str = "Match rule is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Создает ошибку некорректного правила сопоставления.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+        """
         super().__init__(
             message=message,
             details=details,
@@ -93,6 +121,12 @@ class InvalidMockResponseError(MockInvariantError):
         message: str = "Mock response is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Создает ошибку некорректного ответа мока.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+        """
         super().__init__(
             message=message,
             details=details,
@@ -108,6 +142,12 @@ class InvalidScopeError(MockInvariantError):
         message: str = "Mock scope is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Создает ошибку некорректного scope мока.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+        """
         super().__init__(
             message=message,
             details=details,
@@ -123,6 +163,12 @@ class MockConflictError(DomainError):
         message: str = "Mock conflicts with an existing mock",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Создает ошибку конфликта между моками.
+
+        Args:
+            message: Описание ошибки.
+            details: Дополнительные детали ошибки.
+        """
         super().__init__(
             code=DomainErrorCode.MOCK_CONFLICT,
             message=message,

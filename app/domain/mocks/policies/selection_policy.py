@@ -1,3 +1,5 @@
+"""Политика ранжирования моков-кандидатов."""
+
 from app.domain.mocks.models import Mock
 from app.domain.mocks.models.resolution import CandidateRank, RuleMatchResult
 
