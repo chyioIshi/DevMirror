@@ -1,3 +1,5 @@
+"""Контракт запроса на проверку записей журнала."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.shared import HttpMethod

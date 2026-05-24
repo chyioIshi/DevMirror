@@ -1,3 +1,5 @@
+"""Контракт ответа со списком записей журнала запросов."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.contracts.request_logs.items.request_log_record_item import (

@@ -1,3 +1,5 @@
+"""Контракт HTTP-ответа мока в API запросах и ответах."""
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field

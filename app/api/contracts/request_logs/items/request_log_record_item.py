@@ -1,3 +1,5 @@
+"""Контракт одной записи журнала входящих запросов."""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field

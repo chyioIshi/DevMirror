@@ -1,3 +1,5 @@
+"""Routes для просмотра, проверки и очистки журнала запросов."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Response, status

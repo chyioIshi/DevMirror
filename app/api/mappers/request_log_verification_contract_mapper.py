@@ -1,3 +1,5 @@
+"""Маппер между контрактами проверки журнала запросов и доменными моделями."""
+
 from app.api.contracts.request_logs import VerifyRequestLogRequest, VerifyRequestLogResponse
 from app.domain.request_logs.models.verification import (
     RequestLogVerificationExpectation,

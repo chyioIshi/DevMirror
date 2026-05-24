@@ -1,3 +1,5 @@
+"""Маппер между API контрактами моков и доменными моделями."""
+
 from app.api.contracts.mocks import CreateMockRequest, MockResponseItem, UpdateMockRequest
 from app.api.contracts.mocks.items import MatchRuleItem
 from app.api.contracts.mocks.items import MockResponsePayloadItem as MockResponseItemDTO

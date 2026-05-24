@@ -1,3 +1,5 @@
+"""Контракт ответа с результатом проверки журнала запросов."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 

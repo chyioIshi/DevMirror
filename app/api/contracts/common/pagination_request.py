@@ -1,3 +1,5 @@
+"""Общий контракт параметров пагинации для списковых API-методов."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 

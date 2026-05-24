@@ -1,3 +1,5 @@
+"""ASGI middleware для логирования HTTP-запросов и корреляционных id."""
+
 import json
 import logging
 import time
@@ -17,10 +19,27 @@ BODY_LOG_LIMIT_BYTES = 4096
 
 
 class RequestLoggingMiddleware:
+    """Логирует HTTP-запросы, ответы и добавляет request/correlation id."""
+
     def __init__(self, app: ASGIApp) -> None:
+        """Инициализирует middleware ASGI-приложением.
+
+        Args:
+            app: Следующее ASGI-приложение в цепочке middleware.
+        """
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Обрабатывает ASGI-вызов и логирует завершение HTTP-запроса.
+
+        Args:
+            scope: ASGI scope текущего соединения.
+            receive: ASGI receive callable.
+            send: ASGI send callable.
+
+        Raises:
+            Exception: Повторно пробрасывает исключение нижележащего приложения после логирования.
+        """
         if scope.get("type") != "http":
             await self.app(scope, receive, send)
             return
@@ -40,12 +59,22 @@ class RequestLoggingMiddleware:
         failed = False
 
         async def receive_wrapper() -> Message:
+            """Сохраняет ограниченную копию тела запроса и передает сообщение дальше.
+
+            Returns:
+                Исходное ASGI-сообщение от `receive`.
+            """
             message = await receive()
             if message["type"] == "http.request":
                 _extend_limited(request_body, message.get("body", b""))
             return message
 
         async def send_wrapper(message: Message) -> None:
+            """Добавляет correlation headers и сохраняет ограниченную копию тела ответа.
+
+            Args:
+                message: ASGI-сообщение, отправляемое клиенту.
+            """
             nonlocal status_code
 
             if message["type"] == "http.response.start":
@@ -94,6 +123,12 @@ class RequestLoggingMiddleware:
 
 
 def _log_request(level: int, **kwargs: Any) -> None:
+    """Пишет структурированный лог завершенного HTTP-запроса.
+
+    Args:
+        level: Уровень логирования.
+        **kwargs: Поля события HTTP-запроса и необязательные тела запроса/ответа.
+    """
     request_body = kwargs.pop("request_body", None)
     response_body = kwargs.pop("response_body", None)
     exc_info = bool(kwargs.pop("exc_info", False))
@@ -107,14 +142,38 @@ def _log_request(level: int, **kwargs: Any) -> None:
 
 
 def _level_for(status_code: int) -> int:
+    """Определяет уровень логирования по HTTP-статусу.
+
+    Args:
+        status_code: HTTP-статус ответа.
+
+    Returns:
+        `logging.ERROR` для 4xx/5xx и `logging.INFO` для остальных статусов.
+    """
     return logging.ERROR if status_code >= 400 else logging.INFO
 
 
 def _duration_ms(started_at: float) -> float:
+    """Вычисляет длительность запроса в миллисекундах.
+
+    Args:
+        started_at: Значение `time.perf_counter()` на старте запроса.
+
+    Returns:
+        Длительность выполнения в миллисекундах.
+    """
     return round((time.perf_counter() - started_at) * 1000, 3)
 
 
 def _headers(scope: Scope) -> dict[str, str]:
+    """Извлекает HTTP-заголовки из ASGI scope.
+
+    Args:
+        scope: ASGI scope текущего HTTP-запроса.
+
+    Returns:
+        Словарь заголовков с ключами в нижнем регистре.
+    """
     return {
         key.decode("latin-1").lower(): value.decode("latin-1")
         for key, value in scope.get("headers", [])
@@ -122,6 +181,13 @@ def _headers(scope: Scope) -> dict[str, str]:
 
 
 def _set_raw_header(headers: list[tuple[bytes, bytes]], name: bytes, value: bytes) -> None:
+    """Устанавливает raw HTTP-заголовок в списке ASGI headers.
+
+    Args:
+        headers: Изменяемый список raw headers.
+        name: Имя заголовка в bytes.
+        value: Значение заголовка в bytes.
+    """
     normalized_name = name.lower()
     matched = False
     index = 0
@@ -141,12 +207,26 @@ def _set_raw_header(headers: list[tuple[bytes, bytes]], name: bytes, value: byte
 
 
 def _extend_limited(target: bytearray, body: bytes) -> None:
+    """Добавляет фрагмент тела, не превышая лимит логирования.
+
+    Args:
+        target: Буфер, в который добавляется тело.
+        body: Очередной фрагмент тела запроса или ответа.
+    """
     remaining = BODY_LOG_LIMIT_BYTES - len(target)
     if remaining > 0:
         target.extend(body[:remaining])
 
 
 def _decode_body(body: bytes) -> Any:
+    """Декодирует тело запроса или ответа для структурированного лога.
+
+    Args:
+        body: Тело запроса или ответа в bytes.
+
+    Returns:
+        JSON-значение, если тело содержит JSON, иначе строку.
+    """
     text = body.decode("utf-8", errors="replace")
     try:
         return json.loads(text)

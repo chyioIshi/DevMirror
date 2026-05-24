@@ -1,3 +1,5 @@
+"""Контракт правила сопоставления запроса для API моков."""
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field

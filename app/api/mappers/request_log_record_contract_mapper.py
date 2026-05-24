@@ -1,3 +1,5 @@
+"""Маппер между доменными записями журнала запросов и API контрактами."""
+
 from app.api.contracts.request_logs.items import (
     MatchedMockItem,
     RequestContextItem,

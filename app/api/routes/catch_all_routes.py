@@ -1,3 +1,5 @@
+"""Catch-all route для обработки пользовательских запросов к мокам."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -58,6 +60,21 @@ async def catch_each_request(
         Depends(get_mock_response_builder),
     ],
 ) -> Response:
+    """Обрабатывает входящий запрос и возвращает ответ найденного мока.
+
+    Args:
+        request: Исходный FastAPI request.
+        settings: Конфиг приложения.
+        request_context_resolver: Адаптер сборки доменного контекста запроса.
+        mock_resolver_service: Сервис поиска подходящего мока.
+        mock_response_builder: Адаптер сборки HTTP-ответа из мока.
+
+    Returns:
+        HTTP-ответ, сконструированный по найденному моку.
+
+    Raises:
+        HTTPException: Если путь служебный или подходящий активный мок не найден.
+    """
     if _is_reserved_path(request.url.path, settings):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not this route!!!")
 

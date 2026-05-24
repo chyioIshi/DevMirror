@@ -1,3 +1,5 @@
+"""Контракт объекта c информацией о моке, зарезолвленным для запроса."""
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field

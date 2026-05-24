@@ -1,3 +1,5 @@
+"""Admin routes для управления моками."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Query, Response, status

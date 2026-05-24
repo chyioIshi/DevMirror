@@ -1,3 +1,5 @@
+"""Контракт представления мока в API ответе."""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field

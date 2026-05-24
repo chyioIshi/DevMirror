@@ -1,3 +1,5 @@
+"""Контракт запроса на частичное обновление мока."""
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem

@@ -1,3 +1,5 @@
+"""Контракт ответа healthcheck endpoint."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
