@@ -1,4 +1,4 @@
-"""Порт репозитория журнала входящих запросов."""
+"""Request log repository port."""
 
 from typing import Protocol
 
@@ -6,16 +6,31 @@ from app.domain.request_logs.models import RequestLogRecord
 
 
 class RequestLogRepository(Protocol):
-    """Описывает операции хранения и чтения журнала запросов."""
+    """Describes request log persistence and read operations."""
 
     async def write(self, record: RequestLogRecord) -> RequestLogRecord:
-        """Сохраняет запись журнала запросов."""
+        """Persists a request log record.
+
+        Args:
+            record: Request log record to persist.
+
+        Returns:
+            Persisted request log record.
+        """
         ...
 
     async def list_records(self, limit: int = 100, offset: int = 0) -> list[RequestLogRecord]:
-        """Возвращает записи журнала запросов с поддержкой пагинации."""
+        """Returns request log records with pagination support.
+
+        Args:
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            Request log records.
+        """
         ...
 
     async def clear(self) -> None:
-        """Очищает журнал запросов."""
+        """Clears the request log."""
         ...

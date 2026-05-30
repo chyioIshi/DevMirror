@@ -1,4 +1,4 @@
-"""Модель с информацией о моке, зарезолвленным для запроса."""
+"""Model with information about a mock matched to a request."""
 
 from dataclasses import dataclass
 from typing import Any
@@ -8,7 +8,7 @@ from app.domain.shared import HttpMethod
 
 @dataclass(slots=True, frozen=True)
 class MatchedMock:
-    """Описывает найденный мок для запроса в журнале."""
+    """Describes a mock matched to a request in the log."""
 
     id: str
     name: str

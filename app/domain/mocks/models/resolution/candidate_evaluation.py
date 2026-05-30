@@ -1,4 +1,4 @@
-"""Модель оценки одного кандидата при разрешении мока."""
+"""Candidate evaluation model used during mock resolution."""
 
 from dataclasses import dataclass
 
@@ -9,7 +9,7 @@ from app.domain.mocks.models.resolution.rule_match_result import RuleMatchResult
 
 @dataclass(slots=True, frozen=True)
 class CandidateEvaluation:
-    """Описывает результат оценки одного кандидата на соответствие входящему запросу."""
+    """Result of evaluating one candidate against an incoming request."""
 
     mock: Mock
     rule_result: RuleMatchResult
@@ -17,12 +17,9 @@ class CandidateEvaluation:
 
     @property
     def matched(self) -> bool:
-        """Возвращает результат соответствия мока-кандидата запросу.
-
-        Args:
-            None
+        """Returns whether the candidate mock matched the request.
 
         Returns:
-            True, если мок-кандидат соответствует запросу, иначе False.
+            True when the candidate mock matched the request; otherwise False.
         """
         return self.rule_result.matched

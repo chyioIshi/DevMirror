@@ -1,11 +1,11 @@
-"""Модель ранга кандидата для выбора наиболее подходящего мока."""
+"""Candidate ranking model used to choose the best mock."""
 
 from dataclasses import dataclass
 
 
 @dataclass(slots=True, frozen=True)
 class CandidateRank:
-    """Хранит метрики ранжирования для кандидата в моки."""
+    """Ranking metrics for a mock candidate."""
 
     priority: int
     scope_rank: int
@@ -16,7 +16,11 @@ class CandidateRank:
     stable_id: str
 
     def sort_key(self) -> tuple[int, int, int, int, float, float, str]:
-        """Возвращает ключ сортировки для ранжированных кандидатов."""
+        """Returns the sort key for ranked candidates.
+
+        Returns:
+            Tuple used to compare candidate ranks.
+        """
         return (
             self.priority,
             self.scope_rank,

@@ -1,4 +1,4 @@
-"""Модель итогового результата разрешения мока для запроса."""
+"""Final mock resolution result model for a request."""
 
 from dataclasses import dataclass, field
 
@@ -10,7 +10,7 @@ from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
 
 @dataclass(slots=True, frozen=True)
 class MockResolutionResult:
-    """Описывает результат разрешения запроса до мока."""
+    """Result of resolving a request to a mock."""
 
     requested_scope: str
     resolved_mock: ResolvedMock | None
@@ -18,24 +18,18 @@ class MockResolutionResult:
 
     @property
     def candidate_count(self) -> int:
-        """Возвращает количество оцененных кандидатов.
-
-        Args:
-            None
+        """Returns the number of evaluated candidates.
 
         Returns:
-            Количество оцененных кандидатов.
+            Number of evaluated candidates.
         """
         return len(self.evaluations)
 
     @property
     def matched_count(self) -> int:
-        """Возвращает количество кандидатов, соответствующих правилам запроса.
-
-        Args:
-            None
+        """Returns the number of candidates matched by request rules.
 
         Returns:
-            Количество кандидатов, соответствующих правилам запроса.
+            Number of candidates matched by request rules.
         """
         return sum(1 for evaluation in self.evaluations if evaluation.matched)

@@ -1,4 +1,4 @@
-"""Доменные исключения и коды ошибок для моков."""
+"""Domain exceptions and error codes for mocks."""
 
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -6,7 +6,7 @@ from typing import Any
 
 
 class DomainErrorCode(StrEnum):
-    """Коды ошибок доменного слоя моков."""
+    """Error codes for the mock domain layer."""
 
     MOCK_INVARIANT_ERROR = "MOCK_INVARIANT_ERROR"
     INVALID_MOCK_ROUTE = "INVALID_MOCK_ROUTE"
@@ -19,19 +19,19 @@ class DomainErrorCode(StrEnum):
 
 @dataclass(eq=False)
 class DomainError(Exception):
-    """Базовая доменная ошибка."""
+    """Base domain error."""
 
     code: DomainErrorCode
     message: str
     details: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        """Инициализирует базовый `Exception` сообщением доменной ошибки."""
+        """Initializes the base `Exception` with the domain error message."""
         Exception.__init__(self, self.message)
 
 
 class MockInvariantError(DomainError):
-    """Ошибка нарушения инварианта агрегата Mock."""
+    """Error raised when a `Mock` aggregate invariant is violated."""
 
     def __init__(
         self,
@@ -40,29 +40,29 @@ class MockInvariantError(DomainError):
         *,
         code: DomainErrorCode = DomainErrorCode.MOCK_INVARIANT_ERROR,
     ) -> None:
-        """Создает ошибку нарушения инварианта мока.
+        """Creates a mock invariant violation error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
-            code: Код доменной ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
+            code: Domain error code.
         """
         super().__init__(code=code, message=message, details=details or {})
 
 
 class InvalidMockRouteError(MockInvariantError):
-    """Ошибка некорректного маршрута мока."""
+    """Error raised when a mock route is invalid."""
 
     def __init__(
         self,
         message: str = "Mock route is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Создает ошибку некорректного маршрута мока.
+        """Creates an invalid mock route error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
         """
         super().__init__(
             message=message,
@@ -72,18 +72,18 @@ class InvalidMockRouteError(MockInvariantError):
 
 
 class InvalidMockStateError(MockInvariantError):
-    """Ошибка некорректного состояния мока."""
+    """Error raised when a mock state is invalid."""
 
     def __init__(
         self,
         message: str = "Mock state is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Создает ошибку некорректного состояния мока.
+        """Creates an invalid mock state error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
         """
         super().__init__(
             message=message,
@@ -93,18 +93,18 @@ class InvalidMockStateError(MockInvariantError):
 
 
 class InvalidMatchRuleError(MockInvariantError):
-    """Ошибка некорректного правила сопоставления запроса."""
+    """Error raised when a request matching rule is invalid."""
 
     def __init__(
         self,
         message: str = "Match rule is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Создает ошибку некорректного правила сопоставления.
+        """Creates an invalid match rule error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
         """
         super().__init__(
             message=message,
@@ -114,18 +114,18 @@ class InvalidMatchRuleError(MockInvariantError):
 
 
 class InvalidMockResponseError(MockInvariantError):
-    """Ошибка некорректного ответа мока."""
+    """Error raised when a mock response is invalid."""
 
     def __init__(
         self,
         message: str = "Mock response is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Создает ошибку некорректного ответа мока.
+        """Creates an invalid mock response error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
         """
         super().__init__(
             message=message,
@@ -135,18 +135,18 @@ class InvalidMockResponseError(MockInvariantError):
 
 
 class InvalidScopeError(MockInvariantError):
-    """Ошибка некорректного scope мока."""
+    """Error raised when a mock scope is invalid."""
 
     def __init__(
         self,
         message: str = "Mock scope is invalid",
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Создает ошибку некорректного scope мока.
+        """Creates an invalid mock scope error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
         """
         super().__init__(
             message=message,
@@ -156,18 +156,18 @@ class InvalidScopeError(MockInvariantError):
 
 
 class MockConflictError(DomainError):
-    """Ошибка конфликта между моками."""
+    """Error raised when mocks conflict with each other."""
 
     def __init__(
         self,
         message: str = "Mock conflicts with an existing mock",
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Создает ошибку конфликта между моками.
+        """Creates a mock conflict error.
 
         Args:
-            message: Описание ошибки.
-            details: Дополнительные детали ошибки.
+            message: Human-readable error description.
+            details: Additional error details.
         """
         super().__init__(
             code=DomainErrorCode.MOCK_CONFLICT,

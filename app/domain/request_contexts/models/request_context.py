@@ -1,4 +1,4 @@
-"""Модель доменного контекста входящего запроса."""
+"""Incoming request context model."""
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -10,7 +10,7 @@ from app.domain.shared import HttpMethod
 
 @dataclass(slots=True, frozen=True)
 class RequestContext:
-    """Описывает контекст запроса."""
+    """Describes an incoming request context."""
 
     method: HttpMethod
     path: str

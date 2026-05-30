@@ -1,11 +1,11 @@
-"""Политика ранжирования моков-кандидатов."""
+"""Policy for ranking mock candidates."""
 
 from app.domain.mocks.models import Mock
 from app.domain.mocks.models.resolution import CandidateRank, RuleMatchResult
 
 
 class MockSelectionPolicy:
-    """Определяет правила ранжирования и сортировки подходящих моков."""
+    """Defines ranking and sorting rules for matching mocks."""
 
     def rank_candidate(
         self,
@@ -14,7 +14,16 @@ class MockSelectionPolicy:
         requested_scope: str,
         rule_result: RuleMatchResult,
     ) -> CandidateRank:
-        """Формирует объект ранга для подходящего кандидата."""
+        """Builds a rank object for a matching candidate.
+
+        Args:
+            mock: Matching mock candidate.
+            requested_scope: Scope requested for resolution.
+            rule_result: Result of matching the candidate rules.
+
+        Returns:
+            Candidate rank used for sorting.
+        """
         return CandidateRank(
             priority=mock.priority,
             scope_rank=1 if mock.scope == requested_scope else 0,

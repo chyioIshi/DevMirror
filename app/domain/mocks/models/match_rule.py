@@ -1,4 +1,4 @@
-"""Модель правила сопоставления входящего запроса."""
+"""Request matching rule model."""
 
 from dataclasses import dataclass
 from typing import Any
@@ -17,7 +17,7 @@ _KEY_REQUIRED_SOURCES: frozenset[MatchSource] = frozenset(
 
 @dataclass(slots=True, frozen=True)
 class MatchRule:
-    """Условие, которому должен соответствовать запрос."""
+    """Rule that an incoming request must satisfy."""
 
     source: MatchSource
     operator: MatchOperator
@@ -25,11 +25,12 @@ class MatchRule:
     key: str = ""
 
     def __post_init__(self) -> None:
-        """Проверяет инварианты правила сопоставления.
+        """Validates match rule invariants.
 
         Raises:
-            InvalidMatchRuleError: Если источник требует ключ, оператор требует expected
-                или оператор `in` получил значение неподходящего типа.
+            InvalidMatchRuleError: If the source requires a key, the operator requires
+                an expected value, or the `in` operator receives a value of the wrong
+                type.
         """
         if self.source in _KEY_REQUIRED_SOURCES and not self.key:
             raise InvalidMatchRuleError(f"`key` is required for source `{self.source}`")

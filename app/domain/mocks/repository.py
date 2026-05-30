@@ -1,4 +1,4 @@
-"""Порт репозитория моков."""
+"""Mock repository port."""
 
 from collections.abc import Sequence
 from typing import Protocol
@@ -9,22 +9,50 @@ from app.domain.shared import HttpMethod
 
 
 class MockRepository(Protocol):
-    """Описывает операции хранения и получения моков."""
+    """Describes persistence and retrieval operations for mocks."""
 
     async def add(self, mock: Mock) -> Mock:
-        """Сохраняет новое определение мока."""
+        """Persists a new mock definition.
+
+        Args:
+            mock: Mock to persist.
+
+        Returns:
+            Persisted mock.
+        """
         ...
 
     async def get_by_id(self, mock_id: str) -> Mock | None:
-        """Возвращает мок по идентификатору или ``None``, если он не найден."""
+        """Returns a mock by id.
+
+        Args:
+            mock_id: Mock identifier.
+
+        Returns:
+            Mock when found; otherwise ``None``.
+        """
         ...
 
     async def save(self, mock: Mock) -> Mock:
-        """Сохраняет изменения существующего мока."""
+        """Persists changes to an existing mock.
+
+        Args:
+            mock: Mock with updated state.
+
+        Returns:
+            Saved mock.
+        """
         ...
 
     async def remove(self, mock_id: str) -> bool:
-        """Удаляет мок и сообщает, успешно ли выполнена операция."""
+        """Removes a mock.
+
+        Args:
+            mock_id: Mock identifier.
+
+        Returns:
+            True when the operation removed a mock; otherwise False.
+        """
         ...
 
     async def list_mocks(
@@ -33,7 +61,16 @@ class MockRepository(Protocol):
         limit: int = 100,
         offset: int = 0,
     ) -> list[Mock]:
-        """Возвращает список моков с поддержкой пагинации."""
+        """Returns mocks with pagination support.
+
+        Args:
+            filters: Filters applied to the query.
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            List of matching mocks.
+        """
         ...
 
     async def list_candidates(
@@ -42,5 +79,14 @@ class MockRepository(Protocol):
         path: str,
         scopes: Sequence[str],
     ) -> list[Mock]:
-        """Возвращает моки, которые можно рассматривать при резолвинге."""
+        """Returns mocks that can be considered during resolution.
+
+        Args:
+            method: Request HTTP method.
+            path: Request path.
+            scopes: Scopes allowed for resolution.
+
+        Returns:
+            Candidate mocks for request resolution.
+        """
         ...

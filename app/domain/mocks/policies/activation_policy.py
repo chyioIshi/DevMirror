@@ -1,4 +1,4 @@
-"""Политика обработки конфликтов при активации мока."""
+"""Conflict handling policy for mock activation."""
 
 from collections.abc import Sequence
 
@@ -6,17 +6,17 @@ from app.domain.mocks.models import Mock
 
 
 class MockActivationPolicy:
-    """Находит активные конфликтные моки при активации конкретного мока."""
+    """Finds active conflicting mocks when a target mock is activated."""
 
     def resolve_conflicts(self, target: Mock, conflicts: Sequence[Mock]) -> list[Mock]:
-        """Возвращает активные конфликты, которые нужно деактивировать.
+        """Returns active conflicts that should be deactivated.
 
         Args:
-            target: Мок, который планируется активировать.
-            conflicts: Кандидаты, конфликтующие с целевым моком.
+            target: Mock that is being activated.
+            conflicts: Candidates that conflict with the target mock.
 
         Returns:
-            Список активных конфликтующих моков, исключая сам целевой мок.
+            Active conflicting mocks, excluding the target mock itself.
         """
         target_id = target.id
         return [

@@ -1,4 +1,4 @@
-"""Модель ожидания для проверки журнала запросов."""
+"""Expectation model for request log verification."""
 
 from dataclasses import dataclass
 
@@ -7,7 +7,7 @@ from app.domain.shared import HttpMethod
 
 @dataclass(slots=True, frozen=True)
 class RequestLogVerificationExpectation:
-    """Описывает ожидания для проверки журнала запросов."""
+    """Describes an expectation for request log verification."""
 
     path: str
     method: HttpMethod

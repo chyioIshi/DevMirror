@@ -1,4 +1,4 @@
-"""Порты разрешения scope для входящего запроса."""
+"""Scope resolution ports for incoming requests."""
 
 from typing import Protocol
 
@@ -6,17 +6,30 @@ from app.domain.request_contexts import RequestContext
 
 
 class ScopeResolutionStrategy(Protocol):
-    """Описывает одну стратегию извлечения scope из контекста запроса."""
+    """Describes one strategy for extracting scope from a request context."""
 
     async def resolve(self, request_context: RequestContext) -> str | None:
-        """Возвращает кандидат на scope или ``None``,
-        если стратегия не сработала."""
+        """Returns a scope candidate or ``None`` when the strategy does not match.
+
+        Args:
+            request_context: Incoming request context.
+
+        Returns:
+            Scope candidate or ``None``.
+        """
         ...
 
 
 class ScopeResolver(Protocol):
-    """Описывает компонент, который определяет scope для запроса."""
+    """Describes a component that resolves the final scope for a request."""
 
     async def resolve_scope(self, request_context: RequestContext) -> str:
-        """Определяет итоговый scope для входящего запроса."""
+        """Resolves the final scope for an incoming request.
+
+        Args:
+            request_context: Incoming request context.
+
+        Returns:
+            Resolved scope.
+        """
         ...

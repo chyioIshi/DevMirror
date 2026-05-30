@@ -1,4 +1,4 @@
-"""Модель записи журнала входящего запроса."""
+"""Incoming request log record model."""
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -12,7 +12,7 @@ from app.domain.request_logs.models.verification.expectation import (
 
 @dataclass(slots=True)
 class RequestLogRecord:
-    """Описывает одну запись журнала входящего запроса."""
+    """Describes one incoming request log record."""
 
     request_context: RequestContext
     id: str | None = None
@@ -25,7 +25,14 @@ class RequestLogRecord:
         self,
         expectation: RequestLogVerificationExpectation,
     ) -> bool:
-        """Проверяет, соответствует ли запись ожиданиям."""
+        """Checks whether the record satisfies an expectation.
+
+        Args:
+            expectation: Request log verification expectation.
+
+        Returns:
+            True when the record matches the expectation; otherwise False.
+        """
         if self.request_context.path != expectation.path:
             return False
         if self.request_context.method != expectation.method:
