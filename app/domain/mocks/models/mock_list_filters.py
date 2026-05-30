@@ -1,3 +1,5 @@
+"""Filter model for listing mocks."""
+
 from dataclasses import dataclass
 
 from app.domain.shared import HttpMethod
@@ -5,7 +7,7 @@ from app.domain.shared import HttpMethod
 
 @dataclass(slots=True, frozen=True)
 class MockListFilters:
-    """Описывает необязательные фильтры для получения списка моков."""
+    """Optional filters for retrieving a list of mocks."""
 
     path: str | None = None
     method: HttpMethod | None = None

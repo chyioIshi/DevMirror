@@ -1,3 +1,5 @@
+"""Mapper between domain request log records and API contracts."""
+
 from app.api.contracts.request_logs.items import (
     MatchedMockItem,
     RequestContextItem,
@@ -7,11 +9,18 @@ from app.domain.request_logs.models import RequestLogRecord
 
 
 class RequestLogRecordContractMapper:
-    """Преобразует записи журнала запросов в RESPONSE DTO ответа."""
+    """Converts request log records to response DTOs."""
 
     @staticmethod
-    def from_domain_request_log_record_model(record: RequestLogRecord) -> RequestLogRecordItem:
-        """Преобразует доменную запись журнала в RESPONSE DTO ответа."""
+    def from_domain_request_log_record_model(record: RequestLogRecord) -> RequestLogRecordItem:  # noqa: E501
+        """Converts a domain request log record to a response DTO.
+
+        Args:
+            record: Domain request log record.
+
+        Returns:
+            API response DTO for the request log record.
+        """
         return RequestLogRecordItem(
             id=record.id or "",
             request_context=RequestContextItem(

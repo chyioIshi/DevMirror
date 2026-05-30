@@ -1,3 +1,5 @@
+"""Mock representation contract for API responses."""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,7 +14,7 @@ from app.domain.shared import HttpMethod
 
 
 class MockResponseItem(BaseModel):
-    """Модель ответа, представляющая один сохранённый мок."""
+    """Response model representing one persisted mock."""
 
     model_config = ConfigDict(extra="forbid")
 

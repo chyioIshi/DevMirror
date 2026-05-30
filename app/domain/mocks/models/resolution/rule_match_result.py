@@ -1,3 +1,5 @@
+"""Rule matching result models for incoming requests."""
+
 from dataclasses import dataclass, field
 
 from app.domain.mocks.models.match_rule import MatchRule
@@ -5,7 +7,7 @@ from app.domain.mocks.models.match_rule import MatchRule
 
 @dataclass(slots=True)
 class RuleEvaluation:
-    """Хранит результат вычисления одного правила сопоставления."""
+    """Result of evaluating one matching rule."""
 
     rule: MatchRule
     matched: bool
@@ -15,8 +17,7 @@ class RuleEvaluation:
 
 @dataclass(slots=True)
 class RuleMatchResult:
-    """Описывает общий результат проверки всех правил
-    и хранит итоговый score сопоставления."""
+    """Overall result of checking all rules and the final match score."""
 
     matched: bool
     score: int = 0

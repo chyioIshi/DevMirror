@@ -1,3 +1,5 @@
+"""Response contract for a list of request log records."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.contracts.request_logs.items.request_log_record_item import (
@@ -6,7 +8,7 @@ from app.api.contracts.request_logs.items.request_log_record_item import (
 
 
 class RequestLogListResponse(BaseModel):
-    """Модель ответа со списком записей журнала."""
+    """Response model containing a list of request log records."""
 
     model_config = ConfigDict(extra="forbid")
 

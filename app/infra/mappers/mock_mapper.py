@@ -1,3 +1,5 @@
+"""Mapper between Mongo mock documents and domain models."""
+
 from beanie import PydanticObjectId
 
 from app.domain.mocks.models import MatchRule, Mock, MockResponse
@@ -9,11 +11,18 @@ from app.infra.db.mongo.documents import (
 
 
 class MockMapper:
-    """Преобразует моки между Mongo-документами и доменными моделями."""
+    """Converts mocks between Mongo documents and domain models."""
 
     @staticmethod
     def to_domain(document: MockDocument) -> Mock:
-        """Преобразует сохранённый Mongo-документ в доменную модель."""
+        """Converts a Mongo mock document to a domain model.
+
+        Args:
+            document: Mongo mock document.
+
+        Returns:
+            Domain mock model.
+        """
         return Mock(
             id=str(document.id),
             name=document.name,
@@ -44,7 +53,14 @@ class MockMapper:
 
     @staticmethod
     def to_document(mock: Mock) -> MockDocument:
-        """Преобразует доменную модель в Mongo-документ."""
+        """Converts a domain mock model to a Mongo document.
+
+        Args:
+            mock: Domain mock model.
+
+        Returns:
+            Mongo mock document.
+        """
         payload = MockDocument(
             name=mock.name,
             description=mock.description,

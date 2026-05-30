@@ -1,8 +1,10 @@
+"""Shared pagination request contract for list API endpoints."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class PaginationRequest(BaseModel):
-    """Опциональные параметры пагинации для запросов на список сущностей."""
+    """Optional pagination parameters for entity list requests."""
 
     model_config = ConfigDict(extra="forbid")
 

@@ -1,3 +1,5 @@
+"""Application configuration loaded from env vars."""
+
 from functools import lru_cache
 
 from pydantic import MongoDsn
@@ -5,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AppSettings(BaseSettings):
-    """Хранит конфигурацию приложения из окружения и значений по умолчанию."""
+    """Stores runtime settings for the application."""
 
     app_name: str = "DevMirror Mock Service"
     app_version: str = "0.1.0"
@@ -27,4 +29,9 @@ class AppSettings(BaseSettings):
 
 @lru_cache
 def get_app_settings() -> AppSettings:
+    """Return cached application settings.
+
+    Returns:
+        Application settings loaded from the env and defaults.
+    """
     return AppSettings()

@@ -1,10 +1,12 @@
+"""Mock HTTP response contract for API requests and responses."""
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class MockResponsePayloadItem(BaseModel):
-    """Вложенная DTO-модель ответа, описанного в моке."""
+    """Nested DTO model for the response described by a mock."""
 
     model_config = ConfigDict(extra="forbid")
 

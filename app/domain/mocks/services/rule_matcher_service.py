@@ -1,3 +1,5 @@
+"""Domain service for matching mock rules against a request context."""
+
 from collections.abc import Callable
 from typing import Any
 
@@ -14,7 +16,7 @@ ValueExtractor = Callable[[RequestContext, MatchRule], Any | None]
 
 
 class RuleMatcherService:
-    """Сопоставляет данные контекста запроса с массивом match rules мока."""
+    """Matches request context data against a mock's match rules."""
 
     _SOURCE_SCORE: dict[MatchSource, int] = {
         MatchSource.HEADER: 30,
@@ -31,7 +33,7 @@ class RuleMatcherService:
     }
 
     def __init__(self) -> None:
-        """Инициализирует мапу операторов и экстракторов."""
+        """Initializes operator handlers and value extractors."""
         self._operator_handlers: dict[MatchOperator, OperatorHandler] = {
             MatchOperator.EQ: self._eq,
             MatchOperator.NEQ: self._neq,
@@ -51,7 +53,15 @@ class RuleMatcherService:
         request_context: RequestContext,
         match_rules: list[MatchRule],
     ) -> RuleMatchResult:
-        """Проверяет все правила и останавливается на первом несовпадении."""
+        """Checks all rules and stops at the first mismatch.
+
+        Args:
+            request_context: Incoming request context.
+            match_rules: Matching rules to evaluate.
+
+        Returns:
+            Overall rule matching result.
+        """
         if not match_rules:
             return RuleMatchResult(matched=True, score=0, evaluations=[])
 
@@ -94,12 +104,27 @@ class RuleMatcherService:
         request_context: RequestContext,
         rule: MatchRule,
     ) -> Any | None:
-        """Извлекает из контекста запроса фактическое значение для правила."""
+        """Extracts the actual value for a rule from the request context.
+
+        Args:
+            request_context: Incoming request context.
+            rule: Rule whose actual value should be extracted.
+
+        Returns:
+            Extracted value or ``None``.
+        """
         extractor = self._value_extractors[rule.source]
         return extractor(request_context, rule)
 
     def _calculate_rule_score(self, rule: MatchRule) -> int:
-        """Вычисляет вклад matched rule в итоговый score."""
+        """Calculates the score contribution for a matched rule.
+
+        Args:
+            rule: Matched rule.
+
+        Returns:
+            Rule score contribution.
+        """
         return self._SOURCE_SCORE[rule.source] + self._OPERATOR_SCORE[rule.operator]
 
     @staticmethod
@@ -107,7 +132,15 @@ class RuleMatcherService:
         request_context: RequestContext,
         rule: MatchRule,
     ) -> Any | None:
-        """Извлекает значение заголовка по ключу из контекста запроса."""
+        """Extracts a header value by rule key from the request context.
+
+        Args:
+            request_context: Incoming request context.
+            rule: Rule that provides the header key.
+
+        Returns:
+            Header value or ``None``.
+        """
         return request_context.headers.get(rule.key)
 
     @staticmethod
@@ -115,7 +148,15 @@ class RuleMatcherService:
         request_context: RequestContext,
         rule: MatchRule,
     ) -> Any | None:
-        """Извлекает query-значение для ключа правила из контекста запроса."""
+        """Extracts a query value by rule key from the request context.
+
+        Args:
+            request_context: Incoming request context.
+            rule: Rule that provides the query key.
+
+        Returns:
+            Query value or ``None``.
+        """
         return request_context.query_params.get(rule.key)
 
     @staticmethod
@@ -123,7 +164,15 @@ class RuleMatcherService:
         request_context: RequestContext,
         rule: MatchRule,  # noqa: ARG004
     ) -> Any | None:
-        """Возвращает путь запроса из контекста."""
+        """Returns the request path from the context.
+
+        Args:
+            request_context: Incoming request context.
+            rule: Unused rule argument required by the extractor signature.
+
+        Returns:
+            Request path.
+        """
         return request_context.path
 
     @staticmethod
@@ -131,24 +180,56 @@ class RuleMatcherService:
         request_context: RequestContext,
         rule: MatchRule,
     ) -> Any | None:
-        """Извлекает значение поля из JSON-тела запроса."""
+        """Extracts a field value from the JSON request body.
+
+        Args:
+            request_context: Incoming request context.
+            rule: Rule that provides the JSON field key.
+
+        Returns:
+            JSON field value or ``None``.
+        """
         if isinstance(request_context.body, dict):
             return request_context.body.get(rule.key)
         return None
 
     @staticmethod
     def _eq(actual: Any, expected: Any) -> bool:
-        """Проверяет равенство фактического и ожидаемого значений."""
+        """Checks equality between actual and expected values.
+
+        Args:
+            actual: Actual request value.
+            expected: Expected rule value.
+
+        Returns:
+            True when values are equal; otherwise False.
+        """
         return actual == expected
 
     @staticmethod
     def _neq(actual: Any, expected: Any) -> bool:
-        """Проверяет, что существующее значение отличается от ожидаемого."""
+        """Checks that an existing actual value differs from expected.
+
+        Args:
+            actual: Actual request value.
+            expected: Expected rule value.
+
+        Returns:
+            True when actual exists and differs from expected; otherwise False.
+        """
         return actual is not None and actual != expected
 
     @staticmethod
     def _contains(actual: Any, expected: Any) -> bool:
-        """Проверяет, содержит ли фактическое значение ожидаемое."""
+        """Checks whether the actual value contains the expected value.
+
+        Args:
+            actual: Actual request value.
+            expected: Expected contained value.
+
+        Returns:
+            True when actual contains expected; otherwise False.
+        """
         if actual is None:
             return False
         if isinstance(actual, list | tuple | set):
@@ -159,7 +240,15 @@ class RuleMatcherService:
 
     @staticmethod
     def _in(actual: Any, expected: Any) -> bool:
-        """Проверяет, входит ли фактическое значение в ожидаемый список."""
+        """Checks whether the actual value belongs to the expected list.
+
+        Args:
+            actual: Actual request value.
+            expected: Expected list of values.
+
+        Returns:
+            True when actual is included in expected; otherwise False.
+        """
         if not isinstance(expected, list):
             return False
         if isinstance(actual, list):
@@ -168,5 +257,13 @@ class RuleMatcherService:
 
     @staticmethod
     def _exists(actual: Any, _: Any) -> bool:
-        """Проверяет наличие запрошенного значения."""
+        """Checks that the requested value exists.
+
+        Args:
+            actual: Actual request value.
+            _: Unused expected value.
+
+        Returns:
+            True when actual is not ``None``; otherwise False.
+        """
         return actual is not None

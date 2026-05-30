@@ -1,3 +1,5 @@
+"""Request contract for partially updating a mock."""
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem
@@ -5,7 +7,7 @@ from app.domain.shared import HttpMethod
 
 
 class UpdateMockRequest(BaseModel):
-    """Модель запроса для обновления существующего мока."""
+    """Request model for updating an existing mock."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -62,7 +64,17 @@ class UpdateMockRequest(BaseModel):
     @field_validator("path")
     @classmethod
     def validate_path(cls, value: str | None) -> str | None:
-        """Проверяет поле пути, если оно передано в запросе."""
+        """Validates the path field when it is provided in the request.
+
+        Args:
+            value: Optional path value from the request body.
+
+        Returns:
+            Validated path value or ``None``.
+
+        Raises:
+            ValueError: If the path is provided and does not start with ``/``.
+        """
         if value is not None and not value.startswith("/"):
             raise ValueError("path must start with '/'")
         return value

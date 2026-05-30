@@ -1,3 +1,5 @@
+"""Application service for resolving incoming requests to mocks."""
+
 import logging
 from typing import Final
 
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class MockResolverService:
-    """Подбирает наиболее подходящий мок для входящего запроса."""
+    """Selects the most suitable mock for an incoming request."""
 
     def __init__(
         self,
@@ -23,6 +25,15 @@ class MockResolverService:
         *,
         default_scope: str = "global",
     ) -> None:
+        """Initializes the mock resolver service.
+
+        Args:
+            mock_repository: Mock repository used to load candidates.
+            request_log_service: Service used to persist request log records.
+            scope_resolver: Scope resolver for the incoming request.
+            mock_resolution_service: Domain service that evaluates and ranks candidates.
+            default_scope: Fallback scope included in candidate lookup.
+        """
         self._mock_repository: Final[MockRepository] = mock_repository
         self._request_log_service: Final[RequestLogService] = request_log_service
         self._scope_resolver: Final[ScopeResolver] = scope_resolver
@@ -30,18 +41,16 @@ class MockResolverService:
         self._default_scope: Final[str] = default_scope
 
     async def resolve(self, request_context: RequestContext) -> ResolvedMock | None:
-        """Оркестратор резолва мока, включающий в себя:
+        """Orchestrates request-to-mock resolution and request logging.
 
-        1. получение кандидатов из репозитория,
-        2. резолвинг мока,
-        3. создание записи в журнале запросов.
+        The flow loads candidate mocks, resolves the best match, and writes the request
+        log record regardless of whether a mock was found.
 
         Args:
-            request_context: Контекст входящего запроса, содержащий метод, путь и другие
-                данные запроса.
+            request_context: Incoming request context with method, path, and request data.
 
         Returns:
-            Наиболее подходящий мок-кандидат, или None, если подходящих кандидатов нет.
+            Resolved mock when a matching candidate exists; otherwise ``None``.
         """
         scope: str = await self._scope_resolver.resolve_scope(request_context)
         candidate_scopes: list[str] = [scope]

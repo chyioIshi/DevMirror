@@ -1,10 +1,12 @@
+"""Request contract for verifying request log records."""
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.shared import HttpMethod
 
 
 class VerifyRequestLogRequest(BaseModel):
-    """Модель запроса для проверки наличия ожидаемого запроса в журнале."""
+    """Request model for checking that an expected request exists in the log."""
 
     model_config = ConfigDict(extra="forbid")
 

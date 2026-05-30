@@ -1,3 +1,5 @@
+"""Domain service for choosing the best mock for a request."""
+
 from collections.abc import Sequence
 from typing import Final
 
@@ -15,13 +17,19 @@ from app.domain.request_contexts import RequestContext
 
 
 class MockResolutionService:
-    """Резолвит наиболее подходящий мок из доступных кандидатов."""
+    """Resolves the best matching mock from available candidates."""
 
     def __init__(
         self,
         rule_matcher: RuleMatcherService,
         selection_policy: MockSelectionPolicy,
     ) -> None:
+        """Initializes the service with mock resolution dependencies.
+
+        Args:
+            rule_matcher: Service that matches mock rules against a request.
+            selection_policy: Policy used to rank matching candidates.
+        """
         self._rule_matcher: Final[RuleMatcherService] = rule_matcher
         self._selection_policy: Final[MockSelectionPolicy] = selection_policy
 
@@ -32,19 +40,16 @@ class MockResolutionService:
         *,
         requested_scope: str,
     ) -> MockResolutionResult:
-        """Оценивает кандидатов на соответствие запросу и возвращает наиболее
-        подходящий мок.
+        """Evaluates candidates against a request and returns the best matching mock.
 
         Args:
-            request_context: Контекст входящего запроса, содержащий метод,
-            путь и другие данные запроса.
-            candidates: Список кандидатов на мок, которые соответствуют методу,
-            пути и scope.
-            requested_scope: Scope, для которого выполняется разрешение.
+            request_context: Incoming request context with method, path, and request data.
+            candidates: Mock candidates matching method, path, and scope prefilters.
+            requested_scope: Scope requested for resolution.
 
         Returns:
-            Результат резолва, включающий запрошенный scope, найденный мок
-            (или None, если подходящих кандидатов нет) и подробности оценки всех кандидатов.
+            Resolution result containing the requested scope, selected mock, and
+            evaluation details for all candidates.
         """
         evaluations = await self.evaluate_candidates(
             request_context=request_context,
@@ -68,20 +73,15 @@ class MockResolutionService:
         *,
         requested_scope: str,
     ) -> list[CandidateEvaluation]:
-        """Матчит каждого кандидата с запросом
-        и ранжирует подходящие кандидаты по приоритету и прецедентности scope.
+        """Matches each candidate against the request and ranks matching candidates.
 
         Args:
-            request_context: Контекст входящего запроса, содержащий метод,
-            путь и другие данные запроса.
-            candidates: Список кандидатов на мок, которые соответствуют методу,
-            пути и scope.
-            requested_scope: Scope, для которого выполняется разрешение.
+            request_context: Incoming request context with method, path, and request data.
+            candidates: Mock candidates matching method, path, and scope prefilters.
+            requested_scope: Scope requested for resolution.
 
         Returns:
-            Список оценок кандидатов, включающий информацию
-            о соответствии каждого кандидата запросу и его ранг
-            среди подходящих кандидатов.
+            Candidate evaluations with match results and ranks for matching candidates.
         """
         evaluations: list[CandidateEvaluation] = []
         for candidate in candidates:
@@ -100,17 +100,14 @@ class MockResolutionService:
         *,
         requested_scope: str,
     ) -> ResolvedMock | None:
-        """Выбирает наиболее подходящего кандидата путем ранжирования.
+        """Selects the best matching candidate by rank.
 
         Args:
-            evaluations: Список оценок кандидатов, включающий информацию
-                о соответствии каждого кандидата запросу и его ранг
-                среди подходящих кандидатов.
-            requested_scope: Scope, для которого выполняется разрешение.
+            evaluations: Candidate evaluations with match results and optional ranks.
+            requested_scope: Scope requested for resolution.
 
         Returns:
-            Наиболее подходящий мок-кандидат, или None, если подходящих
-            кандидатов нет
+            Resolved mock when a matching candidate exists; otherwise ``None``.
         """
         matched_candidates = [evaluation for evaluation in evaluations if evaluation.matched]
         if not matched_candidates:
@@ -133,18 +130,15 @@ class MockResolutionService:
         candidate: Mock,
         requested_scope: str,
     ) -> CandidateEvaluation:
-        """Матчит одного кандидата с запросом и определяет его ранг на основании
-        метода rank_candidate класса MockSelectionPolicy.
+        """Matches one candidate against a request and computes its rank.
 
         Args:
-            request_context: Контекст входящего запроса, содержащий метод, путь и другие
-                данные запроса.
-            candidate: Кандидат на мок, который соответствует методу, пути и scope.
-            requested_scope: Scope, для которого выполняется разрешение.
+            request_context: Incoming request context with method, path, and request data.
+            candidate: Mock candidate matching method, path, and scope prefilters.
+            requested_scope: Scope requested for resolution.
 
         Returns:
-            Оценка кандидата (CandidateEvaluation), включающая информацию о соответствии кандидата
-            запросу и его ранге среди подходящих кандидатов.
+            Candidate evaluation with match result and optional rank.
         """
         rule_match_result: RuleMatchResult = await self._rule_matcher.match_rules(
             request_context,
@@ -168,15 +162,16 @@ class MockResolutionService:
 
     @staticmethod
     def _rank_for(evaluation: CandidateEvaluation) -> CandidateRank:
-        """Возвращает ранг кандидата, если он соответствует запросу,
-        или выбрасывает исключение, если ранг не определен.
+        """Returns the rank for a matched candidate evaluation.
 
         Args:
-            evaluation: Оценка кандидата, включающая информацию о соответствии кандидата
-                запросу и его ранге среди подходящих кандидатов.
+            evaluation: Candidate evaluation that must contain a rank.
 
         Returns:
-            Ранг кандидата (CandidateRank), если он соответствует запросу.
+            Candidate rank.
+
+        Raises:
+            ValueError: If the matched candidate evaluation has no rank.
         """
         if evaluation.rank is None:
             msg = "Matched candidate evaluation must have a rank."

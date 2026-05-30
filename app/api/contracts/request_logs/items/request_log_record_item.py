@@ -1,3 +1,5 @@
+"""Contract for one incoming request log record."""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -7,7 +9,7 @@ from app.api.contracts.request_logs.items.request_context_item import RequestCon
 
 
 class RequestLogRecordItem(BaseModel):
-    """Модель ответа для одной записи журнала запросов."""
+    """Response model for one request log record."""
 
     model_config = ConfigDict(extra="forbid")
 

@@ -1,8 +1,10 @@
+"""Enums used by domain models."""
+
 from enum import StrEnum
 
 
 class HttpMethod(StrEnum):
-    """Перечисляет HTTP-методы, поддерживаемые моками."""
+    """HTTP methods supported by mocks."""
 
     GET = "GET"
     POST = "POST"
@@ -14,7 +16,7 @@ class HttpMethod(StrEnum):
 
 
 class MatchSource(StrEnum):
-    """Перечисляет источники данных запроса для сопоставления правил."""
+    """Request data sources available for matching rules."""
 
     HEADER = "header"
     QUERY = "query"
@@ -23,7 +25,7 @@ class MatchSource(StrEnum):
 
 
 class MatchOperator(StrEnum):
-    """Перечисляет операторы, доступные для вычисления правил."""
+    """Operators available for evaluating rules."""
 
     EQ = "eq"
     NEQ = "neq"

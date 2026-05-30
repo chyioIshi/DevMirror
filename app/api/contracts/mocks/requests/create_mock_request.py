@@ -1,3 +1,5 @@
+"""Request contract for creating a mock."""
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem
@@ -5,7 +7,7 @@ from app.domain.shared import HttpMethod
 
 
 class CreateMockRequest(BaseModel):
-    """Модель запроса для создания нового мока."""
+    """Request model for creating a new mock."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -51,7 +53,17 @@ class CreateMockRequest(BaseModel):
     @field_validator("path")
     @classmethod
     def validate_path(cls, value: str) -> str:
-        """Проверяет, что путь создаваемого мока начинается с ``/``."""
+        """Validates that the created mock path starts with ``/``.
+
+        Args:
+            value: Path value from the request body.
+
+        Returns:
+            Validated path value.
+
+        Raises:
+            ValueError: If the path does not start with ``/``.
+        """
         if not value.startswith("/"):
             raise ValueError("path must start with '/'")
         return value

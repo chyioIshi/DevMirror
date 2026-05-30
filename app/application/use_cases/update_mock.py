@@ -1,3 +1,9 @@
+"""Use case for updating a mock.
+
+The module contains a temporarily extracted mock update function that
+coordinates aggregate loading, applying changes, and saving the result.
+"""
+
 import logging
 from typing import cast
 
@@ -11,7 +17,19 @@ logger = logging.getLogger(__name__)
 
 # TODO: временное решение
 async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
-    """UseCase обновления мока (вынес в usecase временно, чтобы не раздувать сервис)."""
+    """Updates an existing mock.
+
+    Args:
+        cmd: Command with the mock id and fields to change.
+        repo: Mock repository.
+
+    Returns:
+        Updated mock after repository persistence.
+
+    Raises:
+        ValidationError: If the command contains no changed fields.
+        MockNotFoundError: If no mock exists with the given id.
+    """
     if not cmd.has_changes():
         raise ValidationError(
             "Update command must contain at least one field",
@@ -64,6 +82,17 @@ async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
 
 
 def _set_value[T](value: T | UnsetType) -> T:
+    """Returns a provided update field value.
+
+    Args:
+        value: Update command field value.
+
+    Returns:
+        Field value without the `UNSET` sentinel.
+
+    Raises:
+        AssertionError: If the helper is called for an unset field.
+    """
     if value is UNSET:
         raise AssertionError("Update field value is unset")
     return cast(T, value)

@@ -1,3 +1,5 @@
+"""Request context contract in request log responses."""
+
 from datetime import datetime
 from typing import Any
 
@@ -7,7 +9,7 @@ from app.domain.shared import HttpMethod
 
 
 class RequestContextItem(BaseModel):
-    """Модель ответа с контекстом входящего запроса."""
+    """Response model with the incoming request context."""
 
     model_config = ConfigDict(extra="forbid")
 

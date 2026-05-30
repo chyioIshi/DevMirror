@@ -1,3 +1,5 @@
+"""JSON logging formatter."""
+
 import json
 import logging
 from datetime import UTC, datetime
@@ -7,9 +9,17 @@ _LOG_RECORD_FIELDS = set(logging.makeLogRecord({}).__dict__)
 
 
 class JsonLogFormatter(logging.Formatter):
-    """Форматтер для логов в JSON-формате."""
+    """Formats log records as compact JSON strings."""
 
     def format(self, record: logging.LogRecord) -> str:
+        """Formats a log record as JSON.
+
+        Args:
+            record: Log record to format.
+
+        Returns:
+            JSON-encoded log entry.
+        """
         payload: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(record.created, UTC)
             .isoformat()
@@ -61,6 +71,14 @@ class JsonLogFormatter(logging.Formatter):
         return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str)
 
     def _get_log_record_extra_fields(self, record: logging.LogRecord) -> dict[str, Any]:
+        """Returns custom fields attached to a log record.
+
+        Args:
+            record: Log record to inspect.
+
+        Returns:
+            Extra fields that are not part of the standard logging record.
+        """
         return {
             key: value
             for key, value in record.__dict__.items()

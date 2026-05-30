@@ -1,3 +1,5 @@
+"""MongoDB repository implementation for request logs."""
+
 from beanie import SortDirection
 
 from app.domain.request_logs.models import RequestLogRecord
@@ -6,16 +8,31 @@ from app.infra.mappers import RequestLogMapper
 
 
 class MongoRequestLogRepository:
-    """Сохраняет и читает журнал запросов в MongoDB."""
+    """Persists and reads request log records from MongoDB."""
 
     async def write(self, record: RequestLogRecord) -> RequestLogRecord:
-        """Сохраняет запись журнала запросов и возвращает её с id."""
+        """Persists a request log record and returns it with an id.
+
+        Args:
+            record: Request log record to persist.
+
+        Returns:
+            Persisted request log record.
+        """
         document = RequestLogMapper.to_document(record)
         await document.insert()
         return RequestLogMapper.to_domain(document)
 
     async def list_records(self, limit: int = 100, offset: int = 0) -> list[RequestLogRecord]:
-        """Возвращает записи журнала в порядке от новых к старым с поддержкой пагинации."""
+        """Returns request log records sorted by creation time with pagination.
+
+        Args:
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            Request log records.
+        """
         documents = (
             await RequestLogDocument.find_all()
             .sort(
@@ -28,5 +45,5 @@ class MongoRequestLogRepository:
         return [RequestLogMapper.to_domain(document) for document in documents]
 
     async def clear(self) -> None:
-        """Удаляет все записи журнала запросов."""
+        """Deletes all request log records."""
         await RequestLogDocument.find_all().delete()
