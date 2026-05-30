@@ -1,3 +1,5 @@
+"""Application service for request log operations."""
+
 import logging
 
 from app.domain.mocks.models.resolution import ResolvedMock
@@ -14,13 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class RequestLogService:
-    """Предоставляет операции чтения, очистки и проверки журнала запросов."""
+    """Provides read, clear, create, and verification operations for request logs."""
 
     def __init__(
         self,
         request_log_repository: RequestLogRepository,
     ) -> None:
-        """Инициализирует сервис репозиторием журнала запросов."""
+        """Initializes the service with a request log repository.
+
+        Args:
+            request_log_repository: Repository used to persist and read request log records.
+        """
         self._request_log_repository = request_log_repository
 
     async def create_record(
@@ -30,7 +36,13 @@ class RequestLogService:
         scope: str,
         resolved_mock: ResolvedMock | None,
     ) -> None:
-        """Сохраняет запись о входящем запросе и результате резолвинга."""
+        """Persists a record for an incoming request and its resolution result.
+
+        Args:
+            request_context: Incoming request context.
+            scope: Scope resolved for the request.
+            resolved_mock: Resolved mock or ``None`` when no mock matched.
+        """
         matched_mock = None
         response_status_code = None
         if resolved_mock is not None:
@@ -72,7 +84,15 @@ class RequestLogService:
         limit: int = 100,
         offset: int = 0,
     ) -> list[RequestLogRecord]:
-        """Возвращает записи журнала запросов с поддержкой пагинации."""
+        """Returns request log records with pagination support.
+
+        Args:
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            Request log records.
+        """
         records = await self._request_log_repository.list_records(
             limit=limit,
             offset=offset,
@@ -84,7 +104,7 @@ class RequestLogService:
         return records
 
     async def clear(self) -> None:
-        """Полностью очищает журнал запросов."""
+        """Completely clears the request log."""
         await self._request_log_repository.clear()
         logger.info("Журнал запросов очищен")
 
@@ -92,7 +112,14 @@ class RequestLogService:
         self,
         expectation: RequestLogVerificationExpectation,
     ) -> RequestLogVerificationResult:
-        """Проверяет, что журнал содержит ожидаемое количество запросов."""
+        """Checks whether the log contains the expected number of requests.
+
+        Args:
+            expectation: Verification expectation to match against request log records.
+
+        Returns:
+            Verification result with match status and actual count.
+        """
         records = await self._request_log_repository.list_records()
         actual_count = sum(1 for record in records if record.matches_expectation(expectation))
         matched = (

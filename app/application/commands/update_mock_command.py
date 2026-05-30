@@ -1,3 +1,5 @@
+"""Application commands for mock use cases."""
+
 from dataclasses import dataclass, field
 from typing import Final
 
@@ -6,6 +8,8 @@ from app.domain.shared import HttpMethod
 
 
 class UnsetType:
+    """Sentinel type for update fields that were not provided."""
+
     __slots__ = ()
 
 
@@ -14,7 +18,7 @@ UNSET: Final = UnsetType()
 
 @dataclass(slots=True, frozen=True)
 class UpdateMockCommand:
-    """Команда частичного обновления мока."""
+    """Command for partially updating a mock."""
 
     mock_id: str
     name: str | UnsetType = field(default=UNSET)
@@ -28,7 +32,11 @@ class UpdateMockCommand:
     tags: list[str] | UnsetType = field(default=UNSET)
 
     def has_changes(self) -> bool:
-        """Проверяет, содержит ли команда хотя бы одно изменяемое поле."""
+        """Checks whether the command contains at least one updated field.
+
+        Returns:
+            True when at least one field was provided; otherwise False.
+        """
         return any(
             value is not UNSET
             for value in (

@@ -1,3 +1,5 @@
+"""Application service for managing mock lifecycle operations."""
+
 import logging
 
 from app.application.commands import UpdateMockCommand
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class MockManagementService:
-    """Управляет созданием, изменением, активацией и удалением моков."""
+    """Coordinates creating, updating, activating, and deleting mocks."""
 
     def __init__(
         self,
@@ -23,12 +25,29 @@ class MockManagementService:
         conflict_service: MockConflictService,
         activation_policy: MockActivationPolicy,
     ) -> None:
+        """Initializes the mock management service.
+
+        Args:
+            repository: Mock repository port.
+            conflict_service: Domain service for detecting conflicting mocks.
+            activation_policy: Policy that decides which conflicting mocks to deactivate.
+        """
         self._repository = repository
         self._conflict_service = conflict_service
         self._activation_policy = activation_policy
 
     async def create_mock(self, mock: Mock) -> Mock:
-        """Сохраняет новый мок."""
+        """Persists a new mock.
+
+        Args:
+            mock: Mock aggregate to persist.
+
+        Returns:
+            Persisted mock.
+
+        Raises:
+            OperationNotAllowedError: If the mock is already active before creation.
+        """
         if mock.active:
             raise OperationNotAllowedError(
                 "Active mocks cannot be created directly",
@@ -57,7 +76,17 @@ class MockManagementService:
         return created_mock
 
     async def get_mock(self, mock_id: str) -> Mock:
-        """Возвращает мок по id или вызывает исключение, если он не найден."""
+        """Returns a mock by id or raises an error when it is not found.
+
+        Args:
+            mock_id: Mock identifier.
+
+        Returns:
+            Found mock.
+
+        Raises:
+            MockNotFoundError: If no mock exists with the given id.
+        """
         mock = await self._repository.get_by_id(mock_id)
         if mock is None:
             raise MockNotFoundError(mock_id=mock_id)
@@ -70,7 +99,16 @@ class MockManagementService:
         limit: int = 100,
         offset: int = 0,
     ) -> list[Mock]:
-        """Возвращает список моков, подходящих под заданные фильтры."""
+        """Returns mocks matching the provided filters.
+
+        Args:
+            filters: Filters applied to the mock list query.
+            limit: Maximum number of mocks to return.
+            offset: Number of mocks to skip.
+
+        Returns:
+            Matching mocks.
+        """
         mocks = await self._repository.list_mocks(filters, limit=limit, offset=offset)
         logger.debug(
             f"Получено {len(mocks)} моков (list_mocks)",
@@ -79,7 +117,18 @@ class MockManagementService:
         return mocks
 
     async def update_mock(self, cmd: UpdateMockCommand) -> Mock:
-        """Применяет частичное обновление к существующему моку."""
+        """Applies a partial update to an existing mock.
+
+        Args:
+            cmd: Update command containing the mock id and changed fields.
+
+        Returns:
+            Updated mock.
+
+        Raises:
+            MockNotFoundError: If no mock exists with the command id.
+            ValidationError: If the command contains no changed fields.
+        """
         updated_mock = await update_mock_use_case(cmd, self._repository)
         logger.info(
             "Обновлен мок %s с id=%s, path=%s, method=%s",
@@ -97,7 +146,14 @@ class MockManagementService:
         return updated_mock
 
     async def delete_mock(self, mock_id: str) -> None:
-        """Удаляет мок или вызывает исключение, если он не найден."""
+        """Deletes a mock or raises an error when it is not found.
+
+        Args:
+            mock_id: Mock identifier.
+
+        Raises:
+            MockNotFoundError: If no mock exists with the given id.
+        """
         await self.get_mock(mock_id)
         await self._repository.remove(mock_id)
         logger.info("Удален мок с id=%s (delete_mock)", mock_id, extra={"mock_id": mock_id})
@@ -108,7 +164,20 @@ class MockManagementService:
         *,
         deactivate_conflicting: bool = False,
     ) -> Mock:
-        """Активирует мок и при необходимости деактивирует конфликтующие."""
+        """Activates a mock and optionally deactivates conflicting mocks.
+
+        Args:
+            mock_id: Identifier of the mock to activate.
+            deactivate_conflicting: Whether active conflicting mocks should be deactivated.
+
+        Returns:
+            Activated mock.
+
+        Raises:
+            MockNotFoundError: If no mock exists with the given id.
+            OperationNotAllowedError: If the mock is already active.
+            MockConflictError: If active conflicts exist and should not be deactivated.
+        """
         current_mock = await self.get_mock(mock_id)
 
         if current_mock.active:
@@ -169,7 +238,18 @@ class MockManagementService:
         return activated_mock
 
     async def deactivate_mock(self, mock_id: str) -> Mock:
-        """Деактивирует указанный мок."""
+        """Deactivates the specified mock.
+
+        Args:
+            mock_id: Identifier of the mock to deactivate.
+
+        Returns:
+            Deactivated mock.
+
+        Raises:
+            MockNotFoundError: If no mock exists with the given id.
+            OperationNotAllowedError: If the mock is already inactive.
+        """
         current_mock = await self.get_mock(mock_id)
         if not current_mock.active:
             raise OperationNotAllowedError(

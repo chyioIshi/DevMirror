@@ -1,7 +1,7 @@
-"""UseCase для обновления мока.
+"""Use case for updating a mock.
 
-Модуль содержит временно вынесенную функцию обновления мока, которая
-координирует загрузку агрегата, применение изменений и сохранение результата.
+The module contains a temporarily extracted mock update function that
+coordinates aggregate loading, applying changes, and saving the result.
 """
 
 import logging
@@ -17,18 +17,18 @@ logger = logging.getLogger(__name__)
 
 # TODO: временное решение
 async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
-    """Обновляет существующий мок.
+    """Updates an existing mock.
 
     Args:
-        cmd: Команда с идентификатором мока и полями, которые нужно изменить.
-        repo: Репозиторий моков.
+        cmd: Command with the mock id and fields to change.
+        repo: Mock repository.
 
     Returns:
-        Обновленный мок после сохранения в репозитории.
+        Updated mock after repository persistence.
 
     Raises:
-        ValidationError: Если команда не содержит ни одного изменяемого поля.
-        MockNotFoundError: Если мок с указанным идентификатором не найден.
+        ValidationError: If the command contains no changed fields.
+        MockNotFoundError: If no mock exists with the given id.
     """
     if not cmd.has_changes():
         raise ValidationError(
@@ -82,16 +82,16 @@ async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
 
 
 def _set_value[T](value: T | UnsetType) -> T:
-    """Возвращает заданное значение обновляемого поля.
+    """Returns a provided update field value.
 
     Args:
-        value: Значение поля команды обновления.
+        value: Update command field value.
 
     Returns:
-        Значение поля без маркера `UNSET`.
+        Field value without the `UNSET` sentinel.
 
     Raises:
-        AssertionError: Если helper вызван для поля без заданного значения.
+        AssertionError: If the helper is called for an unset field.
     """
     if value is UNSET:
         raise AssertionError("Update field value is unset")

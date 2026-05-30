@@ -1,10 +1,12 @@
+"""Application-layer exceptions and error codes."""
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
 
 class ApplicationErrorCode(StrEnum):
-    """Коды ошибок application слоя."""
+    """Application-layer error codes."""
 
     MOCK_NOT_FOUND = "MOCK_NOT_FOUND"
     VALIDATION_ERROR = "VALIDATION_ERROR"
@@ -14,18 +16,19 @@ class ApplicationErrorCode(StrEnum):
 
 @dataclass(eq=False)
 class ApplicationError(Exception):
-    """Базовая ошибка use case или сервиса."""
+    """Base error for use cases and application services."""
 
     code: ApplicationErrorCode
     message: str
     details: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Initializes the base `Exception` with the application error message."""
         Exception.__init__(self, self.message)
 
 
 class MockNotFoundError(ApplicationError):
-    """Ошибка отсутствия мока при поиске по id."""
+    """Error raised when a mock cannot be found by id."""
 
     def __init__(
         self,
@@ -34,6 +37,13 @@ class MockNotFoundError(ApplicationError):
         *,
         mock_id: str | None = None,
     ) -> None:
+        """Creates a mock-not-found error.
+
+        Args:
+            message: Human-readable error description.
+            details: Additional error details.
+            mock_id: Optional mock id added to error details.
+        """
         error_details = dict(details or {})
         if mock_id is not None:
             error_details.setdefault("mock_id", mock_id)
@@ -45,13 +55,19 @@ class MockNotFoundError(ApplicationError):
 
 
 class ValidationError(ApplicationError):
-    """Ошибка валидации команды или данных в use case."""
+    """Error raised when command or use-case data is invalid."""
 
     def __init__(
         self,
         message: str = "Validation error",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Creates a validation error.
+
+        Args:
+            message: Human-readable error description.
+            details: Additional error details.
+        """
         super().__init__(
             code=ApplicationErrorCode.VALIDATION_ERROR,
             message=message,
@@ -60,7 +76,7 @@ class ValidationError(ApplicationError):
 
 
 class OperationNotAllowedError(ApplicationError):
-    """Ошибка неподдерживаемой операции в текущем application контексте."""
+    """Error raised when an operation is not allowed in the current application context."""
 
     def __init__(
         self,
@@ -69,6 +85,13 @@ class OperationNotAllowedError(ApplicationError):
         *,
         conflict: bool = False,
     ) -> None:
+        """Creates an operation-not-allowed error.
+
+        Args:
+            message: Human-readable error description.
+            details: Additional error details.
+            conflict: Whether the error should be treated as a conflict.
+        """
         self.conflict = conflict
         super().__init__(
             code=ApplicationErrorCode.OPERATION_NOT_ALLOWED,
@@ -78,13 +101,19 @@ class OperationNotAllowedError(ApplicationError):
 
 
 class ResourceAlreadyExistsError(ApplicationError):
-    """Ошибка попытки создать ресурс, который уже существует."""
+    """Error raised when trying to create a resource that already exists."""
 
     def __init__(
         self,
         message: str = "Resource already exists",
         details: dict[str, Any] | None = None,
     ) -> None:
+        """Creates a resource-already-exists error.
+
+        Args:
+            message: Human-readable error description.
+            details: Additional error details.
+        """
         super().__init__(
             code=ApplicationErrorCode.RESOURCE_ALREADY_EXISTS,
             message=message,
