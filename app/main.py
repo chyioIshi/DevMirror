@@ -1,3 +1,5 @@
+"""FastAPI app factory and runtime lifecycle wiring."""
+
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -22,6 +24,14 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Manage app startup and shutdown resources.
+
+    Args:
+        app: FastAPI app instance.
+
+    Yields:
+        Control back to FastAPI while the app is running.
+    """
     settings = get_app_settings()
     container = AppContainer(settings=settings)
     app.state.container = container
@@ -42,6 +52,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
+    """Create and configure the FastAPI app.
+
+    Returns:
+        Configured FastAPI app instance.
+    """
     app_settings = get_app_settings()
     configure_logging(app_settings)
 

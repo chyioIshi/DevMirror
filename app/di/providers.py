@@ -1,3 +1,5 @@
+"""FastAPI dependency providers backed by the App container."""
+
 from typing import Annotated
 
 from fastapi import Depends
@@ -16,30 +18,72 @@ ContainerDep = Annotated[AppContainer, Depends(get_container)]
 
 
 def get_app_settings(container: ContainerDep) -> AppSettings:
-    """Возвращает настройки приложения из контейнера."""
+    """Return app settings from the dependency container.
+
+    Args:
+        container: App dependency container.
+
+    Returns:
+        Runtime app settings.
+    """
     return container.settings
 
 
 def get_mock_management_service(container: ContainerDep) -> MockManagementService:
-    """Возвращает сервис управления моками из контейнера."""
+    """Return the mock management service from the dependency container.
+
+    Args:
+        container: App dependency container.
+
+    Returns:
+        Mock management app service.
+    """
     return container.mock_management_service
 
 
 def get_mock_resolver_service(container: ContainerDep) -> MockResolverService:
-    """Возвращает сервис резолва моков из контейнера."""
+    """Return the mock resolver service from the dependency container.
+
+    Args:
+        container: App dependency container.
+
+    Returns:
+        Mock resolver app service.
+    """
     return container.mock_resolver_service
 
 
 def get_mock_response_builder(container: ContainerDep) -> MockResponseBuilder:
-    """Возвращает билдер HTTP-ответов из контейнера."""
+    """Return the mock response builder from the dependency container.
+
+    Args:
+        container: App dependency container.
+
+    Returns:
+        Mock response builder adapter.
+    """
     return container.mock_response_builder
 
 
 def get_request_log_service(container: ContainerDep) -> RequestLogService:
-    """Возвращает сервис журнала запросов из контейнера."""
+    """Return the request log service from the dependency container.
+
+    Args:
+        container: App dependency container.
+
+    Returns:
+        Request log app service.
+    """
     return container.request_log_service
 
 
 def get_request_context_resolver(container: ContainerDep) -> RequestContextResolver:
-    """Возвращает резолвер контекста запроса (адаптер edge-уровня)."""
+    """Return the request context resolver from the dependency container.
+
+    Args:
+        container: App dependency container.
+
+    Returns:
+        Request context resolver adapter.
+    """
     return container.request_context_resolver
