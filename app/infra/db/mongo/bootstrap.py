@@ -1,5 +1,4 @@
-"""Модуль для инициализации соединения с MongoDB и регистрации
-моделей документов."""
+"""MongoDB connection initialization and Beanie document registration."""
 
 from inspect import isawaitable
 from typing import Any
@@ -12,7 +11,14 @@ from app.infra.db.mongo.documents import MockDocument, RequestLogDocument
 
 
 async def init_mongo(settings: AppSettings) -> AsyncMongoClient[dict[str, Any]]:
-    """Инициализирует соединение с MongoDB и регистрирует модели документов."""
+    """Initializes MongoDB connection and registers Beanie document models.
+
+    Args:
+        settings: Application settings with MongoDB connection parameters.
+
+    Returns:
+        Initialized asynchronous MongoDB client.
+    """
     client: AsyncMongoClient[dict[str, Any]] = AsyncMongoClient(str(settings.mongo_dsn))
     await init_beanie(
         database=client[settings.mongo_database],
@@ -22,6 +28,11 @@ async def init_mongo(settings: AppSettings) -> AsyncMongoClient[dict[str, Any]]:
 
 
 async def close_mongo(client: AsyncMongoClient[dict[str, Any]]) -> None:
+    """Closes a MongoDB client.
+
+    Args:
+        client: Asynchronous MongoDB client to close.
+    """
     close_result = client.close()
     if isawaitable(close_result):
         await close_result

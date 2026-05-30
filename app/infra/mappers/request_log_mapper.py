@@ -1,3 +1,5 @@
+"""Mapper between Mongo request log documents and domain models."""
+
 from beanie import PydanticObjectId
 
 from app.domain.request_contexts import RequestContext
@@ -10,11 +12,18 @@ from app.infra.db.mongo.documents import (
 
 
 class RequestLogMapper:
-    """Преобразует request logs между Mongo-документами и доменными моделями."""
+    """Converts request logs between Mongo documents and domain models."""
 
     @staticmethod
     def to_domain(document: RequestLogDocument) -> RequestLogRecord:
-        """Преобразует сохранённый Mongo-документ в доменную модель."""
+        """Converts a Mongo request log document to a domain model.
+
+        Args:
+            document: Mongo request log document.
+
+        Returns:
+            Domain request log record.
+        """
         return RequestLogRecord(
             id=str(document.id),
             request_context=RequestContext(
@@ -46,7 +55,14 @@ class RequestLogMapper:
 
     @staticmethod
     def to_document(record: RequestLogRecord) -> RequestLogDocument:
-        """Преобразует доменную модель в Mongo-документ."""
+        """Converts a domain request log record to a Mongo document.
+
+        Args:
+            record: Domain request log record.
+
+        Returns:
+            Mongo request log document.
+        """
         document = RequestLogDocument(
             request_context=RequestContextDocument(
                 id=record.request_context.id,

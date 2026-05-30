@@ -1,23 +1,42 @@
+"""Request body access helpers for FastAPI requests."""
+
 from typing import Any, Protocol
 
 from fastapi import Request
 
 
 class RequestDataAccessor(Protocol):
-    """Описывает доступ к кэшированным представлениям тела FastAPI-запроса.
-
-    Это infra-уровневый порт: он привязан к транспорту FastAPI и используется
-    адаптерами, которые превращают сырой Request в доменный RequestContext.
-    """
+    """Provides safe access to a cached FastAPI request body."""
 
     async def get_body_bytes(self, request: Request) -> bytes:
-        """Возвращает сырые байты тела запроса."""
+        """Returns raw request body bytes.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            Raw request body bytes.
+        """
         ...
 
     async def get_text(self, request: Request) -> str | None:
-        """Возвращает тело запроса как декодированный текст, если оно доступно."""
+        """Returns request body as text.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            UTF-8 text body or ``None`` for empty bodies.
+        """
         ...
 
     async def get_json(self, request: Request) -> Any | None:
-        """Возвращает разобранное JSON-тело, если оно доступно."""
+        """Returns parsed JSON body.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            Parsed JSON value or ``None`` when the body is empty.
+        """
         ...

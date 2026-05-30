@@ -1,3 +1,5 @@
+"""Logging configuration helpers."""
+
 import logging.config
 from typing import Any
 
@@ -5,10 +7,23 @@ from app.config import AppSettings
 
 
 def configure_logging(settings: AppSettings) -> None:
+    """Configures Python logging for the application.
+
+    Args:
+        settings: Application settings with logging configuration.
+    """
     logging.config.dictConfig(_build_logging_config(settings))
 
 
 def _build_logging_config(settings: AppSettings) -> dict[str, Any]:
+    """Builds a dictionary logging configuration.
+
+    Args:
+        settings: Application settings with logging level.
+
+    Returns:
+        Dictionary compatible with `logging.config.dictConfig`.
+    """
     log_level = settings.log_level.upper()
 
     return {

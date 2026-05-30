@@ -1,3 +1,5 @@
+"""MongoDB repository implementation for mocks."""
+
 from collections.abc import Sequence
 
 from beanie import PydanticObjectId, SortDirection
@@ -24,10 +26,21 @@ _CONNECTION_ERRORS = (
 
 
 class MongoMockRepository:
-    """Сохраняет и запрашивает определения моков в MongoDB."""
+    """Persists and queries mock definitions in MongoDB."""
 
     async def add(self, mock: Mock) -> Mock:
-        """Создаёт новый документ мока и возвращает сохранённую доменную модель."""
+        """Creates a new mock document and returns the persisted domain model.
+
+        Args:
+            mock: Domain mock model to persist.
+
+        Returns:
+            Persisted mock.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If persistence fails for another reason.
+        """
         try:
             document = MockMapper.to_document(mock)
             await document.insert()
@@ -38,9 +51,17 @@ class MongoMockRepository:
             raise RepositoryError(details={"operation": "add"}) from exc
 
     async def get_by_id(self, mock_id: str) -> Mock | None:
-        """Возвращает мок по идентификатору.
+        """Returns a mock by id.
 
-        Возвращает ``None`` для некорректного либо отсутствующего id.
+        Args:
+            mock_id: Mock identifier.
+
+        Returns:
+            Mock when found; otherwise ``None``.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If lookup fails for another reason.
         """
         object_id = self._parse_object_id(mock_id)
         if object_id is None:
@@ -60,7 +81,18 @@ class MongoMockRepository:
             ) from exc
 
     async def save(self, mock: Mock) -> Mock:
-        """Заменяет существующий Mongo-документ переданным состоянием мока."""
+        """Replaces an existing Mongo document with the provided mock state.
+
+        Args:
+            mock: Domain mock model to persist.
+
+        Returns:
+            Saved mock.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If persistence fails for another reason.
+        """
         try:
             document = MockMapper.to_document(mock)
             await document.replace()
@@ -75,7 +107,18 @@ class MongoMockRepository:
             ) from exc
 
     async def remove(self, mock_id: str) -> bool:
-        """Удаляет мок по id и сообщает, был ли удалён документ."""
+        """Deletes a mock by id.
+
+        Args:
+            mock_id: Mock identifier.
+
+        Returns:
+            True when a document was deleted; otherwise False.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If deletion fails for another reason.
+        """
         object_id = self._parse_object_id(mock_id)
         if object_id is None:
             return False
@@ -100,7 +143,20 @@ class MongoMockRepository:
         limit: int = 100,
         offset: int = 0,
     ) -> list[Mock]:
-        """Возвращает список моков с учётом фильтров и поддержкой пагинации."""
+        """Returns mocks with filters and pagination support.
+
+        Args:
+            filters: Filters applied to the query.
+            limit: Maximum number of mocks to return.
+            offset: Number of mocks to skip.
+
+        Returns:
+            Matching mocks.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If query execution fails for another reason.
+        """
         try:
             query = MockDocument.find_all()
 
@@ -142,7 +198,20 @@ class MongoMockRepository:
         path: str,
         scopes: Sequence[str],
     ) -> list[Mock]:
-        """Возвращает активные моки, подходящие для обработки runзапроса."""
+        """Returns active mocks suitable for request resolution.
+
+        Args:
+            method: Request HTTP method.
+            path: Request path.
+            scopes: Scopes allowed for resolution.
+
+        Returns:
+            Candidate mocks.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If query execution fails for another reason.
+        """
         normalized_method = method if isinstance(method, HttpMethod) else HttpMethod(method)
 
         try:
@@ -185,7 +254,14 @@ class MongoMockRepository:
 
     @staticmethod
     def _parse_object_id(mock_id: str) -> PydanticObjectId | None:
-        """Безопасно преобразует строковый идентификатор в ``PydanticObjectId``."""
+        """Safely converts a string identifier to `PydanticObjectId`.
+
+        Args:
+            mock_id: String mock identifier.
+
+        Returns:
+            Parsed object id or ``None`` when the value is invalid.
+        """
         try:
             return PydanticObjectId(mock_id)
         except Exception:

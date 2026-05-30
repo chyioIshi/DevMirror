@@ -1,3 +1,5 @@
+"""MongoDB documents used to persist request log records."""
+
 from datetime import UTC, datetime
 from typing import Any
 
@@ -9,7 +11,7 @@ from app.domain.shared import HttpMethod
 
 
 class RequestContextDocument(BaseModel):
-    """Вложенный Mongo-документ контекста запроса."""
+    """Nested Mongo document describing request context data."""
 
     id: str
     method: HttpMethod
@@ -21,7 +23,7 @@ class RequestContextDocument(BaseModel):
 
 
 class MatchedMockDocument(BaseModel):
-    """Вложенный Mongo-документ, описывающий найденный мок в журнале."""
+    """Nested Mongo document describing the mock matched to a request."""
 
     id: str
     name: str
@@ -33,7 +35,7 @@ class MatchedMockDocument(BaseModel):
 
 
 class RequestLogDocument(Document):
-    """Mongo-документ для хранения записи журнала запросов."""
+    """Mongo document used to persist request log records."""
 
     request_context: RequestContextDocument
     matched_mock: MatchedMockDocument | None = None
@@ -42,7 +44,7 @@ class RequestLogDocument(Document):
     created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
     class Settings:
-        """Настройки коллекции Beanie и индексы журнала запросов."""
+        """Beanie collection settings for request logs."""
 
         name: str = "request_logs"
         indexes: list[list[tuple[str, int]]] = [

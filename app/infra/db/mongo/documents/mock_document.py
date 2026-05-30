@@ -1,3 +1,5 @@
+"""MongoDB documents used to persist mock definitions."""
+
 from datetime import UTC, datetime
 from typing import Any
 
@@ -9,7 +11,7 @@ from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
 class MatchRuleDocument(BaseModel):
-    """Вложенный Mongo-документ, описывающий одно правило сопоставления запроса."""
+    """Nested Mongo document describing one request matching rule."""
 
     source: MatchSource
     key: str = ""
@@ -18,7 +20,7 @@ class MatchRuleDocument(BaseModel):
 
 
 class MockResponseDocument(BaseModel):
-    """Вложенный Mongo-документ, описывающий подставляемый HTTP-ответ."""
+    """Nested Mongo document describing a mock HTTP response."""
 
     status_code: int
     headers: dict[str, str] = Field(default_factory=dict)
@@ -26,7 +28,7 @@ class MockResponseDocument(BaseModel):
 
 
 class MockDocument(Document):
-    """Основной Mongo-документ для хранения определений моков."""
+    """Mongo document used to persist configured mocks."""
 
     name: str
     description: str | None = None
@@ -42,7 +44,7 @@ class MockDocument(Document):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
     class Settings:
-        """Настройки коллекции Beanie и индексы для моков."""
+        """Beanie collection settings for mocks."""
 
         name: str = "mocks"
         indexes: list[list[tuple[str, int]]] = [

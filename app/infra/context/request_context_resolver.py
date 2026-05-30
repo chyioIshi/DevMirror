@@ -1,3 +1,5 @@
+"""Infrastructure adapter for building request contexts from FastAPI requests."""
+
 from fastapi import Request
 
 from app.domain.request_contexts import RequestContext
@@ -6,14 +8,25 @@ from app.infra.request import RequestDataAccessor
 
 
 class RequestContextResolver:
-    """Собирает нормализованный контекст запроса из сырых данных FastAPI."""
+    """Builds domain request contexts from FastAPI request objects."""
 
     def __init__(self, request_data_accessor: RequestDataAccessor) -> None:
-        """Инициализирует резолвер accessor-ом тела запроса."""
+        """Initializes the resolver with a request data accessor.
+
+        Args:
+            request_data_accessor: Adapter that reads request body data.
+        """
         self._request_data_accessor = request_data_accessor
 
     async def resolve(self, request: Request) -> RequestContext:
-        """Преобразует сырой HTTP-запрос в доменную модель контекста."""
+        """Converts an HTTP request into a domain request context.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            Domain request context built from the HTTP request.
+        """
         body = await self._request_data_accessor.get_json(request)
         if body is None:
             body = await self._request_data_accessor.get_text(request)
@@ -28,7 +41,14 @@ class RequestContextResolver:
 
     @staticmethod
     def _collect_query_params(request: Request) -> dict[str, str | list[str]]:
-        """Собирает query-параметры, сохраняя одиночные и множественные значения."""
+        """Collects query parameters while preserving repeated values.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            Query parameter dictionary where repeated keys are represented as lists.
+        """
         query_params: dict[str, str | list[str]] = {}
         for key in request.query_params:
             values = request.query_params.getlist(key)

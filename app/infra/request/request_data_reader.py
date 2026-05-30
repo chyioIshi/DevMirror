@@ -1,3 +1,5 @@
+"""Cached request body reader for incoming requests."""
+
 import json
 from typing import Any, cast
 
@@ -5,12 +7,19 @@ from fastapi import Request
 
 
 class RequestDataReader:
-    """Кэширует разные представления тела входящего запроса."""
+    """Provides cached reads of an incoming request body."""
 
     _JSON_NOT_PARSED: object = object()
 
     async def get_body_bytes(self, request: Request) -> bytes:
-        """Возвращает сырые байты тела запроса и кэширует их в состоянии запроса."""
+        """Returns raw request body bytes and caches them in request state.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            Raw request body bytes.
+        """
         cached: bytes | None = getattr(request.state, "cached_body_bytes", None)
         if cached is not None:
             return cached
@@ -20,7 +29,14 @@ class RequestDataReader:
         return body
 
     async def get_text(self, request: Request) -> str | None:
-        """Возвращает тело запроса как UTF-8 текст."""
+        """Returns request body as UTF-8 text.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            UTF-8 text body or ``None`` for empty bodies.
+        """
         cached: str | None = getattr(request.state, "cached_body_text", None)
         if cached is not None:
             return cached
@@ -35,7 +51,14 @@ class RequestDataReader:
         return text
 
     async def get_json(self, request: Request) -> Any | None:
-        """Разбирает тело запроса как JSON и кэширует результат."""
+        """Parses request body as JSON and caches the result.
+
+        Args:
+            request: FastAPI request object.
+
+        Returns:
+            Parsed JSON value or ``None`` when parsing fails or body is empty.
+        """
         cached: object = getattr(request.state, "cached_body_json", self._JSON_NOT_PARSED)
         if cached is not self._JSON_NOT_PARSED:
             return cast(Any | None, cached)
