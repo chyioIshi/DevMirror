@@ -1,6 +1,9 @@
-"""Маппер между контрактами проверки журнала запросов и доменными моделями."""
+"""Mapper between request log verification contracts and domain models."""
 
-from app.api.contracts.request_logs import VerifyRequestLogRequest, VerifyRequestLogResponse
+from app.api.contracts.request_logs import (
+    VerifyRequestLogRequest,
+    VerifyRequestLogResponse,
+)
 from app.domain.request_logs.models.verification import (
     RequestLogVerificationExpectation,
     RequestLogVerificationResult,
@@ -8,13 +11,20 @@ from app.domain.request_logs.models.verification import (
 
 
 class RequestLogVerificationContractMapper:
-    """Преобразует REQUEST DTO и результат проверки журнала запросов."""
+    """Converts request DTOs and request log verification results."""
 
     @staticmethod
     def to_domain_request_log_verification_model(
         request: VerifyRequestLogRequest,
     ) -> RequestLogVerificationExpectation:
-        """Преобразует REQUEST DTO запроса проверки в доменную модель ожиданий."""
+        """Converts a verification request DTO to a domain expectation model.
+
+        Args:
+            request: API request DTO with verification criteria.
+
+        Returns:
+            Domain expectation model for request log verification.
+        """
         return RequestLogVerificationExpectation(
             path=request.path,
             method=request.method,
@@ -26,7 +36,14 @@ class RequestLogVerificationContractMapper:
     def from_domain_request_log_verification_model(
         result: RequestLogVerificationResult,
     ) -> VerifyRequestLogResponse:
-        """Преобразует доменный результат проверки в RESPONSE DTO ответа."""
+        """Converts a domain verification result to a response DTO.
+
+        Args:
+            result: Domain request log verification result.
+
+        Returns:
+            API response DTO with verification outcome.
+        """
         return VerifyRequestLogResponse(
             matched=result.matched,
             actual_count=result.actual_count,

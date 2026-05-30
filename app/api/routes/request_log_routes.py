@@ -1,4 +1,4 @@
-"""Routes для просмотра, проверки и очистки журнала запросов."""
+"""Routes for reading, verifying, and clearing request logs."""
 
 from typing import Annotated
 
@@ -29,14 +29,23 @@ async def list_request_logs(
     request_log_service: RequestLogServiceDep,
     pagination: Annotated[PaginationRequest | None, Body()] = None,
 ) -> RequestLogListResponse:
-    """Возвращает записи журнала запросов с поддержкой пагинации."""
+    """Returns request log records with pagination support.
+
+    Args:
+        request_log_service: Application service for request log operations.
+        pagination: Optional pagination request body.
+
+    Returns:
+        API response DTO with request log records.
+    """
     pagination = pagination or PaginationRequest()
     items = await request_log_service.list_records(
         limit=pagination.limit,
         offset=pagination.offset,
     )
     response_items = [
-        RequestLogRecordContractMapper.from_domain_request_log_record_model(item) for item in items
+        RequestLogRecordContractMapper.from_domain_request_log_record_model(item)
+        for item in items  # noqa: E501
     ]
     return RequestLogListResponse(items=response_items, total=len(response_items))
 
@@ -46,17 +55,32 @@ async def verify_request_logs(
     payload: VerifyRequestLogRequest,
     request_log_service: RequestLogServiceDep,
 ) -> VerifyRequestLogResponse:
-    """Проверяет, что в журнале есть ожидаемые запросы."""
+    """Checks that the expected requests exist in the log.
+
+    Args:
+        payload: API request body with verification criteria.
+        request_log_service: Application service for request log operations.
+
+    Returns:
+        API response DTO with verification result.
+    """
     result = await request_log_service.verify(
         RequestLogVerificationContractMapper.to_domain_request_log_verification_model(payload)
     )
-    return RequestLogVerificationContractMapper.from_domain_request_log_verification_model(result)
+    return RequestLogVerificationContractMapper.from_domain_request_log_verification_model(result)  # noqa: E501
 
 
 @request_log_router.delete("", status_code=status.HTTP_200_OK)
 async def clear_request_logs(
     request_log_service: RequestLogServiceDep,
 ) -> Response:
-    """Очищает журнал запросов."""
+    """Clears the request log.
+
+    Args:
+        request_log_service: Application service for request log operations.
+
+    Returns:
+        Empty HTTP 200 response.
+    """
     await request_log_service.clear()
     return Response(status_code=status.HTTP_200_OK)

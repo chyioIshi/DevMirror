@@ -1,4 +1,4 @@
-"""Контракт ответа со списком моков."""
+"""Response contract for a list of mocks."""
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -6,7 +6,7 @@ from app.api.contracts.mocks.responses.mock_response_item import MockResponseIte
 
 
 class MockListResponse(BaseModel):
-    """Модель ответа со списком моков и их количеством."""
+    """Response model containing a list of mocks and their count."""
 
     model_config = ConfigDict(extra="forbid")
 

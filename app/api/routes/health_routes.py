@@ -1,4 +1,4 @@
-"""Healthcheck route приложения."""
+"""Application healthcheck route."""
 
 from fastapi import APIRouter
 
@@ -9,9 +9,9 @@ health_router = APIRouter(tags=["health"])
 
 @health_router.get("", response_model=HealthResponse)
 async def healthcheck() -> HealthResponse:
-    """Возвращает статус работоспособности приложения.
+    """Returns the application health status.
 
     Returns:
-        Ответ healthcheck со статусом `ok`.
+        Healthcheck response with `ok` status.
     """
     return HealthResponse(status="ok")

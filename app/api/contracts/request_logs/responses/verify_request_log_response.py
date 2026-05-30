@@ -1,10 +1,10 @@
-"""Контракт ответа с результатом проверки журнала запросов."""
+"""Response contract with request log verification result."""
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class VerifyRequestLogResponse(BaseModel):
-    """Модель ответа с результатом проверки журнала."""
+    """Response model with the request log verification result."""
 
     model_config = ConfigDict(extra="forbid")
 

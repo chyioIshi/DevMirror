@@ -1,4 +1,4 @@
-"""Контракт правила сопоставления запроса для API моков."""
+"""Request matching rule contract for mock APIs."""
 
 from typing import Any
 
@@ -8,7 +8,7 @@ from app.domain.shared import MatchOperator, MatchSource
 
 
 class MatchRuleItem(BaseModel):
-    """Вложенная DTO-модель правила сопоставления мока."""
+    """Nested DTO model for a mock matching rule."""
 
     model_config = ConfigDict(extra="forbid")
 

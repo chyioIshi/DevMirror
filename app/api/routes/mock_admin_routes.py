@@ -1,4 +1,4 @@
-"""Admin routes для управления моками."""
+"""Admin routes for managing mocks."""
 
 from typing import Annotated
 
@@ -24,12 +24,20 @@ MockManagementServiceDep = Annotated[
 ]
 
 
-@mock_admin_router.post("", response_model=MockResponseItem, status_code=status.HTTP_201_CREATED)
+@mock_admin_router.post("", response_model=MockResponseItem, status_code=status.HTTP_201_CREATED)  # noqa: E501
 async def create_mock(
     request: CreateMockRequest,
     mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
-    """Создает новый мок на основе данных из запроса."""
+    """Creates a new mock from request data.
+
+    Args:
+        request: API request body with mock data.
+        mock_managment_service: Application service for mock management.
+
+    Returns:
+        API response DTO for the created mock.
+    """
     created_mock = await mock_managment_service.create_mock(
         MockContractMapper.to_domain_mock_model(request)
     )
@@ -41,7 +49,15 @@ async def get_mock(
     mock_id: str,
     mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
-    """Возвращает мок по id или 404, если он не найден."""
+    """Returns a mock by id or 404 when it is not found.
+
+    Args:
+        mock_id: Id of the requested mock.
+        mock_managment_service: Application service for mock management.
+
+    Returns:
+        API response DTO for the requested mock.
+    """
     finded_mock = await mock_managment_service.get_mock(mock_id)
     return MockContractMapper.from_domain_mock_model(finded_mock)
 
@@ -55,15 +71,26 @@ async def list_mocks(
     scope: Annotated[str | None, Query()] = None,
     pagination: Annotated[PaginationRequest | None, Body()] = None,
 ) -> MockListResponse:
-    """Возвращает список моков, подходящих под заданные фильтры,
-    с учетом пагинации."""
+    """Returns mocks matching the provided filters with pagination.
+
+    Args:
+        mock_managment_service: Application service for mock management.
+        path: Optional path filter.
+        method: Optional HTTP method filter.
+        active: Optional activation state filter.
+        scope: Optional scope filter.
+        pagination: Optional pagination request body.
+
+    Returns:
+        API response DTO with matching mocks.
+    """
     pagination = pagination or PaginationRequest()
     items = await mock_managment_service.list_mocks(
         MockListFilters(path=path, method=method, active=active, scope=scope),
         limit=pagination.limit,
         offset=pagination.offset,
     )
-    mock_response_items = [MockContractMapper.from_domain_mock_model(item) for item in items]
+    mock_response_items = [MockContractMapper.from_domain_mock_model(item) for item in items]  # noqa: E501
     return MockListResponse(items=mock_response_items, total=len(mock_response_items))
 
 
@@ -73,8 +100,16 @@ async def update_mock(
     request: UpdateMockRequest,
     mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
-    """Применяет частичное обновление к существующему моку
-    или возвращает 404, если он не найден."""
+    """Applies a partial update to an existing mock or returns 404 when it is not found.
+
+    Args:
+        mock_id: Id of the mock being updated.
+        request: API request body with partial update data.
+        mock_managment_service: Application service for mock management.
+
+    Returns:
+        API response DTO for the updated mock.
+    """
     updated_mock = await mock_managment_service.update_mock(
         MockContractMapper.to_update_mock_command(mock_id, request),
     )
@@ -86,7 +121,15 @@ async def delete_mock(
     mock_id: str,
     mock_managment_service: MockManagementServiceDep,
 ) -> Response:
-    """Удаляет мок по id или возвращает 404, если он не найден."""
+    """Deletes a mock by id or returns 404 when it is not found.
+
+    Args:
+        mock_id: Id of the mock being deleted.
+        mock_managment_service: Application service for mock management.
+
+    Returns:
+        Empty HTTP 200 response.
+    """
     await mock_managment_service.delete_mock(mock_id)
     return Response(status_code=status.HTTP_200_OK)
 
@@ -97,8 +140,16 @@ async def activate_mock(
     mock_managment_service: MockManagementServiceDep,
     deactivate_conflicting: Annotated[bool, Query()] = False,
 ) -> MockResponseItem:
-    """Активирует мок по id, при необходимости деактивируя конфликтующие моки,
-    или возвращает 404, если он не найден."""
+    """Activates a mock by id, optionally deactivating conflicting mocks.
+
+    Args:
+        mock_id: Id of the mock being activated.
+        mock_managment_service: Application service for mock management.
+        deactivate_conflicting: Whether conflicting mocks should be deactivated.
+
+    Returns:
+        API response DTO for the activated mock.
+    """
     activated_mock = await mock_managment_service.activate_mock(
         mock_id,
         deactivate_conflicting=deactivate_conflicting,
@@ -111,6 +162,14 @@ async def deactivate_mock(
     mock_id: str,
     mock_managment_service: MockManagementServiceDep,
 ) -> MockResponseItem:
-    """Деактивирует мок по id или возвращает 404, если он не найден."""
+    """Deactivates a mock by id or returns 404 when it is not found.
+
+    Args:
+        mock_id: Id of the mock being deactivated.
+        mock_managment_service: Application service for mock management.
+
+    Returns:
+        API response DTO for the deactivated mock.
+    """
     deactivated_mock = await mock_managment_service.deactivate_mock(mock_id)
     return MockContractMapper.from_domain_mock_model(deactivated_mock)

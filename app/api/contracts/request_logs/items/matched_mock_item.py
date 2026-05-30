@@ -1,4 +1,4 @@
-"""Контракт объекта c информацией о моке, зарезолвленным для запроса."""
+"""Contract for mock information resolved for a request."""
 
 from typing import Any
 
@@ -8,7 +8,7 @@ from app.domain.shared import HttpMethod
 
 
 class MatchedMockItem(BaseModel):
-    """Модель ответа с данными мока, совпавшего с запросом."""
+    """Response model with data for the mock matched to a request."""
 
     model_config = ConfigDict(extra="forbid")
 

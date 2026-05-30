@@ -1,4 +1,4 @@
-"""Регистрация и реализация HTTP-обработчиков ошибок."""
+"""Registration and implementation of HTTP error handlers."""
 
 import logging
 from typing import Any, cast
@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Регистрирует обработчики доменных, прикладных и инфраструктурных ошибок.
+    """Registers handlers for domain, application, and infrastructure errors.
 
     Args:
-        app: Экземпляр FastAPI, в который добавляются exception handlers.
+        app: FastAPI instance where exception handlers are added.
     """
     app.add_exception_handler(MockNotFoundError, mock_not_found_handler)
     app.add_exception_handler(MockConflictError, mock_conflict_handler)
@@ -34,14 +34,14 @@ def register_exception_handlers(app: FastAPI) -> None:
 
 
 async def mock_not_found_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Преобразует ошибку отсутствующего мока в HTTP 404.
+    """Converts a missing mock error to HTTP 404.
 
     Args:
-        request: Входящий HTTP-запрос.
-        exc: Исключение, переданное FastAPI для обработчика.
+        request: Incoming HTTP request.
+        exc: Exception passed by FastAPI to the handler.
 
     Returns:
-        JSON-ответ с описанием ошибки.
+        JSON response with error details.
     """
     error = cast(MockNotFoundError, exc)
     _log_handled_exception(logging.INFO, request, error, status.HTTP_404_NOT_FOUND)
@@ -49,14 +49,14 @@ async def mock_not_found_handler(request: Request, exc: Exception) -> JSONRespon
 
 
 async def mock_conflict_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Преобразует ошибку конфликта моков в HTTP 409.
+    """Converts a mock conflict error to HTTP 409.
 
     Args:
-        request: Входящий HTTP-запрос.
-        exc: Исключение, переданное FastAPI для обработчика.
+        request: Incoming HTTP request.
+        exc: Exception passed by FastAPI to the handler.
 
     Returns:
-        JSON-ответ с описанием ошибки.
+        JSON response with error details.
     """
     error = cast(MockConflictError, exc)
     _log_handled_exception(logging.WARNING, request, error, status.HTTP_409_CONFLICT)
@@ -64,14 +64,14 @@ async def mock_conflict_handler(request: Request, exc: Exception) -> JSONRespons
 
 
 async def domain_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Преобразует доменную ошибку в HTTP 400.
+    """Converts a domain error to HTTP 400.
 
     Args:
-        request: Входящий HTTP-запрос.
-        exc: Исключение, переданное FastAPI для обработчика.
+        request: Incoming HTTP request.
+        exc: Exception passed by FastAPI to the handler.
 
     Returns:
-        JSON-ответ с описанием ошибки.
+        JSON response with error details.
     """
     error = cast(DomainError, exc)
     _log_handled_exception(logging.WARNING, request, error, status.HTTP_400_BAD_REQUEST)
@@ -79,14 +79,14 @@ async def domain_error_handler(request: Request, exc: Exception) -> JSONResponse
 
 
 async def application_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Преобразует прикладную ошибку в подходящий HTTP-статус.
+    """Converts an application error to the appropriate HTTP status.
 
     Args:
-        request: Входящий HTTP-запрос.
-        exc: Исключение, переданное FastAPI для обработчика.
+        request: Incoming HTTP request.
+        exc: Exception passed by FastAPI to the handler.
 
     Returns:
-        JSON-ответ с описанием ошибки.
+        JSON response with error details.
     """
     error = cast(ApplicationError, exc)
     if isinstance(error, ValidationError):
@@ -94,7 +94,7 @@ async def application_error_handler(request: Request, exc: Exception) -> JSONRes
     elif isinstance(error, ResourceAlreadyExistsError):
         status_code = status.HTTP_409_CONFLICT
     elif isinstance(error, OperationNotAllowedError):
-        status_code = status.HTTP_409_CONFLICT if error.conflict else status.HTTP_400_BAD_REQUEST
+        status_code = status.HTTP_409_CONFLICT if error.conflict else status.HTTP_400_BAD_REQUEST  # noqa: E501
     else:
         status_code = status.HTTP_400_BAD_REQUEST
 
@@ -102,30 +102,30 @@ async def application_error_handler(request: Request, exc: Exception) -> JSONRes
     return _error_response(status_code, error)
 
 
-async def infrastructure_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Преобразует инфраструктурную ошибку в HTTP 500.
+async def infrastructure_error_handler(request: Request, exc: Exception) -> JSONResponse:  # noqa: E501
+    """Converts an infrastructure error to HTTP 500.
 
     Args:
-        request: Входящий HTTP-запрос.
-        exc: Исключение, переданное FastAPI для обработчика.
+        request: Incoming HTTP request.
+        exc: Exception passed by FastAPI to the handler.
 
     Returns:
-        JSON-ответ с описанием ошибки.
+        JSON response with error details.
     """
     error = cast(InfrastructureError, exc)
-    _log_handled_exception(logging.ERROR, request, error, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    _log_handled_exception(logging.ERROR, request, error, status.HTTP_500_INTERNAL_SERVER_ERROR)  # noqa: E501
     return _error_response(status.HTTP_500_INTERNAL_SERVER_ERROR, error)
 
 
 async def unknown_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Логирует неожиданную ошибку и возвращает безопасный HTTP 500.
+    """Logs an unexpected error and returns a safe HTTP 500.
 
     Args:
-        request: Входящий HTTP-запрос.
-        exc: Необработанное исключение.
+        request: Incoming HTTP request.
+        exc: Unhandled exception.
 
     Returns:
-        JSON-ответ без внутренних деталей ошибки.
+        JSON response without internal error details.
     """
     request.state.exception_logged = True
     logger.error(
@@ -152,13 +152,13 @@ def _log_handled_exception(
     exc: DomainError | ApplicationError | InfrastructureError,
     status_code: int,
 ) -> None:
-    """Логирует ошибку, обработанную на HTTP-границе.
+    """Logs an error handled at the HTTP boundary.
 
     Args:
-        level: Уровень логирования.
-        request: Входящий HTTP-запрос.
-        exc: Доменная, прикладная или инфраструктурная ошибка.
-        status_code: HTTP-статус, который будет возвращен клиенту.
+        level: Logging level.
+        request: Incoming HTTP request.
+        exc: Domain, application, or infrastructure error.
+        status_code: HTTP status returned to the client.
     """
     logger.log(
         level,
@@ -184,17 +184,17 @@ def _error_response(
     message: str | None = None,
     details: dict[str, Any] | None = None,
 ) -> JSONResponse:
-    """Формирует единый JSON-ответ для ошибок API.
+    """Builds a unified JSON response for API errors.
 
     Args:
-        status_code: HTTP-статус ответа.
-        exc: Типизированная ошибка приложения.
-        code: Код ошибки, если `exc` не передан.
-        message: Сообщение ошибки, если `exc` не передан.
-        details: Дополнительные детали ошибки.
+        status_code: HTTP response status.
+        exc: Typed application error.
+        code: Error code used when `exc` is not provided.
+        message: Error message used when `exc` is not provided.
+        details: Additional error details.
 
     Returns:
-        JSON-ответ в едином формате ошибок.
+        JSON response in the unified error format.
     """
     if exc is not None:
         code = str(exc.code)

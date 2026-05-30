@@ -1,4 +1,4 @@
-"""Catch-all route для обработки пользовательских запросов к мокам."""
+"""Catch-all route for handling user requests to mocks."""
 
 from typing import Annotated
 
@@ -20,7 +20,14 @@ catch_all_router = APIRouter(tags=["catch-all"])
 
 
 def _reserved_paths(settings: AppSettings) -> tuple[str, ...]:
-    """Возвращает набор служебных роутов, которые не должен перехватывать catch-all."""
+    """Returns service routes that must not be intercepted by catch-all.
+
+    Args:
+        settings: Application settings containing service route prefixes.
+
+    Returns:
+        Tuple of reserved path prefixes and exact service paths.
+    """
     return (
         settings.admin_prefix,
         settings.request_log_prefix,
@@ -33,11 +40,19 @@ def _reserved_paths(settings: AppSettings) -> tuple[str, ...]:
 
 
 def _is_reserved_path(path: str, settings: AppSettings) -> bool:
-    """Проверяет, относится ли путь к служебным роутам."""
+    """Checks whether a path belongs to service routes.
+
+    Args:
+        path: Incoming request path.
+        settings: Application settings containing service route prefixes.
+
+    Returns:
+        True if the path is reserved for service endpoints, otherwise False.
+    """
     reserved_paths = _reserved_paths(settings)
     if path in reserved_paths:
         return True
-    return any(path == prefix or path.startswith(f"{prefix}/") for prefix in reserved_paths)
+    return any(path == prefix or path.startswith(f"{prefix}/") for prefix in reserved_paths)  # noqa: E501
 
 
 @catch_all_router.api_route(
@@ -60,26 +75,26 @@ async def catch_each_request(
         Depends(get_mock_response_builder),
     ],
 ) -> Response:
-    """Обрабатывает входящий запрос и возвращает ответ найденного мока.
+    """Handles an incoming request and returns the matched mock response.
 
     Args:
-        request: Исходный FastAPI request.
-        settings: Конфиг приложения.
-        request_context_resolver: Адаптер сборки доменного контекста запроса.
-        mock_resolver_service: Сервис поиска подходящего мока.
-        mock_response_builder: Адаптер сборки HTTP-ответа из мока.
+        request: Original FastAPI request.
+        settings: Application config.
+        request_context_resolver: Adapter that builds the domain request context.
+        mock_resolver_service: Service that resolves a matching mock.
+        mock_response_builder: Adapter that builds an HTTP response from a mock.
 
     Returns:
-        HTTP-ответ, сконструированный по найденному моку.
+        HTTP response built from the matched mock.
 
     Raises:
-        HTTPException: Если путь служебный или подходящий активный мок не найден.
+        HTTPException: If the path is reserved or no matching active mock is found.
     """
     if _is_reserved_path(request.url.path, settings):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not this route!!!")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not this route!!!")  # noqa: E501
 
     request_context = await request_context_resolver.resolve(request)
-    resolved_mock: ResolvedMock | None = await mock_resolver_service.resolve(request_context)
+    resolved_mock: ResolvedMock | None = await mock_resolver_service.resolve(request_context)  # noqa: E501
     if resolved_mock is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
