@@ -5,10 +5,10 @@ from app.api.contracts.mocks import (
     MockResponseItem,
     UpdateMockRequest,
 )
-from app.api.contracts.mocks.items import MatchRuleItem
+from app.api.contracts.mocks.items import MatchRuleItem, SideEffectItem
 from app.api.contracts.mocks.items import MockResponsePayloadItem as MockResponseItemDTO
 from app.application.commands import UNSET, UpdateMockCommand
-from app.domain.mocks.models import MatchRule, Mock, MockResponse
+from app.domain.mocks.models import MatchRule, Mock, MockResponse, SideEffect
 
 
 class MockContractMapper:
@@ -139,6 +139,24 @@ class MockContractMapper:
             status_code=response.status_code,
             headers=response.headers,
             body=response.body,
+            side_effects=[
+                MockContractMapper.to_domain_side_effect_model(side_effect)
+                for side_effect in response.side_effects
+            ],
+        )
+
+    @staticmethod
+    def to_domain_side_effect_model(side_effect: SideEffectItem) -> SideEffect:
+        """Converts a side effect request DTO to a domain model."""
+        return SideEffect(
+            type=side_effect.type,
+            provider=side_effect.provider,
+            target=side_effect.target,
+            payload_template=side_effect.payload_template,
+            options=side_effect.options,
+            mode=side_effect.mode,
+            fail_policy=side_effect.fail_policy,
+            enabled=side_effect.enabled,
         )
 
     @staticmethod
@@ -172,4 +190,22 @@ class MockContractMapper:
             status_code=response.status_code,
             headers=response.headers,
             body=response.body,
+            side_effects=[
+                MockContractMapper.from_domain_side_effect_model(side_effect)
+                for side_effect in response.side_effects
+            ],
+        )
+
+    @staticmethod
+    def from_domain_side_effect_model(side_effect: SideEffect) -> SideEffectItem:
+        """Converts a domain side effect to a response DTO."""
+        return SideEffectItem(
+            type=side_effect.type,
+            provider=side_effect.provider,
+            target=side_effect.target,
+            payload_template=side_effect.payload_template,
+            options=side_effect.options,
+            mode=side_effect.mode,
+            fail_policy=side_effect.fail_policy,
+            enabled=side_effect.enabled,
         )

@@ -2,11 +2,13 @@ from datetime import UTC, datetime
 
 from beanie import PydanticObjectId
 
+from app.domain.mocks.models import SideEffect, SideEffectType
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 from app.infra.db.mongo.documents import (
     MatchRuleDocument,
     MockDocument,
     MockResponseDocument,
+    SideEffectDocument,
 )
 from app.infra.mappers.mock_mapper import MockMapper
 
@@ -42,6 +44,14 @@ class TestMockMapper:
             response_status_code=201,
             response_headers={"x-response": "ok"},
             response_body={"id": 1},
+            response_side_effects=[
+                SideEffect(
+                    type=SideEffectType.MESSAGE_PUBLISH,
+                    provider="kafka",
+                    target={"topic": "users"},
+                    payload_template={"id": "{{body.id}}"},
+                ),
+            ],
             tags=["users"],
             created_at=created_at,
             updated_at=updated_at,
@@ -61,6 +71,10 @@ class TestMockMapper:
         assert document.response.status_code == 201
         assert document.response.headers == {"x-response": "ok"}
         assert document.response.body == {"id": 1}
+        assert document.response.side_effects[0].type == SideEffectType.MESSAGE_PUBLISH
+        assert document.response.side_effects[0].provider == "kafka"
+        assert document.response.side_effects[0].target == {"topic": "users"}
+        assert document.response.side_effects[0].payload_template == {"id": "{{body.id}}"}
         assert document.tags == ["users"]
         assert document.created_at == created_at
         assert document.updated_at == updated_at
@@ -92,6 +106,14 @@ class TestMockMapper:
                 status_code=201,
                 headers={"x-response": "ok"},
                 body={"id": 1},
+                side_effects=[
+                    SideEffectDocument(
+                        type=SideEffectType.MESSAGE_PUBLISH,
+                        provider="kafka",
+                        target={"topic": "users"},
+                        payload_template={"id": "{{body.id}}"},
+                    ),
+                ],
             ),
             tags=["users"],
             created_at=created_at,
@@ -113,6 +135,10 @@ class TestMockMapper:
         assert mock.response.status_code == 201
         assert mock.response.headers == {"x-response": "ok"}
         assert mock.response.body == {"id": 1}
+        assert mock.response.side_effects[0].type == SideEffectType.MESSAGE_PUBLISH
+        assert mock.response.side_effects[0].provider == "kafka"
+        assert mock.response.side_effects[0].target == {"topic": "users"}
+        assert mock.response.side_effects[0].payload_template == {"id": "{{body.id}}"}
         assert mock.tags == ["users"]
         assert mock.created_at == created_at
         assert mock.updated_at == updated_at

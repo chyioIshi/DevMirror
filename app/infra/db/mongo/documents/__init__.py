@@ -2,6 +2,7 @@ from app.infra.db.mongo.documents.mock_document import (
     MatchRuleDocument,
     MockDocument,
     MockResponseDocument,
+    SideEffectDocument,
 )
 from app.infra.db.mongo.documents.request_log_document import (
     MatchedMockDocument,
@@ -16,4 +17,5 @@ __all__ = [
     "MockResponseDocument",
     "RequestContextDocument",
     "RequestLogDocument",
+    "SideEffectDocument",
 ]

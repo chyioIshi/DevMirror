@@ -6,6 +6,7 @@ from app.domain.mocks.exceptions import (
     InvalidMockRouteError,
     InvalidMockStateError,
     InvalidScopeError,
+    InvalidSideEffectError,
     MockConflictError,
     MockInvariantError,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "InvalidMockRouteError",
     "InvalidMockStateError",
     "InvalidScopeError",
+    "InvalidSideEffectError",
     "MockConflictError",
     "MockInvariantError",
     "MockRepository",

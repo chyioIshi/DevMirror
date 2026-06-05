@@ -13,6 +13,7 @@ class DomainErrorCode(StrEnum):
     INVALID_MOCK_STATE = "INVALID_MOCK_STATE"
     INVALID_MATCH_RULE = "INVALID_MATCH_RULE"
     INVALID_MOCK_RESPONSE = "INVALID_MOCK_RESPONSE"
+    INVALID_SIDE_EFFECT = "INVALID_SIDE_EFFECT"
     INVALID_SCOPE = "INVALID_SCOPE"
     MOCK_CONFLICT = "MOCK_CONFLICT"
 
@@ -43,7 +44,7 @@ class MockInvariantError(DomainError):
         """Creates a mock invariant violation error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
             code: Domain error code.
         """
@@ -61,7 +62,7 @@ class InvalidMockRouteError(MockInvariantError):
         """Creates an invalid mock route error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
         """
         super().__init__(
@@ -82,7 +83,7 @@ class InvalidMockStateError(MockInvariantError):
         """Creates an invalid mock state error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
         """
         super().__init__(
@@ -103,7 +104,7 @@ class InvalidMatchRuleError(MockInvariantError):
         """Creates an invalid match rule error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
         """
         super().__init__(
@@ -124,13 +125,34 @@ class InvalidMockResponseError(MockInvariantError):
         """Creates an invalid mock response error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
         """
         super().__init__(
             message=message,
             details=details,
             code=DomainErrorCode.INVALID_MOCK_RESPONSE,
+        )
+
+
+class InvalidSideEffectError(MockInvariantError):
+    """Error raised when a mock response side effect is invalid."""
+
+    def __init__(
+        self,
+        message: str = "Side effect is invalid",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates an invalid side effect error.
+
+        Args:
+            message: Readable error description.
+            details: Additional error details.
+        """
+        super().__init__(
+            message=message,
+            details=details,
+            code=DomainErrorCode.INVALID_SIDE_EFFECT,
         )
 
 
@@ -145,7 +167,7 @@ class InvalidScopeError(MockInvariantError):
         """Creates an invalid mock scope error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
         """
         super().__init__(
@@ -166,7 +188,7 @@ class MockConflictError(DomainError):
         """Creates a mock conflict error.
 
         Args:
-            message: Human-readable error description.
+            message: Readable error description.
             details: Additional error details.
         """
         super().__init__(

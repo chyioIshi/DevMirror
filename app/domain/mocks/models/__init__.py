@@ -3,6 +3,12 @@ from app.domain.mocks.models.mock import Mock
 from app.domain.mocks.models.mock_list_filters import MockListFilters
 from app.domain.mocks.models.mock_response import MockResponse
 from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
+from app.domain.mocks.models.side_effect import (
+    SideEffect,
+    SideEffectFailPolicy,
+    SideEffectMode,
+    SideEffectType,
+)
 
 __all__ = [
     "Mock",
@@ -10,4 +16,8 @@ __all__ = [
     "MockListFilters",
     "MockResponse",
     "ResolvedMock",
+    "SideEffect",
+    "SideEffectFailPolicy",
+    "SideEffectMode",
+    "SideEffectType",
 ]
