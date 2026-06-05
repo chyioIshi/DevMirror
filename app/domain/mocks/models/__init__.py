@@ -9,6 +9,7 @@ from app.domain.mocks.models.side_effect import (
     SideEffectMode,
     SideEffectType,
 )
+from app.domain.mocks.models.side_effect_context import SideEffectContext
 
 __all__ = [
     "Mock",
@@ -17,6 +18,7 @@ __all__ = [
     "MockResponse",
     "ResolvedMock",
     "SideEffect",
+    "SideEffectContext",
     "SideEffectFailPolicy",
     "SideEffectMode",
     "SideEffectType",

@@ -9,6 +9,7 @@ from app.domain.mocks.exceptions import (
     InvalidSideEffectError,
     MockConflictError,
     MockInvariantError,
+    SideEffectTemplateRenderError,
 )
 from app.domain.mocks.repository import MockRepository
 
@@ -24,4 +25,5 @@ __all__ = [
     "MockConflictError",
     "MockInvariantError",
     "MockRepository",
+    "SideEffectTemplateRenderError",
 ]

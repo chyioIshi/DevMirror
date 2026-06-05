@@ -156,6 +156,23 @@ class InvalidSideEffectError(MockInvariantError):
         )
 
 
+class SideEffectTemplateRenderError(InvalidSideEffectError):
+    """Error raised when a side effect template cannot be rendered."""
+
+    def __init__(
+        self,
+        message: str = "Side effect template could not be rendered",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a side effect template rendering error.
+
+        Args:
+            message: Readable error description.
+            details: Additional error details.
+        """
+        super().__init__(message=message, details=details)
+
+
 class InvalidScopeError(MockInvariantError):
     """Error raised when a mock scope is invalid."""
 
