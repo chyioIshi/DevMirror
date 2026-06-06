@@ -1,7 +1,7 @@
 import pytest
 
 from app.application.exceptions import OperationNotAllowedError
-from app.application.services import MockManagementService
+from app.application.mocks import MockManagementService
 from app.domain.mocks import MockConflictError
 from app.domain.mocks.models import Mock
 from app.domain.shared import MatchOperator, MatchSource

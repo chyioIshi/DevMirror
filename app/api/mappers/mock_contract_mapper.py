@@ -7,7 +7,7 @@ from app.api.contracts.mocks import (
 )
 from app.api.contracts.mocks.items import MatchRuleItem, SideEffectItem
 from app.api.contracts.mocks.items import MockResponsePayloadItem as MockResponseItemDTO
-from app.application.commands import UNSET, UpdateMockCommand
+from app.application.mocks.commands import UNSET, UpdateMockCommand
 from app.domain.mocks.models import MatchRule, Mock, MockResponse, SideEffect
 
 

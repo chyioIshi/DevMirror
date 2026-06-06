@@ -3,8 +3,8 @@
 from collections.abc import Sequence
 from typing import Final
 
+from app.domain.mocks.ports import ScopeResolutionStrategy
 from app.domain.request_contexts import RequestContext
-from app.domain.shared.ports import ScopeResolutionStrategy
 
 
 class ChainedScopeResolver:

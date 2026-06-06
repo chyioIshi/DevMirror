@@ -4,11 +4,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.application.services import (
-    MockManagementService,
-    MockResolverService,
-    RequestLogService,
-)
+from app.application.mocks import MockManagementService, MockResolverService
+from app.application.request_logs import RequestLogService
 from app.config import AppSettings
 from app.di.container import AppContainer, get_container
 from app.infra.context import RequestContextResolver

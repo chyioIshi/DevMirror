@@ -1,7 +1,7 @@
 from app.api.contracts.mocks import CreateMockRequest, UpdateMockRequest
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem
 from app.api.mappers import MockContractMapper
-from app.application.commands import UNSET
+from app.application.mocks.commands import UNSET
 from app.domain.mocks.models import SideEffect, SideEffectType
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 

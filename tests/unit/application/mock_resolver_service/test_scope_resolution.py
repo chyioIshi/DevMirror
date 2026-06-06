@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.services import MockResolverService
+from app.application.mocks import MockResolverService
 from app.domain.shared import HttpMethod
 from tests.testkit.factories import RequestFactory
 from tests.testkit.fakes import FakeMockRepository, FakeScopeResolver

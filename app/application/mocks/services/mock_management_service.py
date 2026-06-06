@@ -2,12 +2,12 @@
 
 import logging
 
-from app.application.commands import UpdateMockCommand
 from app.application.exceptions import (
     MockNotFoundError,
     OperationNotAllowedError,
 )
-from app.application.use_cases import update_mock as update_mock_use_case
+from app.application.mocks.commands import UpdateMockCommand
+from app.application.mocks.use_cases import update_mock as update_mock_use_case
 from app.domain.mocks import MockConflictError, MockRepository
 from app.domain.mocks.models import Mock, MockListFilters
 from app.domain.mocks.policies import MockActivationPolicy

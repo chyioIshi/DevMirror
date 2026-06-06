@@ -4,11 +4,8 @@ from typing import Final, cast
 
 from fastapi import Request
 
-from app.application.services import (
-    MockManagementService,
-    MockResolverService,
-    RequestLogService,
-)
+from app.application.mocks import MockManagementService, MockResolverService
+from app.application.request_logs import RequestLogService
 from app.config import AppSettings
 from app.domain.mocks import MockRepository
 from app.domain.mocks.policies import (
@@ -16,16 +13,13 @@ from app.domain.mocks.policies import (
     MockActivationPolicy,
     MockSelectionPolicy,
 )
+from app.domain.mocks.ports import ScopeResolutionStrategy, ScopeResolver
 from app.domain.mocks.services import (
     MockConflictService,
     MockResolutionService,
     RuleMatcherService,
 )
 from app.domain.request_logs import RequestLogRepository
-from app.domain.shared.ports import (
-    ScopeResolutionStrategy,
-    ScopeResolver,
-)
 from app.infra.context import RequestContextResolver
 from app.infra.repositories import (
     MongoMockRepository,

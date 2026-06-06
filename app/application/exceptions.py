@@ -12,6 +12,9 @@ class ApplicationErrorCode(StrEnum):
     VALIDATION_ERROR = "VALIDATION_ERROR"
     OPERATION_NOT_ALLOWED = "OPERATION_NOT_ALLOWED"
     RESOURCE_ALREADY_EXISTS = "RESOURCE_ALREADY_EXISTS"
+    SIDE_EFFECT_PROVIDER_ALREADY_REGISTERED = "SIDE_EFFECT_PROVIDER_ALREADY_REGISTERED"
+    SIDE_EFFECT_PROVIDER_NOT_FOUND = "SIDE_EFFECT_PROVIDER_NOT_FOUND"
+    SIDE_EFFECT_EXECUTION_FAILED = "SIDE_EFFECT_EXECUTION_FAILED"
 
 
 @dataclass(eq=False)
@@ -118,4 +121,70 @@ class ResourceAlreadyExistsError(ApplicationError):
             code=ApplicationErrorCode.RESOURCE_ALREADY_EXISTS,
             message=message,
             details=details or {},
+        )
+
+
+class SideEffectProviderAlreadyRegisteredError(ApplicationError):
+    """Error raised when registering a duplicate side effect provider."""
+
+    def __init__(
+        self,
+        message: str = "Side effect provider is already registered",
+        details: dict[str, Any] | None = None,
+        *,
+        provider: str | None = None,
+    ) -> None:
+        """Creates a duplicate side effect provider registration error."""
+        error_details = dict(details or {})
+        if provider is not None:
+            error_details.setdefault("provider", provider)
+        super().__init__(
+            code=ApplicationErrorCode.SIDE_EFFECT_PROVIDER_ALREADY_REGISTERED,
+            message=message,
+            details=error_details,
+        )
+
+
+class SideEffectProviderNotFoundError(ApplicationError):
+    """Error raised when no side effect provider is registered for a name."""
+
+    def __init__(
+        self,
+        message: str = "Side effect provider was not found",
+        details: dict[str, Any] | None = None,
+        *,
+        provider: str | None = None,
+    ) -> None:
+        """Creates an unknown side effect provider error."""
+        error_details = dict(details or {})
+        if provider is not None:
+            error_details.setdefault("provider", provider)
+        super().__init__(
+            code=ApplicationErrorCode.SIDE_EFFECT_PROVIDER_NOT_FOUND,
+            message=message,
+            details=error_details,
+        )
+
+
+class SideEffectExecutionFailedError(ApplicationError):
+    """Error raised when a side effect cannot be executed successfully."""
+
+    def __init__(
+        self,
+        message: str = "Side effect execution failed",
+        details: dict[str, Any] | None = None,
+        *,
+        provider: str | None = None,
+        attempts: int | None = None,
+    ) -> None:
+        """Creates a side effect execution failure error."""
+        error_details = dict(details or {})
+        if provider is not None:
+            error_details.setdefault("provider", provider)
+        if attempts is not None:
+            error_details.setdefault("attempts", attempts)
+        super().__init__(
+            code=ApplicationErrorCode.SIDE_EFFECT_EXECUTION_FAILED,
+            message=message,
+            details=error_details,
         )

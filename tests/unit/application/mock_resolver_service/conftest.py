@@ -1,6 +1,7 @@
 import pytest
 
-from app.application.services import MockResolverService, RequestLogService
+from app.application.mocks import MockResolverService
+from app.application.request_logs import RequestLogService
 from app.domain.mocks.policies import MockSelectionPolicy
 from app.domain.mocks.services import MockResolutionService, RuleMatcherService
 from tests.testkit.fakes import (

@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.application.services import MockResolverService
+from app.application.mocks import MockResolverService
 from app.config import AppSettings
 from app.di import (
     get_app_settings,

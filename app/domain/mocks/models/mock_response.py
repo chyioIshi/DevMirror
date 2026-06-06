@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.domain.mocks.exceptions import InvalidMockResponseError
-from app.domain.mocks.models.side_effect import SideEffect
+from app.domain.mocks.models.side_effects.side_effect import SideEffect
 
 
 @dataclass(slots=True, frozen=True)

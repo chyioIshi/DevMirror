@@ -3,12 +3,12 @@
 import logging
 from typing import Final
 
-from app.application.services.request_log_service import RequestLogService
+from app.application.request_logs import RequestLogService
 from app.domain.mocks import MockRepository
 from app.domain.mocks.models.resolution import MockResolutionResult, ResolvedMock
+from app.domain.mocks.ports import ScopeResolver
 from app.domain.mocks.services import MockResolutionService
 from app.domain.request_contexts import RequestContext
-from app.domain.shared.ports import ScopeResolver
 
 logger = logging.getLogger(__name__)
 
