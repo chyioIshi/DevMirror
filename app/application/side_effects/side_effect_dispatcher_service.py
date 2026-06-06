@@ -40,13 +40,70 @@ class SideEffectDispatcherService:
 
         for side_effect in side_effects:
             if not side_effect.enabled:
+                logger.info(
+                    "side_effect_execution_finished",
+                    extra={
+                        "side_effect_type": side_effect.type,
+                        "provider": side_effect.provider,
+                        "target": side_effect.target,
+                        "mode": side_effect.mode,
+                        "fail_policy": side_effect.fail_policy,
+                        "status": "skipped",
+                        "attempts": 0,
+                        "request_id": context.execution.get("request_id"),
+                        "mock_id": context.mock.get("id"),
+                        "error": None,
+                    },
+                )
                 continue
 
             provider = self._registry.get(side_effect.provider)
             rendered_effect = self._render_effect(side_effect, context)
-            result = await self._execute_with_policy(provider, rendered_effect, context)
+            try:
+                result = await self._execute_with_policy(provider, rendered_effect, context)
+            except SideEffectExecutionFailedError as exc:
+                execution_error = exc.details.get("error")
+                attempts = exc.details.get("attempts")
+                logger.error(
+                    "side_effect_execution_finished",
+                    extra={
+                        "side_effect_type": rendered_effect.type,
+                        "provider": rendered_effect.provider,
+                        "target": rendered_effect.target,
+                        "mode": rendered_effect.mode,
+                        "fail_policy": rendered_effect.fail_policy,
+                        "status": "failed",
+                        "attempts": attempts
+                        if isinstance(attempts, int) and not isinstance(attempts, bool)
+                        else 1,
+                        "request_id": context.execution.get("request_id"),
+                        "mock_id": context.mock.get("id"),
+                        "error": execution_error
+                        if isinstance(execution_error, str) and execution_error
+                        else exc.message,
+                    },
+                )
+                raise
+
             if result is not None:
                 results.append(result)
+                if rendered_effect.fail_policy != SideEffectFailPolicy.RETRY:
+                    log = logger.info if result.success else logger.error
+                    log(
+                        "side_effect_execution_finished",
+                        extra={
+                            "side_effect_type": rendered_effect.type,
+                            "provider": rendered_effect.provider,
+                            "target": rendered_effect.target,
+                            "mode": rendered_effect.mode,
+                            "fail_policy": rendered_effect.fail_policy,
+                            "status": "success" if result.success else "failed",
+                            "attempts": 1,
+                            "request_id": context.execution.get("request_id"),
+                            "mock_id": context.mock.get("id"),
+                            "error": result.error,
+                        },
+                    )
 
         return results
 
@@ -138,7 +195,7 @@ class SideEffectDispatcherService:
         last_result: SideEffectExecutionResult | None = None
         last_error: Exception | None = None
 
-        for attempt in range(max_attempts):
+        for attempt in range(1, max_attempts + 1):
             try:
                 result = await provider.execute(side_effect, context)
             except Exception as exc:
@@ -155,6 +212,21 @@ class SideEffectDispatcherService:
 
             last_result = result
             if result.success:
+                logger.info(
+                    "side_effect_execution_finished",
+                    extra={
+                        "side_effect_type": side_effect.type,
+                        "provider": side_effect.provider,
+                        "target": side_effect.target,
+                        "mode": side_effect.mode,
+                        "fail_policy": side_effect.fail_policy,
+                        "status": "success",
+                        "attempts": attempt,
+                        "request_id": context.execution.get("request_id"),
+                        "mock_id": context.mock.get("id"),
+                        "error": None,
+                    },
+                )
                 return result
 
             logger.warning(
