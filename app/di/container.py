@@ -6,6 +6,11 @@ from fastapi import Request
 
 from app.application.mocks import MockManagementService, MockResolverService
 from app.application.request_logs import RequestLogService
+from app.application.side_effects import (
+    SideEffectDispatcherService,
+    SideEffectExecutionService,
+    SideEffectProviderRegistry,
+)
 from app.config import AppSettings
 from app.domain.mocks import MockRepository
 from app.domain.mocks.policies import (
@@ -13,7 +18,11 @@ from app.domain.mocks.policies import (
     MockActivationPolicy,
     MockSelectionPolicy,
 )
-from app.domain.mocks.ports import ScopeResolutionStrategy, ScopeResolver
+from app.domain.mocks.ports import (
+    AsyncTaskScheduler,
+    ScopeResolutionStrategy,
+    ScopeResolver,
+)
 from app.domain.mocks.services import (
     MockConflictService,
     MockResolutionService,
@@ -32,6 +41,7 @@ from app.infra.scope_resolution import (
     HeaderScopeResolutionStrategy,
     JsonBodyFieldScopeResolutionStrategy,
 )
+from app.infra.tasks import InProcessAsyncTaskScheduler
 
 
 class AppContainer:
@@ -58,6 +68,10 @@ class AppContainer:
         self._mock_selection_policy: MockSelectionPolicy | None = None
         self._mock_resolver_service: MockResolverService | None = None
         self._mock_response_builder: MockResponseBuilder | None = None
+        self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
+        self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
+        self._async_task_scheduler: AsyncTaskScheduler | None = None
+        self._side_effect_execution_service: SideEffectExecutionService | None = None
 
     @property
     def request_data_reader(self) -> RequestDataReader:
@@ -236,6 +250,39 @@ class AppContainer:
         if self._mock_response_builder is None:
             self._mock_response_builder = MockResponseBuilder()
         return self._mock_response_builder
+
+    @property
+    def side_effect_provider_registry(self) -> SideEffectProviderRegistry:
+        """Return the registry used to resolve side effect providers."""
+        if self._side_effect_provider_registry is None:
+            self._side_effect_provider_registry = SideEffectProviderRegistry()
+        return self._side_effect_provider_registry
+
+    @property
+    def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:
+        """Return the app service that dispatches side effects."""
+        if self._side_effect_dispatcher_service is None:
+            self._side_effect_dispatcher_service = SideEffectDispatcherService(
+                registry=self.side_effect_provider_registry,
+            )
+        return self._side_effect_dispatcher_service
+
+    @property
+    def async_task_scheduler(self) -> AsyncTaskScheduler:
+        """Return the adapter used to schedule background async tasks."""
+        if self._async_task_scheduler is None:
+            self._async_task_scheduler = InProcessAsyncTaskScheduler()
+        return self._async_task_scheduler
+
+    @property
+    def side_effect_execution_service(self) -> SideEffectExecutionService:
+        """Return the app service that executes response side effects."""
+        if self._side_effect_execution_service is None:
+            self._side_effect_execution_service = SideEffectExecutionService(
+                dispatcher_service=self.side_effect_dispatcher_service,
+                async_task_scheduler=self.async_task_scheduler,
+            )
+        return self._side_effect_execution_service
 
 
 def get_container(request: Request) -> AppContainer:

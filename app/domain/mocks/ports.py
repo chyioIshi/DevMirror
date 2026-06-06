@@ -1,6 +1,7 @@
 """Ports used by the mocks domain."""
 
-from typing import Protocol
+from collections.abc import Coroutine
+from typing import Any, Protocol
 
 from app.domain.mocks.models import (
     SideEffect,
@@ -37,4 +38,12 @@ class SideEffectProvider(Protocol):
         context: SideEffectContext,
     ) -> SideEffectExecutionResult:
         """Executes a side effect."""
+        ...
+
+
+class AsyncTaskScheduler(Protocol):
+    """Port for scheduling background coroutine execution."""
+
+    def schedule(self, coroutine: Coroutine[Any, Any, None]) -> None:
+        """Schedule coroutine execution without awaiting it in the caller."""
         ...

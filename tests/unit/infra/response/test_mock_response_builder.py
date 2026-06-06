@@ -1,6 +1,7 @@
 from fastapi import Response
 from fastapi.responses import JSONResponse
 
+from app.domain.mocks.models import MockResponse
 from app.infra.response.mock_response_builder import MockResponseBuilder
 
 
@@ -36,4 +37,13 @@ class TestMockResponseBuilder:
         assert isinstance(response, JSONResponse)
         assert response.status_code == 201
         assert response.headers["x-test"] == "yes"
+        assert response.body == b'{"ok":true}'
+
+    def test_build_response_returns_json_response_when_body_exists(self) -> None:
+        response = MockResponseBuilder().build_response(
+            MockResponse(status_code=202, body={"ok": True}),
+        )
+
+        assert isinstance(response, JSONResponse)
+        assert response.status_code == 202
         assert response.body == b'{"ok":true}'

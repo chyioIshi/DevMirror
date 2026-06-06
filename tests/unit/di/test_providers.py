@@ -38,6 +38,13 @@ class TestDependencyProviders:
 
         assert result is container.mock_response_builder
 
+    def test_get_side_effect_execution_service_returns_container_service(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = providers.get_side_effect_execution_service(container)
+
+        assert result is container.side_effect_execution_service
+
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""
         container = AppContainer(settings=AppSettings())

@@ -3,6 +3,7 @@ from tests.testkit.fakes.api import (
     FakeMockResolverService,
     FakeRequestContextResolver,
     FakeRequestLogService,
+    FakeSideEffectExecutionService,
 )
 from tests.testkit.fakes.application import (
     FakeMockRepository,
@@ -38,4 +39,5 @@ __all__ = [
     "FakeRequestLogService",
     "FakeRequestLogRepository",
     "FakeScopeResolver",
+    "FakeSideEffectExecutionService",
 ]
