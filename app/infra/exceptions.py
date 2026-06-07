@@ -13,6 +13,7 @@ class InfrastructureErrorCode(StrEnum):
     DATABASE_CONNECTION_ERROR = "DATABASE_CONNECTION_ERROR"
     TRANSACTION_ERROR = "TRANSACTION_ERROR"
     SERIALIZATION_ERROR = "SERIALIZATION_ERROR"
+    SIDE_EFFECT_PROVIDER_PLUGIN_ERROR = "SIDE_EFFECT_PROVIDER_PLUGIN_ERROR"
 
 
 @dataclass(eq=False)
@@ -65,6 +66,22 @@ class DatabaseConnectionError(InfrastructureError):
         """
         super().__init__(
             code=InfrastructureErrorCode.DATABASE_CONNECTION_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class SideEffectProviderPluginError(InfrastructureError):
+    """Error raised when a side effect provider plugin cannot be loaded."""
+
+    def __init__(
+        self,
+        message: str = "Side effect provider plugin could not be loaded",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a side effect provider plugin loading error."""
+        super().__init__(
+            code=InfrastructureErrorCode.SIDE_EFFECT_PROVIDER_PLUGIN_ERROR,
             message=message,
             details=details or {},
         )

@@ -41,6 +41,7 @@ from app.infra.scope_resolution import (
     HeaderScopeResolutionStrategy,
     JsonBodyFieldScopeResolutionStrategy,
 )
+from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginLoader
 from app.infra.tasks import InProcessAsyncTaskScheduler
 
 
@@ -68,6 +69,7 @@ class AppContainer:
         self._mock_selection_policy: MockSelectionPolicy | None = None
         self._mock_resolver_service: MockResolverService | None = None
         self._mock_response_builder: MockResponseBuilder | None = None
+        self._connection_registry: ConnectionRegistry | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
         self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
         self._async_task_scheduler: AsyncTaskScheduler | None = None
@@ -252,10 +254,21 @@ class AppContainer:
         return self._mock_response_builder
 
     @property
+    def connection_registry(self) -> ConnectionRegistry:
+        """Return the infrastructure connection registry used by plugins."""
+        if self._connection_registry is None:
+            self._connection_registry = ConnectionRegistry()
+        return self._connection_registry
+
+    @property
     def side_effect_provider_registry(self) -> SideEffectProviderRegistry:
         """Return the registry used to resolve side effect providers."""
         if self._side_effect_provider_registry is None:
-            self._side_effect_provider_registry = SideEffectProviderRegistry()
+            registry = SideEffectProviderRegistry()
+            SideEffectProviderPluginLoader(
+                connection_registry=self.connection_registry,
+            ).load_into(registry)
+            self._side_effect_provider_registry = registry
         return self._side_effect_provider_registry
 
     @property

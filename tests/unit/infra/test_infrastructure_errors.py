@@ -3,6 +3,7 @@ from app.infra.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     RepositoryError,
+    SideEffectProviderPluginError,
 )
 
 
@@ -36,3 +37,10 @@ class TestInfrastructureErrors:
         assert str(error) == "Database connection failed"
         assert error.code == InfrastructureErrorCode.DATABASE_CONNECTION_ERROR
         assert error.details == {"operation": "list"}
+
+    def test_side_effect_provider_plugin_error_keeps_details(self) -> None:
+        error = SideEffectProviderPluginError(details={"entry_point": "kafka"})
+
+        assert str(error) == "Side effect provider plugin could not be loaded"
+        assert error.code == InfrastructureErrorCode.SIDE_EFFECT_PROVIDER_PLUGIN_ERROR
+        assert error.details == {"entry_point": "kafka"}
