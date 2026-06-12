@@ -108,4 +108,15 @@ jobs:
         run: uv sync --dev --frozen
 
       - name: Run unit tests
-        run: uv run pytest tests/unit -q
+        run: |
+          uv run pytest tests/unit -q \
+            --cov=app \
+            --cov-report=term \
+            --cov-report=xml:coverage.xml
+
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          file: coverage.xml
+          format: cobertura
+          fail-on-error: false
