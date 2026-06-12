@@ -1,6 +1,7 @@
 from app.config import AppSettings
 from app.di import providers
 from app.di.container import AppContainer
+from app.infra.side_effects import ConnectionConfig
 
 
 class TestDependencyProviders:
@@ -44,6 +45,20 @@ class TestDependencyProviders:
         result = providers.get_side_effect_execution_service(container)
 
         assert result is container.side_effect_execution_service
+
+    def test_connection_registry_uses_settings_connections(self) -> None:
+        connection = ConnectionConfig(
+            name="main-kafka",
+            provider="kafka",
+            settings={"bootstrap_servers": "localhost:9092"},
+        )
+        container = AppContainer(
+            settings=AppSettings(side_effect_connections=[connection]),
+        )
+
+        result = container.connection_registry.get("main-kafka")
+
+        assert result == connection
 
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""

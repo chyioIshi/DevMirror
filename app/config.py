@@ -2,8 +2,10 @@
 
 from functools import lru_cache
 
-from pydantic import MongoDsn
+from pydantic import Field, MongoDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.infra.side_effects.connection_config import ConnectionConfig
 
 
 class AppSettings(BaseSettings):
@@ -20,6 +22,7 @@ class AppSettings(BaseSettings):
     request_log_prefix: str = "/admin/request-logs"
     health_prefix: str = "/health"
     log_level: str = "INFO"
+    side_effect_connections: list[ConnectionConfig] = Field(default_factory=list)
 
     model_config = SettingsConfigDict(
         env_file=".env",

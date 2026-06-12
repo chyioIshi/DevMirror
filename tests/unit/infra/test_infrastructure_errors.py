@@ -1,4 +1,5 @@
 from app.infra.exceptions import (
+    ConnectionNotFoundError,
     DatabaseConnectionError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -44,3 +45,10 @@ class TestInfrastructureErrors:
         assert str(error) == "Side effect provider plugin could not be loaded"
         assert error.code == InfrastructureErrorCode.SIDE_EFFECT_PROVIDER_PLUGIN_ERROR
         assert error.details == {"entry_point": "kafka"}
+
+    def test_connection_not_found_error_adds_name(self) -> None:
+        error = ConnectionNotFoundError(name="main-kafka")
+
+        assert str(error) == "Connection was not found"
+        assert error.code == InfrastructureErrorCode.CONNECTION_NOT_FOUND
+        assert error.details == {"name": "main-kafka"}

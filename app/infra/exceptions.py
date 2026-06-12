@@ -14,6 +14,7 @@ class InfrastructureErrorCode(StrEnum):
     TRANSACTION_ERROR = "TRANSACTION_ERROR"
     SERIALIZATION_ERROR = "SERIALIZATION_ERROR"
     SIDE_EFFECT_PROVIDER_PLUGIN_ERROR = "SIDE_EFFECT_PROVIDER_PLUGIN_ERROR"
+    CONNECTION_NOT_FOUND = "CONNECTION_NOT_FOUND"
 
 
 @dataclass(eq=False)
@@ -84,4 +85,25 @@ class SideEffectProviderPluginError(InfrastructureError):
             code=InfrastructureErrorCode.SIDE_EFFECT_PROVIDER_PLUGIN_ERROR,
             message=message,
             details=details or {},
+        )
+
+
+class ConnectionNotFoundError(InfrastructureError):
+    """Error raised when a named side effect provider connection is unknown."""
+
+    def __init__(
+        self,
+        message: str = "Connection was not found",
+        details: dict[str, Any] | None = None,
+        *,
+        name: str | None = None,
+    ) -> None:
+        """Creates a connection-not-found error."""
+        error_details = dict(details or {})
+        if name is not None:
+            error_details.setdefault("name", name)
+        super().__init__(
+            code=InfrastructureErrorCode.CONNECTION_NOT_FOUND,
+            message=message,
+            details=error_details,
         )

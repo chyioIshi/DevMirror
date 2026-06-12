@@ -257,7 +257,9 @@ class AppContainer:
     def connection_registry(self) -> ConnectionRegistry:
         """Return the infrastructure connection registry used by plugins."""
         if self._connection_registry is None:
-            self._connection_registry = ConnectionRegistry()
+            self._connection_registry = ConnectionRegistry(
+                connections=self.settings.side_effect_connections,
+            )
         return self._connection_registry
 
     @property
