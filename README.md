@@ -1,5 +1,13 @@
 # DevMirror
 
+[![CI](https://github.com/chyioIshi/DevMirror/actions/workflows/ci.yml/badge.svg)](https://github.com/chyioIshi/DevMirror/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.13%2B-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-async%20API-green)
+![MongoDB](https://img.shields.io/badge/MongoDB-Beanie-green)
+![Code style](https://img.shields.io/badge/code%20style-ruff-black)
+![Tests](https://img.shields.io/badge/tests-pytest-blue)
+![License](https://img.shields.io/github/license/chyioIshi/DevMirror)
+
 DevMirror is a mock service platform inspired by WireMock. It lets you define HTTP mocks, match incoming requests dynamically, and return configured responses from a FastAPI service backed by MongoDB.
 
 ## Features
