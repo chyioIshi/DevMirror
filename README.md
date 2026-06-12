@@ -1,5 +1,6 @@
 # DevMirror
 
+[![Coverage Status](https://coveralls.io/repos/github/chyioIshi/DevMirror/badge.svg?branch=main)](https://coveralls.io/github/chyioIshi/DevMirror?branch=main)
 [![CI](https://github.com/chyioIshi/DevMirror/actions/workflows/ci.yml/badge.svg)](https://github.com/chyioIshi/DevMirror/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.13%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async%20API-green)
