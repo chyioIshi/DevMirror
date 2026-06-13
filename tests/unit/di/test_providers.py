@@ -12,6 +12,14 @@ class FakeHttpClient:
         self.is_closed = True
 
 
+class FakeKafkaMessageProducer:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
 class TestDependencyProviders:
     """Проверяет DI provider-функции."""
 
@@ -75,22 +83,39 @@ class TestDependencyProviders:
 
         assert result.provider == "http"
 
-    async def test_aclose_closes_http_callback_client(self, monkeypatch) -> None:
+    def test_side_effect_provider_registry_registers_kafka_provider(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.side_effect_provider_registry.get("kafka")
+
+        assert result.provider == "kafka"
+
+    async def test_aclose_closes_side_effect_clients(self, monkeypatch) -> None:
         clients: list[FakeHttpClient] = []
+        producers: list[FakeKafkaMessageProducer] = []
 
         def client_factory() -> FakeHttpClient:
             client = FakeHttpClient()
             clients.append(client)
             return client
 
+        def producer_factory() -> FakeKafkaMessageProducer:
+            producer = FakeKafkaMessageProducer()
+            producers.append(producer)
+            return producer
+
         monkeypatch.setattr("app.di.container.httpx.AsyncClient", client_factory)
+        monkeypatch.setattr("app.di.container.AioKafkaMessageProducer", producer_factory)
         container = AppContainer(settings=AppSettings())
 
         container.side_effect_provider_registry.get("http")
+        container.side_effect_provider_registry.get("kafka")
         await container.aclose()
 
         assert len(clients) == 1
         assert clients[0].is_closed is True
+        assert len(producers) == 1
+        assert producers[0].closed is True
 
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""

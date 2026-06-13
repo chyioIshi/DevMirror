@@ -54,7 +54,7 @@ class SideEffect:
 
     def _validate_target(self) -> None:
         if self.type == SideEffectType.MESSAGE_PUBLISH:
-            self._require_any_target_key("topic", "queue")
+            self._require_any_target_key("topic", "queue", "destination")
             return
 
         if self.type in {SideEffectType.DB_INSERT, SideEffectType.DB_UPDATE}:

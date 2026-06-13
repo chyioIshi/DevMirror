@@ -16,6 +16,7 @@ class InfrastructureErrorCode(StrEnum):
     SIDE_EFFECT_PROVIDER_PLUGIN_ERROR = "SIDE_EFFECT_PROVIDER_PLUGIN_ERROR"
     CONNECTION_NOT_FOUND = "CONNECTION_NOT_FOUND"
     INVALID_SIDE_EFFECT_PROVIDER_CONFIG = "INVALID_SIDE_EFFECT_PROVIDER_CONFIG"
+    KAFKA_PUBLISH_ERROR = "KAFKA_PUBLISH_ERROR"
 
 
 @dataclass(eq=False)
@@ -121,6 +122,22 @@ class InvalidSideEffectProviderConfigError(InfrastructureError):
         """Creates an invalid side effect provider config error."""
         super().__init__(
             code=InfrastructureErrorCode.INVALID_SIDE_EFFECT_PROVIDER_CONFIG,
+            message=message,
+            details=details or {},
+        )
+
+
+class KafkaPublishError(InfrastructureError):
+    """Error raised when a Kafka message cannot be published."""
+
+    def __init__(
+        self,
+        message: str = "Kafka message publish failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a Kafka publish error."""
+        super().__init__(
+            code=InfrastructureErrorCode.KAFKA_PUBLISH_ERROR,
             message=message,
             details=details or {},
         )

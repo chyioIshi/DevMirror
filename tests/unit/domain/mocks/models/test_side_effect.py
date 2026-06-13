@@ -44,6 +44,16 @@ class TestSideEffect:
 
         assert side_effect.target == {"queue": "user-events"}
 
+    def test_message_publish_allows_destination_target(self) -> None:
+        side_effect = SideEffect(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
+            target={"destination": "user-events"},
+            payload_template={"ok": True},
+        )
+
+        assert side_effect.target == {"destination": "user-events"}
+
     @pytest.mark.parametrize("target", [{}, {"topic": " "}, {"queue": ""}, {"topic": 123}])
     def test_message_publish_requires_topic_or_queue(self, target: dict[str, object]) -> None:
         with pytest.raises(InvalidSideEffectError):

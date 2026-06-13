@@ -32,3 +32,19 @@ def connection_registry() -> ConnectionRegistry:
             ),
         ],
     )
+
+
+@pytest.fixture
+def kafka_connection_registry() -> ConnectionRegistry:
+    return ConnectionRegistry(
+        connections=[
+            ConnectionConfig(
+                name="main-kafka",
+                provider="kafka",
+                settings={
+                    "bootstrap_servers": "localhost:9092",
+                    "client_id": "devmirror-tests",
+                },
+            ),
+        ],
+    )

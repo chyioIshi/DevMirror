@@ -43,7 +43,11 @@ from app.infra.scope_resolution import (
     JsonBodyFieldScopeResolutionStrategy,
 )
 from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginLoader
-from app.infra.side_effects.providers import HttpCallbackSideEffectProvider
+from app.infra.side_effects.providers import (
+    AioKafkaMessageProducer,
+    HttpCallbackSideEffectProvider,
+    KafkaSideEffectProvider,
+)
 from app.infra.tasks import InProcessAsyncTaskScheduler
 
 
@@ -74,6 +78,8 @@ class AppContainer:
         self._connection_registry: ConnectionRegistry | None = None
         self._http_callback_client: httpx.AsyncClient | None = None
         self._http_callback_side_effect_provider: HttpCallbackSideEffectProvider | None = None
+        self._kafka_message_producer: AioKafkaMessageProducer | None = None
+        self._kafka_side_effect_provider: KafkaSideEffectProvider | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
         self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
         self._async_task_scheduler: AsyncTaskScheduler | None = None
@@ -279,6 +285,14 @@ class AppContainer:
                     client=self._http_callback_client,
                 )
             registry.register(self._http_callback_side_effect_provider)
+            if self._kafka_side_effect_provider is None:
+                if self._kafka_message_producer is None:
+                    self._kafka_message_producer = AioKafkaMessageProducer()
+                self._kafka_side_effect_provider = KafkaSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    producer=self._kafka_message_producer,
+                )
+            registry.register(self._kafka_side_effect_provider)
             SideEffectProviderPluginLoader(
                 connection_registry=self.connection_registry,
             ).load_into(registry)
@@ -289,6 +303,8 @@ class AppContainer:
         """Close infrastructure resources owned by the container."""
         if self._http_callback_client is not None and not self._http_callback_client.is_closed:
             await self._http_callback_client.aclose()
+        if self._kafka_message_producer is not None:
+            await self._kafka_message_producer.aclose()
 
     @property
     def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:
