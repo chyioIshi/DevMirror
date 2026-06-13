@@ -101,8 +101,8 @@ class TestMockContractMapper:
                 side_effects=[
                     {
                         "type": "http_callback",
-                        "provider": "webhook",
-                        "target": {"url": "https://example.test/callback"},
+                        "provider": "http",
+                        "target": {"connection": "main-http"},
                         "payload_template": {"accepted": "{{body.accepted}}"},
                     },
                 ],

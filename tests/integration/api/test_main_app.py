@@ -38,7 +38,7 @@ class TestMainApp:
         def fake_configure_logging(value: AppSettings) -> None:
             configured_settings.append(value)
 
-        monkeypatch.setattr(config_module, "get_settings", lambda: settings)
+        monkeypatch.setattr(config_module, "get_app_settings", lambda: settings)
         monkeypatch.setattr(logging_module, "configure_logging", fake_configure_logging)
         main = _import_main()
         configured_settings.clear()
@@ -68,7 +68,7 @@ class TestMainApp:
             assert value is settings
             return mongo_client
 
-        monkeypatch.setattr(config_module, "get_settings", lambda: settings)
+        monkeypatch.setattr(config_module, "get_app_settings", lambda: settings)
         monkeypatch.setattr(logging_module, "configure_logging", lambda _: None)
         main = _import_main()
         monkeypatch.setattr(main, "init_mongo", fake_init_mongo)
@@ -86,7 +86,7 @@ class TestMainApp:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Проверяет, что созданное приложение обрабатывает health route."""
-        monkeypatch.setattr(config_module, "get_settings", lambda: AppSettings())
+        monkeypatch.setattr(config_module, "get_app_settings", lambda: AppSettings())
         monkeypatch.setattr(logging_module, "configure_logging", lambda _: None)
         main = _import_main()
         app = main.create_app()

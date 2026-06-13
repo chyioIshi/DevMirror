@@ -47,6 +47,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        await container.aclose()
         await close_mongo(mongo_client)
         logger.info("DevMirror stopped")
 

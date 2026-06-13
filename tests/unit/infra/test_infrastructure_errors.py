@@ -3,6 +3,7 @@ from app.infra.exceptions import (
     DatabaseConnectionError,
     InfrastructureError,
     InfrastructureErrorCode,
+    InvalidSideEffectProviderConfigError,
     RepositoryError,
     SideEffectProviderPluginError,
 )
@@ -52,3 +53,10 @@ class TestInfrastructureErrors:
         assert str(error) == "Connection was not found"
         assert error.code == InfrastructureErrorCode.CONNECTION_NOT_FOUND
         assert error.details == {"name": "main-kafka"}
+
+    def test_invalid_side_effect_provider_config_error_keeps_details(self) -> None:
+        error = InvalidSideEffectProviderConfigError(details={"field": "options.method"})
+
+        assert str(error) == "Invalid side effect provider configuration"
+        assert error.code == InfrastructureErrorCode.INVALID_SIDE_EFFECT_PROVIDER_CONFIG
+        assert error.details == {"field": "options.method"}

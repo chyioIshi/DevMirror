@@ -85,12 +85,30 @@ class TestSideEffect:
                 payload_template={"ok": True},
             )
 
-    @pytest.mark.parametrize("target", [{}, {"url": ""}, {"url": 123}])
-    def test_http_callback_requires_url_target(self, target: dict[str, object]) -> None:
+    def test_http_callback_requires_connection_target(
+        self,
+    ) -> None:
+        side_effect = SideEffect(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
+            target={"connection": "main-http"},
+            payload_template={"ok": True},
+        )
+
+        assert side_effect.target == {"connection": "main-http"}
+
+    @pytest.mark.parametrize(
+        "target",
+        [{}, {"url": "https://example.test/callback"}, {"connection": ""}, {"connection": 123}],
+    )
+    def test_http_callback_rejects_missing_connection_target(
+        self,
+        target: dict[str, object],
+    ) -> None:
         with pytest.raises(InvalidSideEffectError):
             SideEffect(
                 type=SideEffectType.HTTP_CALLBACK,
-                provider="webhook",
+                provider="http",
                 target=target,
                 payload_template={"ok": True},
             )
@@ -99,8 +117,8 @@ class TestSideEffect:
         with pytest.raises(InvalidSideEffectError):
             SideEffect(
                 type=SideEffectType.HTTP_CALLBACK,
-                provider="webhook",
-                target={"url": "https://example.test/callback"},
+                provider="http",
+                target={"connection": "main-http"},
                 payload_template={"ok": True},
                 fail_policy=SideEffectFailPolicy.RETRY,
             )
@@ -110,8 +128,8 @@ class TestSideEffect:
         with pytest.raises(InvalidSideEffectError):
             SideEffect(
                 type=SideEffectType.HTTP_CALLBACK,
-                provider="webhook",
-                target={"url": "https://example.test/callback"},
+                provider="http",
+                target={"connection": "main-http"},
                 payload_template={"ok": True},
                 options={"max_attempts": max_attempts},
                 fail_policy=SideEffectFailPolicy.RETRY,

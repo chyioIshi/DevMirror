@@ -2,6 +2,7 @@
 
 from typing import Final, cast
 
+import httpx
 from fastapi import Request
 
 from app.application.mocks import MockManagementService, MockResolverService
@@ -42,6 +43,7 @@ from app.infra.scope_resolution import (
     JsonBodyFieldScopeResolutionStrategy,
 )
 from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginLoader
+from app.infra.side_effects.providers import HttpCallbackSideEffectProvider
 from app.infra.tasks import InProcessAsyncTaskScheduler
 
 
@@ -70,6 +72,8 @@ class AppContainer:
         self._mock_resolver_service: MockResolverService | None = None
         self._mock_response_builder: MockResponseBuilder | None = None
         self._connection_registry: ConnectionRegistry | None = None
+        self._http_callback_client: httpx.AsyncClient | None = None
+        self._http_callback_side_effect_provider: HttpCallbackSideEffectProvider | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
         self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
         self._async_task_scheduler: AsyncTaskScheduler | None = None
@@ -267,11 +271,24 @@ class AppContainer:
         """Return the registry used to resolve side effect providers."""
         if self._side_effect_provider_registry is None:
             registry = SideEffectProviderRegistry()
+            if self._http_callback_side_effect_provider is None:
+                if self._http_callback_client is None:
+                    self._http_callback_client = httpx.AsyncClient()
+                self._http_callback_side_effect_provider = HttpCallbackSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    client=self._http_callback_client,
+                )
+            registry.register(self._http_callback_side_effect_provider)
             SideEffectProviderPluginLoader(
                 connection_registry=self.connection_registry,
             ).load_into(registry)
             self._side_effect_provider_registry = registry
         return self._side_effect_provider_registry
+
+    async def aclose(self) -> None:
+        """Close infrastructure resources owned by the container."""
+        if self._http_callback_client is not None and not self._http_callback_client.is_closed:
+            await self._http_callback_client.aclose()
 
     @property
     def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:

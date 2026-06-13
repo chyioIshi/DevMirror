@@ -4,6 +4,14 @@ from app.di.container import AppContainer
 from app.infra.side_effects import ConnectionConfig
 
 
+class FakeHttpClient:
+    def __init__(self) -> None:
+        self.is_closed = False
+
+    async def aclose(self) -> None:
+        self.is_closed = True
+
+
 class TestDependencyProviders:
     """Проверяет DI provider-функции."""
 
@@ -59,6 +67,30 @@ class TestDependencyProviders:
         result = container.connection_registry.get("main-kafka")
 
         assert result == connection
+
+    def test_side_effect_provider_registry_registers_http_provider(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.side_effect_provider_registry.get("http")
+
+        assert result.provider == "http"
+
+    async def test_aclose_closes_http_callback_client(self, monkeypatch) -> None:
+        clients: list[FakeHttpClient] = []
+
+        def client_factory() -> FakeHttpClient:
+            client = FakeHttpClient()
+            clients.append(client)
+            return client
+
+        monkeypatch.setattr("app.di.container.httpx.AsyncClient", client_factory)
+        container = AppContainer(settings=AppSettings())
+
+        container.side_effect_provider_registry.get("http")
+        await container.aclose()
+
+        assert len(clients) == 1
+        assert clients[0].is_closed is True
 
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""

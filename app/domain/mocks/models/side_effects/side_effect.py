@@ -62,7 +62,7 @@ class SideEffect:
             return
 
         if self.type == SideEffectType.HTTP_CALLBACK:
-            self._require_target_key("url")
+            self._require_target_key("connection")
 
     def _validate_fail_policy_options(self) -> None:
         if self.fail_policy != SideEffectFailPolicy.RETRY:

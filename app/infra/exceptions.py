@@ -15,6 +15,7 @@ class InfrastructureErrorCode(StrEnum):
     SERIALIZATION_ERROR = "SERIALIZATION_ERROR"
     SIDE_EFFECT_PROVIDER_PLUGIN_ERROR = "SIDE_EFFECT_PROVIDER_PLUGIN_ERROR"
     CONNECTION_NOT_FOUND = "CONNECTION_NOT_FOUND"
+    INVALID_SIDE_EFFECT_PROVIDER_CONFIG = "INVALID_SIDE_EFFECT_PROVIDER_CONFIG"
 
 
 @dataclass(eq=False)
@@ -106,4 +107,20 @@ class ConnectionNotFoundError(InfrastructureError):
             code=InfrastructureErrorCode.CONNECTION_NOT_FOUND,
             message=message,
             details=error_details,
+        )
+
+
+class InvalidSideEffectProviderConfigError(InfrastructureError):
+    """Error raised when a side effect provider config is invalid."""
+
+    def __init__(
+        self,
+        message: str = "Invalid side effect provider configuration",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates an invalid side effect provider config error."""
+        super().__init__(
+            code=InfrastructureErrorCode.INVALID_SIDE_EFFECT_PROVIDER_CONFIG,
+            message=message,
+            details=details or {},
         )
