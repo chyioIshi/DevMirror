@@ -44,9 +44,11 @@ from app.infra.scope_resolution import (
 )
 from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginLoader
 from app.infra.side_effects.providers import (
-    AioKafkaMessageProducer,
+    AsyncKafkaProducer,
+    AsyncPostgresClient,
     HttpCallbackSideEffectProvider,
     KafkaSideEffectProvider,
+    PostgresSideEffectProvider,
 )
 from app.infra.tasks import InProcessAsyncTaskScheduler
 
@@ -78,8 +80,10 @@ class AppContainer:
         self._connection_registry: ConnectionRegistry | None = None
         self._http_callback_client: httpx.AsyncClient | None = None
         self._http_callback_side_effect_provider: HttpCallbackSideEffectProvider | None = None
-        self._kafka_message_producer: AioKafkaMessageProducer | None = None
+        self._kafka_message_producer: AsyncKafkaProducer | None = None
         self._kafka_side_effect_provider: KafkaSideEffectProvider | None = None
+        self._postgres_client: AsyncPostgresClient | None = None
+        self._postgres_side_effect_provider: PostgresSideEffectProvider | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
         self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
         self._async_task_scheduler: AsyncTaskScheduler | None = None
@@ -287,12 +291,20 @@ class AppContainer:
             registry.register(self._http_callback_side_effect_provider)
             if self._kafka_side_effect_provider is None:
                 if self._kafka_message_producer is None:
-                    self._kafka_message_producer = AioKafkaMessageProducer()
+                    self._kafka_message_producer = AsyncKafkaProducer()
                 self._kafka_side_effect_provider = KafkaSideEffectProvider(
                     connection_registry=self.connection_registry,
                     producer=self._kafka_message_producer,
                 )
             registry.register(self._kafka_side_effect_provider)
+            if self._postgres_side_effect_provider is None:
+                if self._postgres_client is None:
+                    self._postgres_client = AsyncPostgresClient()
+                self._postgres_side_effect_provider = PostgresSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    pg_client=self._postgres_client,
+                )
+            registry.register(self._postgres_side_effect_provider)
             SideEffectProviderPluginLoader(
                 connection_registry=self.connection_registry,
             ).load_into(registry)
@@ -305,6 +317,8 @@ class AppContainer:
             await self._http_callback_client.aclose()
         if self._kafka_message_producer is not None:
             await self._kafka_message_producer.aclose()
+        if self._postgres_client is not None:
+            await self._postgres_client.aclose()
 
     @property
     def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:

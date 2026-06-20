@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 import httpx
@@ -28,9 +29,14 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         client = FakeAsyncClient()
-        effect = self._side_effect(target={"connection": "main-http", "path": "callbacks"})
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
+            target={"connection": "main-http", "path": "callbacks"},
+        )
         provider = HttpCallbackSideEffectProvider(
             connection_registry=connection_registry,
             client=client,
@@ -46,6 +52,7 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         requests: list[httpx.Request] = []
 
@@ -53,7 +60,9 @@ class TestHttpCallbackSideEffectProvider:
             requests.append(request)
             return httpx.Response(status_code=202, text="accepted")
 
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={"connection": "main-http", "path": "/callbacks/orders"},
             payload_template={"entity_id": "entity-1"},
         )
@@ -79,6 +88,7 @@ class TestHttpCallbackSideEffectProvider:
     async def test_supports_absolute_target_url(
         self,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         connection_registry = ConnectionRegistry(
             connections=[
@@ -98,7 +108,9 @@ class TestHttpCallbackSideEffectProvider:
             requests.append(request)
             return httpx.Response(status_code=200, text="ok")
 
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={
                 "connection": "main-http",
                 "url": "https://override.test/callback",
@@ -119,8 +131,11 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={
                 "connection": "main-http",
                 "url": "https://override.test/callback",
@@ -140,6 +155,7 @@ class TestHttpCallbackSideEffectProvider:
     async def test_rejects_non_http_or_https_scheme(
         self,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         registry = ConnectionRegistry(
             connections=[
@@ -153,7 +169,9 @@ class TestHttpCallbackSideEffectProvider:
                 ),
             ],
         )
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={
                 "connection": "main-http",
                 "url": "ftp://callback.test/file",
@@ -174,6 +192,7 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         requests: list[httpx.Request] = []
 
@@ -181,7 +200,9 @@ class TestHttpCallbackSideEffectProvider:
             requests.append(request)
             return httpx.Response(status_code=200)
 
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={"connection": "main-http", "path": "callbacks"},
             options={
                 "headers": {
@@ -209,6 +230,7 @@ class TestHttpCallbackSideEffectProvider:
         method: str,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         requests: list[httpx.Request] = []
 
@@ -216,7 +238,9 @@ class TestHttpCallbackSideEffectProvider:
             requests.append(request)
             return httpx.Response(status_code=200)
 
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={"connection": "main-http", "path": "callbacks"},
             payload_template={"entity_id": "entity-1"},
             options={"method": method},
@@ -237,6 +261,7 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         requests: list[httpx.Request] = []
 
@@ -244,7 +269,9 @@ class TestHttpCallbackSideEffectProvider:
             requests.append(request)
             return httpx.Response(status_code=200)
 
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={"connection": "main-http", "path": "callbacks"},
             options={"method": "GET"},
         )
@@ -264,8 +291,11 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
             target={"connection": "main-http", "path": "callbacks"},
             options={"method": "TRACE"},
         )
@@ -284,11 +314,16 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         async def handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(status_code=503, text="service unavailable")
 
-        effect = self._side_effect(target={"connection": "main-http", "path": "callbacks"})
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
+            target={"connection": "main-http", "path": "callbacks"},
+        )
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
             provider = HttpCallbackSideEffectProvider(
@@ -309,11 +344,16 @@ class TestHttpCallbackSideEffectProvider:
         self,
         connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         async def handler(request: httpx.Request) -> httpx.Response:
             raise httpx.ConnectError("connection failed", request=request)
 
-        effect = self._side_effect(target={"connection": "main-http", "path": "callbacks"})
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
+            target={"connection": "main-http", "path": "callbacks"},
+        )
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
             provider = HttpCallbackSideEffectProvider(
@@ -329,6 +369,7 @@ class TestHttpCallbackSideEffectProvider:
     async def test_rejects_non_http_connection(
         self,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         registry = ConnectionRegistry(
             connections=[
@@ -339,7 +380,9 @@ class TestHttpCallbackSideEffectProvider:
                 )
             ]
         )
-        effect = self._side_effect(target={"connection": "main-kafka"})
+        effect = side_effect_factory(
+            type=SideEffectType.HTTP_CALLBACK, provider="http", target={"connection": "main-kafka"}
+        )
         provider = HttpCallbackSideEffectProvider(
             connection_registry=registry,
             client=FakeAsyncClient(),
@@ -365,18 +408,3 @@ class TestHttpCallbackSideEffectProvider:
         ]
 
         assert leaked_files == []
-
-    def _side_effect(
-        self,
-        *,
-        target: dict[str, object],
-        payload_template: dict[str, object] | None = None,
-        options: dict[str, object] | None = None,
-    ) -> SideEffect:
-        return SideEffect(
-            type=SideEffectType.HTTP_CALLBACK,
-            provider="http",
-            target=target,
-            payload_template=payload_template or {"ok": True},
-            options=options or {},
-        )

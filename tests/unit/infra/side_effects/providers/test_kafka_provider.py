@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -55,9 +56,14 @@ class TestKafkaSideEffectProvider:
         self,
         kafka_connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         producer = FakeKafkaProducer()
-        effect = self._side_effect(target={"connection": "main-kafka", "destination": "events"})
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
+            target={"connection": "main-kafka", "destination": "events"},
+        )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
             producer=producer,
@@ -87,9 +93,12 @@ class TestKafkaSideEffectProvider:
         self,
         kafka_connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         producer = FakeKafkaProducer()
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
             target={"connection": "main-kafka", "destination": "events"},
             payload_template={"entity_id": "entity-1"},
             options={
@@ -117,6 +126,7 @@ class TestKafkaSideEffectProvider:
     async def test_uses_named_connection(
         self,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         registry = ConnectionRegistry(
             connections=[
@@ -128,7 +138,9 @@ class TestKafkaSideEffectProvider:
             ]
         )
         producer = FakeKafkaProducer()
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
             target={"connection": "secondary-kafka", "destination": "events"},
         )
         provider = KafkaSideEffectProvider(connection_registry=registry, producer=producer)
@@ -140,6 +152,7 @@ class TestKafkaSideEffectProvider:
     async def test_supports_list_bootstrap_servers(
         self,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         registry = ConnectionRegistry(
             connections=[
@@ -153,7 +166,9 @@ class TestKafkaSideEffectProvider:
             ]
         )
         producer = FakeKafkaProducer()
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
             target={"connection": "cluster-kafka", "destination": "events"},
         )
         provider = KafkaSideEffectProvider(connection_registry=registry, producer=producer)
@@ -169,9 +184,12 @@ class TestKafkaSideEffectProvider:
         self,
         kafka_connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         producer = FakeKafkaProducer()
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
             target={"connection": "main-kafka", "destination": "events"},
             options={"key": 42},
         )
@@ -189,8 +207,11 @@ class TestKafkaSideEffectProvider:
         self,
         kafka_connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        effect = self._side_effect(
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
             target={"connection": "main-kafka", "destination": "events"},
             options={"headers": {"source": 123}},
         )
@@ -253,8 +274,13 @@ class TestKafkaSideEffectProvider:
         self,
         kafka_connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        effect = self._side_effect(target={"connection": "missing", "destination": "events"})
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
+            target={"connection": "missing", "destination": "events"},
+        )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
             producer=FakeKafkaProducer(),
@@ -268,6 +294,7 @@ class TestKafkaSideEffectProvider:
     async def test_mismatched_connection_fails_clearly(
         self,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
         registry = ConnectionRegistry(
             connections=[
@@ -278,7 +305,11 @@ class TestKafkaSideEffectProvider:
                 )
             ]
         )
-        effect = self._side_effect(target={"connection": "main-http", "destination": "events"})
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
+            target={"connection": "main-http", "destination": "events"},
+        )
         provider = KafkaSideEffectProvider(
             connection_registry=registry,
             producer=FakeKafkaProducer(),
@@ -294,8 +325,13 @@ class TestKafkaSideEffectProvider:
         self,
         kafka_connection_registry: ConnectionRegistry,
         side_effect_context: SideEffectContext,
+        side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        effect = self._side_effect(target={"connection": "main-kafka", "destination": "events"})
+        effect = side_effect_factory(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
+            target={"connection": "main-kafka", "destination": "events"},
+        )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
             producer=FakeKafkaProducer(error=RuntimeError("publish failed")),
@@ -331,18 +367,3 @@ class TestKafkaSideEffectProvider:
         ]
 
         assert leaked_files == []
-
-    def _side_effect(
-        self,
-        *,
-        target: dict[str, object],
-        payload_template: dict[str, object] | None = None,
-        options: dict[str, object] | None = None,
-    ) -> SideEffect:
-        return SideEffect(
-            type=SideEffectType.MESSAGE_PUBLISH,
-            provider="kafka",
-            target=target,
-            payload_template=payload_template or {"ok": True},
-            options=options or {},
-        )

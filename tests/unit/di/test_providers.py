@@ -20,6 +20,14 @@ class FakeKafkaMessageProducer:
         self.closed = True
 
 
+class FakePostgresClient:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
 class TestDependencyProviders:
     """Проверяет DI provider-функции."""
 
@@ -90,9 +98,17 @@ class TestDependencyProviders:
 
         assert result.provider == "kafka"
 
+    def test_side_effect_provider_registry_registers_postgres_provider(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.side_effect_provider_registry.get("postgres")
+
+        assert result.provider == "postgres"
+
     async def test_aclose_closes_side_effect_clients(self, monkeypatch) -> None:
         clients: list[FakeHttpClient] = []
         producers: list[FakeKafkaMessageProducer] = []
+        pg_clients: list[FakePostgresClient] = []
 
         def client_factory() -> FakeHttpClient:
             client = FakeHttpClient()
@@ -104,18 +120,30 @@ class TestDependencyProviders:
             producers.append(producer)
             return producer
 
+        def pg_client_factory() -> FakePostgresClient:
+            pg_client = FakePostgresClient()
+            pg_clients.append(pg_client)
+            return pg_client
+
         monkeypatch.setattr("app.di.container.httpx.AsyncClient", client_factory)
-        monkeypatch.setattr("app.di.container.AioKafkaMessageProducer", producer_factory)
+        monkeypatch.setattr("app.di.container.AsyncKafkaProducer", producer_factory)
+        monkeypatch.setattr(
+            "app.di.container.AsyncPostgresClient",
+            pg_client_factory,
+        )
         container = AppContainer(settings=AppSettings())
 
         container.side_effect_provider_registry.get("http")
         container.side_effect_provider_registry.get("kafka")
+        container.side_effect_provider_registry.get("postgres")
         await container.aclose()
 
         assert len(clients) == 1
         assert clients[0].is_closed is True
         assert len(producers) == 1
         assert producers[0].closed is True
+        assert len(pg_clients) == 1
+        assert pg_clients[0].closed is True
 
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""

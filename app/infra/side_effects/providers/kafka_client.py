@@ -22,7 +22,7 @@ class KafkaProducerKey:
     client_id: str | None
 
 
-class AioKafkaMessageProducer:
+class AsyncKafkaProducer:
     """Publishes Kafka messages using reusable aiokafka producers."""
 
     def __init__(self) -> None:

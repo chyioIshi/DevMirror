@@ -17,6 +17,7 @@ class InfrastructureErrorCode(StrEnum):
     CONNECTION_NOT_FOUND = "CONNECTION_NOT_FOUND"
     INVALID_SIDE_EFFECT_PROVIDER_CONFIG = "INVALID_SIDE_EFFECT_PROVIDER_CONFIG"
     KAFKA_PUBLISH_ERROR = "KAFKA_PUBLISH_ERROR"
+    POSTGRES_INSERT_ERROR = "POSTGRES_INSERT_ERROR"
 
 
 @dataclass(eq=False)
@@ -138,6 +139,22 @@ class KafkaPublishError(InfrastructureError):
         """Creates a Kafka publish error."""
         super().__init__(
             code=InfrastructureErrorCode.KAFKA_PUBLISH_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class PostgresInsertError(InfrastructureError):
+    """Error raised when a Postgres insert cannot be executed."""
+
+    def __init__(
+        self,
+        message: str = "Postgres insert failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a Postgres insert error."""
+        super().__init__(
+            code=InfrastructureErrorCode.POSTGRES_INSERT_ERROR,
             message=message,
             details=details or {},
         )

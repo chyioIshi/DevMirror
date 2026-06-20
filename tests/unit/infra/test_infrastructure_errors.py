@@ -4,6 +4,7 @@ from app.infra.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     InvalidSideEffectProviderConfigError,
+    PostgresInsertError,
     RepositoryError,
     SideEffectProviderPluginError,
 )
@@ -60,3 +61,10 @@ class TestInfrastructureErrors:
         assert str(error) == "Invalid side effect provider configuration"
         assert error.code == InfrastructureErrorCode.INVALID_SIDE_EFFECT_PROVIDER_CONFIG
         assert error.details == {"field": "options.method"}
+
+    def test_postgres_insert_error_keeps_details(self) -> None:
+        error = PostgresInsertError(details={"stage": "execute"})
+
+        assert str(error) == "Postgres insert failed"
+        assert error.code == InfrastructureErrorCode.POSTGRES_INSERT_ERROR
+        assert error.details == {"stage": "execute"}
