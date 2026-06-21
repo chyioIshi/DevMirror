@@ -46,9 +46,11 @@ from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginL
 from app.infra.side_effects.providers import (
     AsyncKafkaProducer,
     AsyncPostgresClient,
+    AsyncRedisClient,
     HttpCallbackSideEffectProvider,
     KafkaSideEffectProvider,
     PostgresSideEffectProvider,
+    RedisSideEffectProvider,
 )
 from app.infra.tasks import InProcessAsyncTaskScheduler
 
@@ -84,6 +86,8 @@ class AppContainer:
         self._kafka_side_effect_provider: KafkaSideEffectProvider | None = None
         self._postgres_client: AsyncPostgresClient | None = None
         self._postgres_side_effect_provider: PostgresSideEffectProvider | None = None
+        self._redis_client: AsyncRedisClient | None = None
+        self._redis_side_effect_provider: RedisSideEffectProvider | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
         self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
         self._async_task_scheduler: AsyncTaskScheduler | None = None
@@ -305,6 +309,14 @@ class AppContainer:
                     pg_client=self._postgres_client,
                 )
             registry.register(self._postgres_side_effect_provider)
+            if self._redis_side_effect_provider is None:
+                if self._redis_client is None:
+                    self._redis_client = AsyncRedisClient()
+                self._redis_side_effect_provider = RedisSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    redis_client=self._redis_client,
+                )
+            registry.register(self._redis_side_effect_provider)
             SideEffectProviderPluginLoader(
                 connection_registry=self.connection_registry,
             ).load_into(registry)
@@ -319,6 +331,8 @@ class AppContainer:
             await self._kafka_message_producer.aclose()
         if self._postgres_client is not None:
             await self._postgres_client.aclose()
+        if self._redis_client is not None:
+            await self._redis_client.aclose()
 
     @property
     def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:

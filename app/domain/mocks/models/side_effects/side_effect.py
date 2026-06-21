@@ -14,6 +14,9 @@ class SideEffectType(StrEnum):
     DB_INSERT = "db_insert"
     DB_UPDATE = "db_update"
     HTTP_CALLBACK = "http_callback"
+    REDIS_SET = "redis_set"
+    REDIS_DELETE = "redis_delete"
+    REDIS_PUBLISH = "redis_publish"
 
 
 class SideEffectMode(StrEnum):

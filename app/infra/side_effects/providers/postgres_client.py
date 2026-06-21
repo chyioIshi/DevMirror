@@ -7,6 +7,7 @@ from typing import Any
 
 import asyncpg
 
+from app.helpers.side_effect_provider_validation import SideEffectProviderValidation
 from app.infra.exceptions import InvalidSideEffectProviderConfigError, PostgresInsertError
 from app.infra.side_effects.connection_config import ConnectionConfig
 
@@ -115,8 +116,18 @@ class AsyncPostgresClient:
             return pool
 
     def _pool_config(self, connection: ConnectionConfig) -> PostgresPoolConfig:
-        min_size = self._optional_positive_int(connection.settings, "min_size")
-        max_size = self._optional_positive_int(connection.settings, "max_size")
+        min_size = SideEffectProviderValidation.optional_positive_int(
+            connection.settings,
+            "min_size",
+            "connection.settings.min_size",
+            subject="Postgres",
+        )
+        max_size = SideEffectProviderValidation.optional_positive_int(
+            connection.settings,
+            "max_size",
+            "connection.settings.max_size",
+            subject="Postgres",
+        )
         if min_size is not None and max_size is not None and max_size < min_size:
             raise InvalidSideEffectProviderConfigError(
                 "Postgres connection.settings.max_size must be greater than or equal to min_size",
@@ -128,9 +139,11 @@ class AsyncPostgresClient:
             dsn=self._dsn(connection),
             min_size=min_size,
             max_size=max_size,
-            command_timeout=self._optional_positive_number(
+            command_timeout=SideEffectProviderValidation.optional_positive_number(
                 connection.settings,
                 "command_timeout",
+                "connection.settings.command_timeout",
+                subject="Postgres",
             ),
         )
 
@@ -141,34 +154,4 @@ class AsyncPostgresClient:
         raise InvalidSideEffectProviderConfigError(
             "Postgres connection.settings.dsn must be configured",
             details={"field": "connection.settings.dsn"},
-        )
-
-    def _optional_positive_int(
-        self,
-        settings: dict[str, Any],
-        key: str,
-    ) -> int | None:
-        value = settings.get(key)
-        if value is None:
-            return None
-        if isinstance(value, int) and not isinstance(value, bool) and value > 0:
-            return value
-        raise InvalidSideEffectProviderConfigError(
-            f"Postgres connection.settings.{key} must be a positive integer",
-            details={"field": f"connection.settings.{key}"},
-        )
-
-    def _optional_positive_number(
-        self,
-        settings: dict[str, Any],
-        key: str,
-    ) -> float | None:
-        value = settings.get(key)
-        if value is None:
-            return None
-        if isinstance(value, int | float) and not isinstance(value, bool) and value > 0:
-            return float(value)
-        raise InvalidSideEffectProviderConfigError(
-            f"Postgres connection.settings.{key} must be a positive number",
-            details={"field": f"connection.settings.{key}"},
         )

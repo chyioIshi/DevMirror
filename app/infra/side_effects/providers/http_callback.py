@@ -11,6 +11,7 @@ from app.domain.mocks.models import (
     SideEffectExecutionResult,
     SideEffectType,
 )
+from app.helpers.side_effect_provider_validation import SideEffectProviderValidation
 from app.infra.exceptions import InvalidSideEffectProviderConfigError
 from app.infra.side_effects.connection_config import ConnectionConfig
 from app.infra.side_effects.connection_registry import ConnectionRegistry
@@ -107,7 +108,9 @@ class HttpCallbackSideEffectProvider:
         return await self._client.request(method, url, **request_kwargs)
 
     def _get_connection(self, target: dict[str, Any]) -> ConnectionConfig:
-        connection_name = self._optional_string(target, "connection")
+        connection_name = SideEffectProviderValidation.optional_string(
+            target, "connection", subject="HTTP callback"
+        )
         if connection_name is None:
             raise InvalidSideEffectProviderConfigError(
                 "HTTP callback target.connection must be configured",
@@ -127,7 +130,9 @@ class HttpCallbackSideEffectProvider:
         return connection
 
     def _url(self, target: dict[str, Any], settings: dict[str, Any]) -> str:
-        override_url = self._optional_string(target, "url")
+        override_url = SideEffectProviderValidation.optional_string(
+            target, "url", subject="HTTP callback"
+        )
         if override_url is not None:
             if settings.get("allow_absolute_url") is not True:
                 raise InvalidSideEffectProviderConfigError(
@@ -137,10 +142,15 @@ class HttpCallbackSideEffectProvider:
             self._validate_absolute_url(override_url, "target.url")
             return override_url
 
-        base_url = self._required_string(settings, "base_url", "connection.settings.base_url")
+        base_url = SideEffectProviderValidation.required_string(
+            settings,
+            "base_url",
+            "connection.settings.base_url",
+            subject="HTTP callback",
+        )
         self._validate_absolute_url(base_url, "connection.settings.base_url")
 
-        path = self._optional_string(target, "path")
+        path = SideEffectProviderValidation.optional_string(target, "path", subject="HTTP callback")
         if path is None:
             return base_url
 
@@ -168,11 +178,18 @@ class HttpCallbackSideEffectProvider:
         settings: dict[str, Any],
         options: dict[str, Any],
     ) -> dict[str, str]:
-        headers = self._string_mapping(
+        headers = SideEffectProviderValidation.string_mapping(
             settings.get("default_headers"),
             "connection.settings.default_headers",
+            subject="HTTP callback",
         )
-        headers.update(self._string_mapping(options.get("headers"), "options.headers"))
+        headers.update(
+            SideEffectProviderValidation.string_mapping(
+                options.get("headers"),
+                "options.headers",
+                subject="HTTP callback",
+            )
+        )
         return headers
 
     def _timeout(self, settings: dict[str, Any]) -> float | None:
@@ -185,45 +202,6 @@ class HttpCallbackSideEffectProvider:
             "HTTP callback connection.settings.timeout_seconds must be positive",
             details={"field": "connection.settings.timeout_seconds"},
         )
-
-    def _optional_string(self, mapping: dict[str, Any], key: str) -> str | None:
-        value = mapping.get(key)
-        if value is None:
-            return None
-        if isinstance(value, str) and value.strip():
-            return value
-        raise InvalidSideEffectProviderConfigError(
-            f"HTTP callback {key} must be a non-empty string",
-            details={"field": key},
-        )
-
-    def _required_string(self, mapping: dict[str, Any], key: str, field: str) -> str:
-        value = self._optional_string(mapping, key)
-        if value is None:
-            raise InvalidSideEffectProviderConfigError(
-                f"HTTP callback {field} must be configured",
-                details={"field": field},
-            )
-        return value
-
-    def _string_mapping(self, value: Any, field: str) -> dict[str, str]:
-        if value is None:
-            return {}
-        if not isinstance(value, dict):
-            raise InvalidSideEffectProviderConfigError(
-                f"HTTP callback {field} must be a dictionary",
-                details={"field": field},
-            )
-
-        result: dict[str, str] = {}
-        for key, item in value.items():
-            if not isinstance(key, str) or not isinstance(item, str):
-                raise InvalidSideEffectProviderConfigError(
-                    f"HTTP callback {field} must contain only string values",
-                    details={"field": field},
-                )
-            result[key] = item
-        return result
 
     def _validate_absolute_url(self, value: str, field: str) -> None:
         parsed = urlparse(value)

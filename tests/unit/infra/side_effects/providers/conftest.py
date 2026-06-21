@@ -106,3 +106,21 @@ def postgres_connection_registry() -> ConnectionRegistry:
             ),
         ],
     )
+
+
+@pytest.fixture
+def redis_connection_registry() -> ConnectionRegistry:
+    return ConnectionRegistry(
+        connections=[
+            ConnectionConfig(
+                name="main-redis",
+                provider="redis",
+                settings={
+                    "url": "redis://localhost:6379/0",
+                    "socket_timeout": 2,
+                    "socket_connect_timeout": 1,
+                    "max_connections": 5,
+                },
+            ),
+        ],
+    )

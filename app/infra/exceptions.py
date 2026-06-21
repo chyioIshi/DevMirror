@@ -18,6 +18,7 @@ class InfrastructureErrorCode(StrEnum):
     INVALID_SIDE_EFFECT_PROVIDER_CONFIG = "INVALID_SIDE_EFFECT_PROVIDER_CONFIG"
     KAFKA_PUBLISH_ERROR = "KAFKA_PUBLISH_ERROR"
     POSTGRES_INSERT_ERROR = "POSTGRES_INSERT_ERROR"
+    REDIS_SIDE_EFFECT_ERROR = "REDIS_SIDE_EFFECT_ERROR"
 
 
 @dataclass(eq=False)
@@ -155,6 +156,22 @@ class PostgresInsertError(InfrastructureError):
         """Creates a Postgres insert error."""
         super().__init__(
             code=InfrastructureErrorCode.POSTGRES_INSERT_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class RedisSideEffectError(InfrastructureError):
+    """Error raised when a Redis side effect command cannot be executed."""
+
+    def __init__(
+        self,
+        message: str = "Redis side effect execution failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a Redis side effect execution error."""
+        super().__init__(
+            code=InfrastructureErrorCode.REDIS_SIDE_EFFECT_ERROR,
             message=message,
             details=details or {},
         )

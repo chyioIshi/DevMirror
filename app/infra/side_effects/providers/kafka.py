@@ -8,12 +8,13 @@ from app.domain.mocks.models import (
     SideEffectExecutionResult,
     SideEffectType,
 )
+from app.helpers.side_effect_provider_validation import SideEffectProviderValidation
 from app.infra.exceptions import InvalidSideEffectProviderConfigError
 from app.infra.side_effects.connection_config import ConnectionConfig
 from app.infra.side_effects.connection_registry import ConnectionRegistry
 
 
-class KafkaMessageProducer(Protocol):
+class KafkaProducer(Protocol):
     """Protocol implemented by concrete Kafka producer adapters.
 
     Headers are plain string headers at provider boundary. Concrete producer
@@ -47,7 +48,7 @@ class KafkaSideEffectProvider:
     def __init__(
         self,
         connection_registry: ConnectionRegistry,
-        producer: KafkaMessageProducer,
+        producer: KafkaProducer,
     ) -> None:
         """Initializes the provider with connection configs and a producer adapter."""
         self._connection_registry = connection_registry
@@ -71,8 +72,15 @@ class KafkaSideEffectProvider:
             "bootstrap_servers",
             "connection.settings.bootstrap_servers",
         )
-        client_id = self._optional_string(settings, "client_id")
-        topic = self._required_string(effect.target, "destination", "target.destination")
+        client_id = SideEffectProviderValidation.optional_string(
+            settings, "client_id", subject="Kafka"
+        )
+        topic = SideEffectProviderValidation.required_string(
+            effect.target,
+            "destination",
+            "target.destination",
+            subject="Kafka",
+        )
         rendered_payload = effect.payload_template
         rendered_options = effect.options
         key = self._optional_key(rendered_options)
@@ -120,7 +128,12 @@ class KafkaSideEffectProvider:
             )
 
     def _get_connection(self, target: dict[str, Any]) -> ConnectionConfig:
-        connection_name = self._required_string(target, "connection", "target.connection")
+        connection_name = SideEffectProviderValidation.required_string(
+            target,
+            "connection",
+            "target.connection",
+            subject="Kafka",
+        )
         connection = self._connection_registry.get(connection_name)
         if connection.provider != self.provider:
             raise InvalidSideEffectProviderConfigError(
@@ -134,7 +147,11 @@ class KafkaSideEffectProvider:
         return connection
 
     def _headers(self, options: dict[str, Any]) -> dict[str, str] | None:
-        headers = self._string_mapping(options.get("headers"), "options.headers")
+        headers = SideEffectProviderValidation.string_mapping(
+            options.get("headers"),
+            "options.headers",
+            subject="Kafka",
+        )
         return headers or None
 
     def _optional_key(self, options: dict[str, Any]) -> str | None:
@@ -146,17 +163,6 @@ class KafkaSideEffectProvider:
         raise InvalidSideEffectProviderConfigError(
             "Kafka options.key must be a string, number, or boolean",
             details={"field": "options.key"},
-        )
-
-    def _optional_string(self, mapping: dict[str, Any], key: str) -> str | None:
-        value = mapping.get(key)
-        if value is None:
-            return None
-        if isinstance(value, str) and value.strip():
-            return value
-        raise InvalidSideEffectProviderConfigError(
-            f"Kafka {key} must be a non-empty string",
-            details={"field": key},
         )
 
     def _bootstrap_servers(
@@ -182,31 +188,3 @@ class KafkaSideEffectProvider:
             f"Kafka {field} must be a non-empty string or list of non-empty strings",
             details={"field": field},
         )
-
-    def _required_string(self, mapping: dict[str, Any], key: str, field: str) -> str:
-        value = self._optional_string(mapping, key)
-        if value is None:
-            raise InvalidSideEffectProviderConfigError(
-                f"Kafka {field} must be configured",
-                details={"field": field},
-            )
-        return value
-
-    def _string_mapping(self, value: Any, field: str) -> dict[str, str]:
-        if value is None:
-            return {}
-        if not isinstance(value, dict):
-            raise InvalidSideEffectProviderConfigError(
-                f"Kafka {field} must be a dictionary",
-                details={"field": field},
-            )
-
-        result: dict[str, str] = {}
-        for key, item in value.items():
-            if not isinstance(key, str) or not isinstance(item, str):
-                raise InvalidSideEffectProviderConfigError(
-                    f"Kafka {field} must contain only string values",
-                    details={"field": field},
-                )
-            result[key] = item
-        return result

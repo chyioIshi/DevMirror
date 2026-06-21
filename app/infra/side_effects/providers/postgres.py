@@ -10,6 +10,7 @@ from app.domain.mocks.models import (
     SideEffectExecutionResult,
     SideEffectType,
 )
+from app.helpers.side_effect_provider_validation import SideEffectProviderValidation
 from app.infra.exceptions import InvalidSideEffectProviderConfigError, PostgresInsertError
 from app.infra.side_effects.connection_config import ConnectionConfig
 from app.infra.side_effects.connection_registry import ConnectionRegistry
@@ -17,7 +18,7 @@ from app.infra.side_effects.connection_registry import ConnectionRegistry
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
-class PostgresInsertExecutor(Protocol):
+class PostgresClient(Protocol):
     """Protocol implemented by concrete Postgres insert adapters.
 
     The provider validates table/column identifiers and builds an INSERT
@@ -44,7 +45,7 @@ class PostgresSideEffectProvider:
     def __init__(
         self,
         connection_registry: ConnectionRegistry,
-        pg_client: PostgresInsertExecutor,
+        pg_client: PostgresClient,
     ) -> None:
         """Initializes the provider with connection configs and a Postgres client."""
         self._connection_registry = connection_registry
@@ -106,10 +107,11 @@ class PostgresSideEffectProvider:
             )
 
     def _get_connection(self, target: dict[str, Any]) -> ConnectionConfig:
-        connection_name = self._required_string(
+        connection_name = SideEffectProviderValidation.required_string(
             target,
             "connection",
             "target.connection",
+            subject="Postgres",
         )
         connection = self._connection_registry.get(connection_name)
         if connection.provider != self.provider:
@@ -124,7 +126,12 @@ class PostgresSideEffectProvider:
         return connection
 
     def _table(self, target: dict[str, Any]) -> str:
-        table = self._required_string(target, "table", "target.table")
+        table = SideEffectProviderValidation.required_string(
+            target,
+            "table",
+            "target.table",
+            subject="Postgres",
+        )
         self._validate_table_identifier(table)
         return table
 
@@ -169,23 +176,3 @@ class PostgresSideEffectProvider:
 
     def _quote_identifier(self, value: str) -> str:
         return f'"{value}"'
-
-    def _optional_string(self, mapping: dict[str, Any], key: str) -> str | None:
-        value = mapping.get(key)
-        if value is None:
-            return None
-        if isinstance(value, str) and value.strip():
-            return value
-        raise InvalidSideEffectProviderConfigError(
-            f"Postgres {key} must be a non-empty string",
-            details={"field": key},
-        )
-
-    def _required_string(self, mapping: dict[str, Any], key: str, field: str) -> str:
-        value = self._optional_string(mapping, key)
-        if value is None:
-            raise InvalidSideEffectProviderConfigError(
-                f"Postgres {field} must be configured",
-                details={"field": field},
-            )
-        return value

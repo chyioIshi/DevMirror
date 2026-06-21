@@ -12,7 +12,7 @@ class FakeHttpClient:
         self.is_closed = True
 
 
-class FakeKafkaMessageProducer:
+class FakeKafkaProducer:
     def __init__(self) -> None:
         self.closed = False
 
@@ -21,6 +21,14 @@ class FakeKafkaMessageProducer:
 
 
 class FakePostgresClient:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
+class FakeRedisClient:
     def __init__(self) -> None:
         self.closed = False
 
@@ -105,18 +113,26 @@ class TestDependencyProviders:
 
         assert result.provider == "postgres"
 
+    def test_side_effect_provider_registry_registers_redis_provider(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.side_effect_provider_registry.get("redis")
+
+        assert result.provider == "redis"
+
     async def test_aclose_closes_side_effect_clients(self, monkeypatch) -> None:
         clients: list[FakeHttpClient] = []
-        producers: list[FakeKafkaMessageProducer] = []
+        producers: list[FakeKafkaProducer] = []
         pg_clients: list[FakePostgresClient] = []
+        redis_clients: list[FakeRedisClient] = []
 
         def client_factory() -> FakeHttpClient:
             client = FakeHttpClient()
             clients.append(client)
             return client
 
-        def producer_factory() -> FakeKafkaMessageProducer:
-            producer = FakeKafkaMessageProducer()
+        def producer_factory() -> FakeKafkaProducer:
+            producer = FakeKafkaProducer()
             producers.append(producer)
             return producer
 
@@ -125,17 +141,24 @@ class TestDependencyProviders:
             pg_clients.append(pg_client)
             return pg_client
 
+        def redis_client_factory() -> FakeRedisClient:
+            redis_client = FakeRedisClient()
+            redis_clients.append(redis_client)
+            return redis_client
+
         monkeypatch.setattr("app.di.container.httpx.AsyncClient", client_factory)
         monkeypatch.setattr("app.di.container.AsyncKafkaProducer", producer_factory)
         monkeypatch.setattr(
             "app.di.container.AsyncPostgresClient",
             pg_client_factory,
         )
+        monkeypatch.setattr("app.di.container.AsyncRedisClient", redis_client_factory)
         container = AppContainer(settings=AppSettings())
 
         container.side_effect_provider_registry.get("http")
         container.side_effect_provider_registry.get("kafka")
         container.side_effect_provider_registry.get("postgres")
+        container.side_effect_provider_registry.get("redis")
         await container.aclose()
 
         assert len(clients) == 1
@@ -144,6 +167,8 @@ class TestDependencyProviders:
         assert producers[0].closed is True
         assert len(pg_clients) == 1
         assert pg_clients[0].closed is True
+        assert len(redis_clients) == 1
+        assert redis_clients[0].closed is True
 
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""
