@@ -105,7 +105,7 @@ class TestAsyncMongoSideEffectExecutor:
         FakePymongoAsyncMongoClient.close_error_hosts = set()
 
         monkeypatch.setattr(
-            "app.infra.side_effects.providers.mongo_side_effect_executor.PymongoAsyncMongoClient",
+            "app.infra.side_effects.providers.executors.mongo_side_effect_executor.PymongoAsyncMongoClient",
             FakePymongoAsyncMongoClient,
         )
 

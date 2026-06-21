@@ -70,7 +70,7 @@ def reset_fake_kafka_producer(monkeypatch: pytest.MonkeyPatch) -> None:
     FakeAioKafkaProducer.send_error = None
     FakeAioKafkaProducer.stop_error_client_ids = set()
     monkeypatch.setattr(
-        "app.infra.side_effects.providers.kafka_side_effect_executor.AIOKafkaProducer",
+        "app.infra.side_effects.providers.executors.kafka_side_effect_executor.AIOKafkaProducer",
         FakeAioKafkaProducer,
     )
 

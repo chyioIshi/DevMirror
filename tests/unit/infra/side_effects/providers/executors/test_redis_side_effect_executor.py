@@ -77,7 +77,7 @@ class TestAsyncRedisSideEffectExecutor:
             return FakeRedis(params=kwargs)
 
         monkeypatch.setattr(
-            "app.infra.side_effects.providers.redis_side_effect_executor.redis.Redis.from_url",
+            "app.infra.side_effects.providers.executors.redis_side_effect_executor.redis.Redis.from_url",
             from_url,
         )
 

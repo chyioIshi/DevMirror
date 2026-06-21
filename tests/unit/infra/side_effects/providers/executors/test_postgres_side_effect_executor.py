@@ -62,7 +62,7 @@ class TestAsyncPostgresSideEffectExecutor:
             return FakeAsyncpgPool(kwargs=kwargs)
 
         monkeypatch.setattr(
-            "app.infra.side_effects.providers.postgres_side_effect_executor.asyncpg.create_pool",
+            "app.infra.side_effects.providers.executors.postgres_side_effect_executor.asyncpg.create_pool",
             create_pool,
         )
 
