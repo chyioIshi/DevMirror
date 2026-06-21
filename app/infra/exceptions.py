@@ -19,6 +19,7 @@ class InfrastructureErrorCode(StrEnum):
     KAFKA_PUBLISH_ERROR = "KAFKA_PUBLISH_ERROR"
     POSTGRES_INSERT_ERROR = "POSTGRES_INSERT_ERROR"
     REDIS_SIDE_EFFECT_ERROR = "REDIS_SIDE_EFFECT_ERROR"
+    MONGO_SIDE_EFFECT_ERROR = "MONGO_SIDE_EFFECT_ERROR"
 
 
 @dataclass(eq=False)
@@ -172,6 +173,22 @@ class RedisSideEffectError(InfrastructureError):
         """Creates a Redis side effect execution error."""
         super().__init__(
             code=InfrastructureErrorCode.REDIS_SIDE_EFFECT_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class MongoSideEffectError(InfrastructureError):
+    """Error raised when a MongoDB side effect command cannot be executed."""
+
+    def __init__(
+        self,
+        message: str = "Mongo side effect execution failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a MongoDB side effect execution error."""
+        super().__init__(
+            code=InfrastructureErrorCode.MONGO_SIDE_EFFECT_ERROR,
             message=message,
             details=details or {},
         )

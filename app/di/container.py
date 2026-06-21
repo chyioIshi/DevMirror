@@ -44,11 +44,13 @@ from app.infra.scope_resolution import (
 )
 from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginLoader
 from app.infra.side_effects.providers import (
-    AsyncKafkaProducer,
-    AsyncPostgresClient,
-    AsyncRedisClient,
+    AsyncKafkaSideEffectExecutor,
+    AsyncMongoSideEffectExecutor,
+    AsyncPostgresSideEffectExecutor,
+    AsyncRedisSideEffectExecutor,
     HttpCallbackSideEffectProvider,
     KafkaSideEffectProvider,
+    MongoSideEffectProvider,
     PostgresSideEffectProvider,
     RedisSideEffectProvider,
 )
@@ -82,11 +84,13 @@ class AppContainer:
         self._connection_registry: ConnectionRegistry | None = None
         self._http_callback_client: httpx.AsyncClient | None = None
         self._http_callback_side_effect_provider: HttpCallbackSideEffectProvider | None = None
-        self._kafka_message_producer: AsyncKafkaProducer | None = None
+        self._kafka_side_effect_executor: AsyncKafkaSideEffectExecutor | None = None
         self._kafka_side_effect_provider: KafkaSideEffectProvider | None = None
-        self._postgres_client: AsyncPostgresClient | None = None
+        self._mongo_side_effect_executor: AsyncMongoSideEffectExecutor | None = None
+        self._mongo_side_effect_provider: MongoSideEffectProvider | None = None
+        self._postgres_side_effect_executor: AsyncPostgresSideEffectExecutor | None = None
         self._postgres_side_effect_provider: PostgresSideEffectProvider | None = None
-        self._redis_client: AsyncRedisClient | None = None
+        self._redis_side_effect_executor: AsyncRedisSideEffectExecutor | None = None
         self._redis_side_effect_provider: RedisSideEffectProvider | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
         self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
@@ -294,27 +298,35 @@ class AppContainer:
                 )
             registry.register(self._http_callback_side_effect_provider)
             if self._kafka_side_effect_provider is None:
-                if self._kafka_message_producer is None:
-                    self._kafka_message_producer = AsyncKafkaProducer()
+                if self._kafka_side_effect_executor is None:
+                    self._kafka_side_effect_executor = AsyncKafkaSideEffectExecutor()
                 self._kafka_side_effect_provider = KafkaSideEffectProvider(
                     connection_registry=self.connection_registry,
-                    producer=self._kafka_message_producer,
+                    side_effect_executor=self._kafka_side_effect_executor,
                 )
             registry.register(self._kafka_side_effect_provider)
+            if self._mongo_side_effect_provider is None:
+                if self._mongo_side_effect_executor is None:
+                    self._mongo_side_effect_executor = AsyncMongoSideEffectExecutor()
+                self._mongo_side_effect_provider = MongoSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._mongo_side_effect_executor,
+                )
+            registry.register(self._mongo_side_effect_provider)
             if self._postgres_side_effect_provider is None:
-                if self._postgres_client is None:
-                    self._postgres_client = AsyncPostgresClient()
+                if self._postgres_side_effect_executor is None:
+                    self._postgres_side_effect_executor = AsyncPostgresSideEffectExecutor()
                 self._postgres_side_effect_provider = PostgresSideEffectProvider(
                     connection_registry=self.connection_registry,
-                    pg_client=self._postgres_client,
+                    side_effect_executor=self._postgres_side_effect_executor,
                 )
             registry.register(self._postgres_side_effect_provider)
             if self._redis_side_effect_provider is None:
-                if self._redis_client is None:
-                    self._redis_client = AsyncRedisClient()
+                if self._redis_side_effect_executor is None:
+                    self._redis_side_effect_executor = AsyncRedisSideEffectExecutor()
                 self._redis_side_effect_provider = RedisSideEffectProvider(
                     connection_registry=self.connection_registry,
-                    redis_client=self._redis_client,
+                    side_effect_executor=self._redis_side_effect_executor,
                 )
             registry.register(self._redis_side_effect_provider)
             SideEffectProviderPluginLoader(
@@ -327,12 +339,14 @@ class AppContainer:
         """Close infrastructure resources owned by the container."""
         if self._http_callback_client is not None and not self._http_callback_client.is_closed:
             await self._http_callback_client.aclose()
-        if self._kafka_message_producer is not None:
-            await self._kafka_message_producer.aclose()
-        if self._postgres_client is not None:
-            await self._postgres_client.aclose()
-        if self._redis_client is not None:
-            await self._redis_client.aclose()
+        if self._kafka_side_effect_executor is not None:
+            await self._kafka_side_effect_executor.aclose()
+        if self._mongo_side_effect_executor is not None:
+            await self._mongo_side_effect_executor.aclose()
+        if self._postgres_side_effect_executor is not None:
+            await self._postgres_side_effect_executor.aclose()
+        if self._redis_side_effect_executor is not None:
+            await self._redis_side_effect_executor.aclose()
 
     @property
     def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:

@@ -15,19 +15,19 @@ _BOOTSTRAP_SERVERS_ERROR = (
 
 
 @dataclass(slots=True, frozen=True)
-class KafkaProducerKey:
+class KafkaSideEffectExecutorKey:
     """Identifies a reusable Kafka producer instance."""
 
     bootstrap_servers: str | tuple[str, ...]
     client_id: str | None
 
 
-class AsyncKafkaProducer:
+class AsyncKafkaSideEffectExecutor:
     """Publishes Kafka messages using reusable aiokafka producers."""
 
     def __init__(self) -> None:
         """Initializes an empty producer cache."""
-        self._producers: dict[KafkaProducerKey, AIOKafkaProducer] = {}
+        self._producers: dict[KafkaSideEffectExecutorKey, AIOKafkaProducer] = {}
         self._producer_lock = asyncio.Lock()
 
     async def publish(
@@ -93,7 +93,7 @@ class AsyncKafkaProducer:
         client_id: str | None,
     ) -> AIOKafkaProducer:
         bootstrap_servers = self._validate_bootstrap_servers(bootstrap_servers)
-        key = KafkaProducerKey(
+        key = KafkaSideEffectExecutorKey(
             bootstrap_servers=self._producer_key(bootstrap_servers),
             client_id=client_id,
         )

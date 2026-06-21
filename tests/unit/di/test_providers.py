@@ -12,7 +12,7 @@ class FakeHttpClient:
         self.is_closed = True
 
 
-class FakeKafkaProducer:
+class FakeKafkaSideEffectExecutor:
     def __init__(self) -> None:
         self.closed = False
 
@@ -20,7 +20,7 @@ class FakeKafkaProducer:
         self.closed = True
 
 
-class FakePostgresClient:
+class FakeMongoSideEffectExecutor:
     def __init__(self) -> None:
         self.closed = False
 
@@ -28,7 +28,15 @@ class FakePostgresClient:
         self.closed = True
 
 
-class FakeRedisClient:
+class FakePostgresSideEffectExecutor:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
+class FakeRedisSideEffectExecutor:
     def __init__(self) -> None:
         self.closed = False
 
@@ -106,6 +114,13 @@ class TestDependencyProviders:
 
         assert result.provider == "kafka"
 
+    def test_side_effect_provider_registry_registers_mongo_provider(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.side_effect_provider_registry.get("mongo")
+
+        assert result.provider == "mongo"
+
     def test_side_effect_provider_registry_registers_postgres_provider(self) -> None:
         container = AppContainer(settings=AppSettings())
 
@@ -120,55 +135,74 @@ class TestDependencyProviders:
 
         assert result.provider == "redis"
 
-    async def test_aclose_closes_side_effect_clients(self, monkeypatch) -> None:
+    async def test_aclose_closes_side_effect_executors(self, monkeypatch) -> None:
         clients: list[FakeHttpClient] = []
-        producers: list[FakeKafkaProducer] = []
-        pg_clients: list[FakePostgresClient] = []
-        redis_clients: list[FakeRedisClient] = []
+        kafka_executors: list[FakeKafkaSideEffectExecutor] = []
+        mongo_executors: list[FakeMongoSideEffectExecutor] = []
+        postgres_executors: list[FakePostgresSideEffectExecutor] = []
+        redis_executors: list[FakeRedisSideEffectExecutor] = []
 
         def client_factory() -> FakeHttpClient:
             client = FakeHttpClient()
             clients.append(client)
             return client
 
-        def producer_factory() -> FakeKafkaProducer:
-            producer = FakeKafkaProducer()
-            producers.append(producer)
-            return producer
+        def kafka_executor_factory() -> FakeKafkaSideEffectExecutor:
+            executor = FakeKafkaSideEffectExecutor()
+            kafka_executors.append(executor)
+            return executor
 
-        def pg_client_factory() -> FakePostgresClient:
-            pg_client = FakePostgresClient()
-            pg_clients.append(pg_client)
-            return pg_client
+        def mongo_executor_factory() -> FakeMongoSideEffectExecutor:
+            executor = FakeMongoSideEffectExecutor()
+            mongo_executors.append(executor)
+            return executor
 
-        def redis_client_factory() -> FakeRedisClient:
-            redis_client = FakeRedisClient()
-            redis_clients.append(redis_client)
-            return redis_client
+        def postgres_executor_factory() -> FakePostgresSideEffectExecutor:
+            executor = FakePostgresSideEffectExecutor()
+            postgres_executors.append(executor)
+            return executor
+
+        def redis_executor_factory() -> FakeRedisSideEffectExecutor:
+            executor = FakeRedisSideEffectExecutor()
+            redis_executors.append(executor)
+            return executor
 
         monkeypatch.setattr("app.di.container.httpx.AsyncClient", client_factory)
-        monkeypatch.setattr("app.di.container.AsyncKafkaProducer", producer_factory)
         monkeypatch.setattr(
-            "app.di.container.AsyncPostgresClient",
-            pg_client_factory,
+            "app.di.container.AsyncKafkaSideEffectExecutor",
+            kafka_executor_factory,
         )
-        monkeypatch.setattr("app.di.container.AsyncRedisClient", redis_client_factory)
+        monkeypatch.setattr(
+            "app.di.container.AsyncMongoSideEffectExecutor",
+            mongo_executor_factory,
+        )
+        monkeypatch.setattr(
+            "app.di.container.AsyncPostgresSideEffectExecutor",
+            postgres_executor_factory,
+        )
+        monkeypatch.setattr(
+            "app.di.container.AsyncRedisSideEffectExecutor",
+            redis_executor_factory,
+        )
         container = AppContainer(settings=AppSettings())
 
         container.side_effect_provider_registry.get("http")
         container.side_effect_provider_registry.get("kafka")
+        container.side_effect_provider_registry.get("mongo")
         container.side_effect_provider_registry.get("postgres")
         container.side_effect_provider_registry.get("redis")
         await container.aclose()
 
         assert len(clients) == 1
         assert clients[0].is_closed is True
-        assert len(producers) == 1
-        assert producers[0].closed is True
-        assert len(pg_clients) == 1
-        assert pg_clients[0].closed is True
-        assert len(redis_clients) == 1
-        assert redis_clients[0].closed is True
+        assert len(kafka_executors) == 1
+        assert kafka_executors[0].closed is True
+        assert len(mongo_executors) == 1
+        assert mongo_executors[0].closed is True
+        assert len(postgres_executors) == 1
+        assert postgres_executors[0].closed is True
+        assert len(redis_executors) == 1
+        assert redis_executors[0].closed is True
 
     def test_get_request_log_service_returns_container_service(self) -> None:
         """Проверяет получение сервиса журнала запросов."""

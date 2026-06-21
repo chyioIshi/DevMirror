@@ -14,7 +14,7 @@ from app.infra.side_effects.connection_config import ConnectionConfig
 from app.infra.side_effects.connection_registry import ConnectionRegistry
 
 
-class RedisClient(Protocol):
+class RedisSideEffectExecutor(Protocol):
     """Protocol implemented by concrete Redis command adapters."""
 
     async def set_value(
@@ -61,11 +61,11 @@ class RedisSideEffectProvider:
     def __init__(
         self,
         connection_registry: ConnectionRegistry,
-        redis_client: RedisClient,
+        side_effect_executor: RedisSideEffectExecutor,
     ) -> None:
-        """Initializes the provider with connection configs and a Redis client."""
+        """Initializes the provider with connection configs and an executor."""
         self._connection_registry = connection_registry
-        self._redis_client = redis_client
+        self._side_effect_executor = side_effect_executor
 
     async def execute(
         self,
@@ -118,7 +118,7 @@ class RedisSideEffectProvider:
         )
         rendered_payload = effect.payload_template
 
-        await self._redis_client.set_value(
+        await self._side_effect_executor.set_value(
             connection=connection,
             key=key,
             value=rendered_payload,
@@ -145,7 +145,10 @@ class RedisSideEffectProvider:
             effect.target, "key", "target.key", subject="Redis"
         )
 
-        deleted_count = await self._redis_client.delete_key(connection=connection, key=key)
+        deleted_count = await self._side_effect_executor.delete_key(
+            connection=connection,
+            key=key,
+        )
         return SideEffectExecutionResult(
             provider=self.provider,
             success=True,
@@ -171,7 +174,7 @@ class RedisSideEffectProvider:
         )
         rendered_payload = effect.payload_template
 
-        receiver_count = await self._redis_client.publish(
+        receiver_count = await self._side_effect_executor.publish(
             connection=connection,
             channel=channel,
             message=rendered_payload,

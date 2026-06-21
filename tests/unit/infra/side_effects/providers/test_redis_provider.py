@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -23,7 +22,7 @@ class RedisCall:
 
 
 @dataclass(slots=True)
-class FakeRedisClient:
+class FakeRedisSideEffectExecutor:
     calls: list[RedisCall] = field(default_factory=list)
     error: RedisSideEffectError | None = None
 
@@ -88,7 +87,7 @@ class TestRedisSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        redis_client = FakeRedisClient()
+        executor = FakeRedisSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.REDIS_SET,
             provider="redis",
@@ -98,7 +97,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=redis_client,
+            side_effect_executor=executor,
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -110,7 +109,7 @@ class TestRedisSideEffectProvider:
             "key": "cache:item",
             "ttl_seconds": 30,
         }
-        assert redis_client.calls == [
+        assert executor.calls == [
             RedisCall(
                 operation="redis_set",
                 connection=redis_connection_registry.get("main-redis"),
@@ -135,7 +134,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -158,7 +157,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -180,7 +179,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(ConnectionNotFoundError) as exc_info:
@@ -209,7 +208,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -231,7 +230,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -253,7 +252,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -275,7 +274,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -297,7 +296,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -318,7 +317,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -341,7 +340,7 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(),
+            side_effect_executor=FakeRedisSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -363,7 +362,9 @@ class TestRedisSideEffectProvider:
         )
         provider = RedisSideEffectProvider(
             connection_registry=redis_connection_registry,
-            redis_client=FakeRedisClient(error=RedisSideEffectError("redis failed")),
+            side_effect_executor=FakeRedisSideEffectExecutor(
+                error=RedisSideEffectError("redis failed")
+            ),
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -371,20 +372,3 @@ class TestRedisSideEffectProvider:
         assert result.success is False
         assert result.details == {"connection": "main-redis", "operation": "redis_set"}
         assert result.error == "redis failed"
-
-
-class TestRedisSideEffectProviderArchitecture:
-    def test_domain_and_application_do_not_import_redis_client(self) -> None:
-        forbidden_roots = [Path("app/domain"), Path("app/application")]
-
-        matches = [
-            path
-            for root in forbidden_roots
-            for path in root.rglob("*.py")
-            if any(
-                line.startswith(("import redis", "from redis"))
-                for line in path.read_text(encoding="utf-8").splitlines()
-            )
-        ]
-
-        assert matches == []

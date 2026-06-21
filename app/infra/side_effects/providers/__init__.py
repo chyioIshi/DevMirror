@@ -1,26 +1,33 @@
 from app.infra.side_effects.providers.http_callback import HttpCallbackSideEffectProvider
-from app.infra.side_effects.providers.kafka import KafkaProducer, KafkaSideEffectProvider
-from app.infra.side_effects.providers.kafka_client import AsyncKafkaProducer
+from app.infra.side_effects.providers.kafka import KafkaSideEffectExecutor, KafkaSideEffectProvider
+from app.infra.side_effects.providers.kafka_side_effect_executor import AsyncKafkaSideEffectExecutor
+from app.infra.side_effects.providers.mongo import MongoSideEffectExecutor, MongoSideEffectProvider
+from app.infra.side_effects.providers.mongo_side_effect_executor import AsyncMongoSideEffectExecutor
 from app.infra.side_effects.providers.postgres import (
-    PostgresClient,
+    PostgresSideEffectExecutor,
     PostgresSideEffectProvider,
 )
-from app.infra.side_effects.providers.postgres_client import AsyncPostgresClient
+from app.infra.side_effects.providers.postgres_side_effect_executor import (
+    AsyncPostgresSideEffectExecutor,
+)
 from app.infra.side_effects.providers.redis import (
-    RedisClient,
+    RedisSideEffectExecutor,
     RedisSideEffectProvider,
 )
-from app.infra.side_effects.providers.redis_client import AsyncRedisClient
+from app.infra.side_effects.providers.redis_side_effect_executor import AsyncRedisSideEffectExecutor
 
 __all__ = [
-    "AsyncKafkaProducer",
-    "AsyncPostgresClient",
-    "AsyncRedisClient",
+    "AsyncKafkaSideEffectExecutor",
+    "AsyncMongoSideEffectExecutor",
+    "AsyncPostgresSideEffectExecutor",
+    "AsyncRedisSideEffectExecutor",
     "HttpCallbackSideEffectProvider",
-    "KafkaProducer",
+    "KafkaSideEffectExecutor",
     "KafkaSideEffectProvider",
-    "PostgresClient",
+    "MongoSideEffectExecutor",
+    "MongoSideEffectProvider",
+    "PostgresSideEffectExecutor",
     "PostgresSideEffectProvider",
-    "RedisClient",
+    "RedisSideEffectExecutor",
     "RedisSideEffectProvider",
 ]

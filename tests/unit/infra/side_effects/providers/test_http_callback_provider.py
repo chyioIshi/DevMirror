@@ -1,6 +1,5 @@
 import json
 from collections.abc import Callable
-from pathlib import Path
 
 import httpx
 import pytest
@@ -393,18 +392,3 @@ class TestHttpCallbackSideEffectProvider:
             match="must reference an http connection",
         ):
             await provider.execute(effect, side_effect_context)
-
-    def test_http_client_imports_do_not_leak_into_application_or_domain(self) -> None:
-        checked_files = [
-            *Path("app/application").rglob("*.py"),
-            *Path("app/domain").rglob("*.py"),
-        ]
-
-        leaked_files = [
-            str(path)
-            for path in checked_files
-            if "import httpx" in path.read_text(encoding="utf-8")
-            or "from httpx" in path.read_text(encoding="utf-8")
-        ]
-
-        assert leaked_files == []

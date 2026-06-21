@@ -1,4 +1,4 @@
-"""redis.asyncio-backed Redis side effect client."""
+"""redis.asyncio-backed Redis side effect executor."""
 
 import asyncio
 import json
@@ -15,8 +15,8 @@ RedisCommandValue = bytes | str
 
 
 @dataclass(slots=True, frozen=True)
-class RedisClientConfig:
-    """Validated Redis client configuration."""
+class RedisSideEffectExecutorConfig:
+    """Validated Redis executor configuration."""
 
     connection_name: str
     url: str
@@ -25,7 +25,7 @@ class RedisClientConfig:
     max_connections: int | None
 
     def key(self) -> tuple[str, str, float | None, float | None, int | None]:
-        """Returns the cache key for a Redis client created from this config."""
+        """Returns the cache key for a Redis executor created from this config."""
         return (
             self.connection_name,
             self.url,
@@ -46,11 +46,11 @@ class RedisClientConfig:
         return params
 
 
-class AsyncRedisClient:
+class AsyncRedisSideEffectExecutor:
     """Executes Redis side effect commands using reusable async Redis clients."""
 
     def __init__(self) -> None:
-        """Initializes an empty Redis client cache."""
+        """Initializes an empty Redis executor cache."""
         self._clients: dict[
             tuple[str, str, float | None, float | None, int | None],
             redis.Redis,
@@ -173,8 +173,8 @@ class AsyncRedisClient:
             self._clients[key] = client
             return client
 
-    def _client_config(self, connection: ConnectionConfig) -> RedisClientConfig:
-        return RedisClientConfig(
+    def _client_config(self, connection: ConnectionConfig) -> RedisSideEffectExecutorConfig:
+        return RedisSideEffectExecutorConfig(
             connection_name=connection.name,
             url=self._url(connection),
             socket_timeout=SideEffectProviderValidation.optional_positive_number(

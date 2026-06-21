@@ -44,7 +44,7 @@ class PostgresPoolConfig:
         return kwargs
 
 
-class AsyncPostgresClient:
+class AsyncPostgresSideEffectExecutor:
     """Executes parameterized Postgres INSERT statements using reusable pools."""
 
     def __init__(self) -> None:

@@ -22,7 +22,7 @@ class InsertedRow:
 
 
 @dataclass(slots=True)
-class FakePostgresClient:
+class FakePostgresSideEffectExecutor:
     inserted_rows: list[InsertedRow] = field(default_factory=list)
     error: PostgresInsertError | None = None
 
@@ -53,7 +53,7 @@ class TestPostgresSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        pg_client = FakePostgresClient()
+        executor = FakePostgresSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.DB_INSERT,
             provider="postgres",
@@ -62,7 +62,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=pg_client,
+            side_effect_executor=executor,
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -74,15 +74,15 @@ class TestPostgresSideEffectProvider:
             "columns": ["entity_id", "status"],
             "command_tag": "INSERT 0 1",
         }
-        assert pg_client.inserted_rows == [
+        assert executor.inserted_rows == [
             InsertedRow(
                 connection=postgres_connection_registry.get("main-postgres"),
                 statement='INSERT INTO "events" ("entity_id", "status") VALUES ($1, $2)',
                 parameters=["entity-1", "created"],
             )
         ]
-        assert "entity-1" not in pg_client.inserted_rows[0].statement
-        assert "created" not in pg_client.inserted_rows[0].statement
+        assert "entity-1" not in executor.inserted_rows[0].statement
+        assert "created" not in executor.inserted_rows[0].statement
 
     async def test_supports_schema_qualified_table_identifier(
         self,
@@ -90,7 +90,7 @@ class TestPostgresSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        pg_client = FakePostgresClient()
+        executor = FakePostgresSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.DB_INSERT,
             provider="postgres",
@@ -98,12 +98,12 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=pg_client,
+            side_effect_executor=executor,
         )
 
         await provider.execute(effect, side_effect_context)
 
-        assert pg_client.inserted_rows[0].statement == (
+        assert executor.inserted_rows[0].statement == (
             'INSERT INTO "audit"."events" ("ok") VALUES ($1)'
         )
 
@@ -120,7 +120,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(ConnectionNotFoundError) as exc_info:
@@ -141,7 +141,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -163,7 +163,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -185,7 +185,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -214,7 +214,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -236,7 +236,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -258,7 +258,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -280,7 +280,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -302,7 +302,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -325,7 +325,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -347,7 +347,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -370,7 +370,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(),
+            side_effect_executor=FakePostgresSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -385,7 +385,7 @@ class TestPostgresSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        pg_client = FakePostgresClient()
+        executor = FakePostgresSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.DB_INSERT,
             provider="postgres",
@@ -394,7 +394,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=pg_client,
+            side_effect_executor=executor,
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -404,7 +404,7 @@ class TestPostgresSideEffectProvider:
             "second_column",
             "third_column",
         ]
-        assert pg_client.inserted_rows[0].parameters == [1, 2, 3]
+        assert executor.inserted_rows[0].parameters == [1, 2, 3]
 
     async def test_postgres_insert_error_returns_failed_execution_result(
         self,
@@ -419,7 +419,7 @@ class TestPostgresSideEffectProvider:
         )
         provider = PostgresSideEffectProvider(
             connection_registry=postgres_connection_registry,
-            pg_client=FakePostgresClient(
+            side_effect_executor=FakePostgresSideEffectExecutor(
                 error=PostgresInsertError("insert failed"),
             ),
         )

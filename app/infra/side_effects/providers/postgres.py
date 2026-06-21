@@ -18,7 +18,7 @@ from app.infra.side_effects.connection_registry import ConnectionRegistry
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
-class PostgresClient(Protocol):
+class PostgresSideEffectExecutor(Protocol):
     """Protocol implemented by concrete Postgres insert adapters.
 
     The provider validates table/column identifiers and builds an INSERT
@@ -45,11 +45,11 @@ class PostgresSideEffectProvider:
     def __init__(
         self,
         connection_registry: ConnectionRegistry,
-        pg_client: PostgresClient,
+        side_effect_executor: PostgresSideEffectExecutor,
     ) -> None:
-        """Initializes the provider with connection configs and a Postgres client."""
+        """Initializes the provider with connection configs and an executor."""
         self._connection_registry = connection_registry
-        self._pg_client = pg_client
+        self._side_effect_executor = side_effect_executor
 
     async def execute(
         self,
@@ -69,7 +69,7 @@ class PostgresSideEffectProvider:
         statement = self._insert_statement(table=table, columns=columns)
 
         try:
-            metadata = await self._pg_client.execute_insert(
+            metadata = await self._side_effect_executor.execute_insert(
                 connection=connection,
                 statement=statement,
                 parameters=parameters,

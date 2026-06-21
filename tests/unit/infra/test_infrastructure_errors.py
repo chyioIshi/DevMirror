@@ -4,6 +4,7 @@ from app.infra.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     InvalidSideEffectProviderConfigError,
+    MongoSideEffectError,
     PostgresInsertError,
     RepositoryError,
     SideEffectProviderPluginError,
@@ -67,4 +68,11 @@ class TestInfrastructureErrors:
 
         assert str(error) == "Postgres insert failed"
         assert error.code == InfrastructureErrorCode.POSTGRES_INSERT_ERROR
+        assert error.details == {"stage": "execute"}
+
+    def test_mongo_side_effect_error_keeps_details(self) -> None:
+        error = MongoSideEffectError(details={"stage": "execute"})
+
+        assert str(error) == "Mongo side effect execution failed"
+        assert error.code == InfrastructureErrorCode.MONGO_SIDE_EFFECT_ERROR
         assert error.details == {"stage": "execute"}

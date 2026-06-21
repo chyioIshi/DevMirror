@@ -68,6 +68,26 @@ class SideEffectProviderValidation:
         )
 
     @classmethod
+    def optional_non_negative_int(
+        cls,
+        mapping: dict[str, Any],
+        key: str,
+        field: str,
+        *,
+        subject: str,
+    ) -> int | None:
+        """Returns an optional non-negative integer value."""
+        value = mapping.get(key)
+        if value is None:
+            return None
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            return value
+        raise InvalidSideEffectProviderConfigError(
+            f"{subject} {field} must be a non-negative integer",
+            details={"field": field},
+        )
+
+    @classmethod
     def required_string(
         cls,
         mapping: dict[str, Any],

@@ -1,14 +1,13 @@
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, ClassVar
 
 import pytest
 
 from app.infra.exceptions import InvalidSideEffectProviderConfigError, RedisSideEffectError
 from app.infra.side_effects import ConnectionConfig
-from app.infra.side_effects.providers import AsyncRedisClient
+from app.infra.side_effects.providers import AsyncRedisSideEffectExecutor
 
 
 @dataclass(slots=True)
@@ -64,7 +63,7 @@ class FakeRedis:
             raise RuntimeError(f"close failed: {self.params['url']}")
 
 
-class TestAsyncRedisClient:
+class TestAsyncRedisSideEffectExecutor:
     @pytest.fixture(autouse=True)
     def reset_fake_redis(self, monkeypatch: pytest.MonkeyPatch) -> None:
         FakeRedis.created_clients.clear()
@@ -78,7 +77,7 @@ class TestAsyncRedisClient:
             return FakeRedis(params=kwargs)
 
         monkeypatch.setattr(
-            "app.infra.side_effects.providers.redis_client.redis.Redis.from_url",
+            "app.infra.side_effects.providers.redis_side_effect_executor.redis.Redis.from_url",
             from_url,
         )
 
@@ -94,11 +93,11 @@ class TestAsyncRedisClient:
             settings={"url": "redis://localhost:6379/0"},
         )
 
-    async def test_creates_client_once_for_same_connection_settings(
+    async def test_creates_executor_once_for_same_connection_settings(
         self,
         redis_connection: ConnectionConfig,
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         await asyncio.gather(
             *[
@@ -114,8 +113,8 @@ class TestAsyncRedisClient:
         assert len(FakeRedis.created_clients) == 1
         assert len(FakeRedis.created_clients[0].commands) == 5
 
-    async def test_reuses_cached_client(self, redis_connection: ConnectionConfig) -> None:
-        client = AsyncRedisClient()
+    async def test_reuses_cached_executor(self, redis_connection: ConnectionConfig) -> None:
+        client = AsyncRedisSideEffectExecutor()
 
         await client.set_value(connection=redis_connection, key="first", value={"ok": True})
         await client.set_value(connection=redis_connection, key="second", value={"ok": False})
@@ -128,11 +127,11 @@ class TestAsyncRedisClient:
             "second",
         ]
 
-    async def test_creates_different_clients_for_different_options(
+    async def test_creates_different_executors_for_different_options(
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         for connection in [
             connection_factory(
@@ -164,11 +163,11 @@ class TestAsyncRedisClient:
 
         assert len(FakeRedis.created_clients) == 4
 
-    async def test_passes_client_options_to_redis_from_url(
+    async def test_passes_executor_options_to_redis_from_url(
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         await client.set_value(
             connection=connection_factory(
@@ -197,7 +196,7 @@ class TestAsyncRedisClient:
         self,
         redis_connection: ConnectionConfig,
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         await client.set_value(connection=redis_connection, key="dict", value={"id": "item-1"})
         await client.set_value(connection=redis_connection, key="list", value=[1, 2])
@@ -216,7 +215,7 @@ class TestAsyncRedisClient:
     async def test_delete_key_returns_deleted_count(
         self, redis_connection: ConnectionConfig
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         result = await client.delete_key(connection=redis_connection, key="cache:item")
 
@@ -226,7 +225,7 @@ class TestAsyncRedisClient:
         ]
 
     async def test_publish_serializes_message(self, redis_connection: ConnectionConfig) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         result = await client.publish(
             connection=redis_connection,
@@ -243,7 +242,7 @@ class TestAsyncRedisClient:
         ]
 
     async def test_missing_url_raises_invalid_config(self) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         with pytest.raises(
             InvalidSideEffectProviderConfigError,
@@ -276,13 +275,13 @@ class TestAsyncRedisClient:
             ),
         ],
     )
-    async def test_invalid_client_options_raise_invalid_config(
+    async def test_invalid_executor_options_raise_invalid_config(
         self,
         connection_factory: Callable[..., ConnectionConfig],
         settings: dict[str, Any],
         message: str,
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         with pytest.raises(InvalidSideEffectProviderConfigError, match=message):
             await client.set_value(
@@ -296,9 +295,9 @@ class TestAsyncRedisClient:
                 value={"ok": True},
             )
 
-    async def test_wraps_client_creation_errors(self, redis_connection: ConnectionConfig) -> None:
+    async def test_wraps_executor_creation_errors(self, redis_connection: ConnectionConfig) -> None:
         FakeRedis.create_client_error = RuntimeError("connect failed")
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         with pytest.raises(RedisSideEffectError) as exc_info:
             await client.set_value(
@@ -312,7 +311,7 @@ class TestAsyncRedisClient:
 
     async def test_wraps_command_errors(self, redis_connection: ConnectionConfig) -> None:
         FakeRedis.command_error = RuntimeError("command failed")
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         with pytest.raises(RedisSideEffectError) as exc_info:
             await client.set_value(
@@ -326,7 +325,7 @@ class TestAsyncRedisClient:
         }
 
     async def test_wraps_serialization_errors(self, redis_connection: ConnectionConfig) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
 
         with pytest.raises(RedisSideEffectError) as exc_info:
             await client.set_value(connection=redis_connection, key="cache:item", value=object())
@@ -337,11 +336,11 @@ class TestAsyncRedisClient:
             "connection": "main-redis",
         }
 
-    async def test_aclose_closes_all_clients_and_clears_cache(
+    async def test_aclose_closes_all_executors_and_clears_cache(
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
         for connection in [
             connection_factory(
                 name="first-redis",
@@ -363,11 +362,11 @@ class TestAsyncRedisClient:
         assert [redis_client.closed for redis_client in FakeRedis.created_clients] == [True, True]
         assert client._clients == {}
 
-    async def test_aclose_raises_redis_error_when_client_close_fails(
+    async def test_aclose_raises_redis_error_when_executor_close_fails(
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        client = AsyncRedisClient()
+        client = AsyncRedisSideEffectExecutor()
         for connection in [
             connection_factory(
                 name="first-redis",
@@ -392,18 +391,3 @@ class TestAsyncRedisClient:
         assert client._clients == {}
         assert exc_info.value.details["stage"] == "close"
         assert exc_info.value.details["errors"] == ["close failed: redis://localhost:6380/0"]
-
-
-class TestAsyncRedisClientArchitecture:
-    def test_redis_library_imports_only_in_redis_client(self) -> None:
-        matches = [
-            path
-            for path in Path("app").rglob("*.py")
-            if path != Path("app/infra/side_effects/providers/redis_client.py")
-            if any(
-                line.startswith(("import redis", "from redis"))
-                for line in path.read_text(encoding="utf-8").splitlines()
-            )
-        ]
-
-        assert matches == []

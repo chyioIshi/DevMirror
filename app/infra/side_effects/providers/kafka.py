@@ -14,7 +14,7 @@ from app.infra.side_effects.connection_config import ConnectionConfig
 from app.infra.side_effects.connection_registry import ConnectionRegistry
 
 
-class KafkaProducer(Protocol):
+class KafkaSideEffectExecutor(Protocol):
     """Protocol implemented by concrete Kafka producer adapters.
 
     Headers are plain string headers at provider boundary. Concrete producer
@@ -48,11 +48,11 @@ class KafkaSideEffectProvider:
     def __init__(
         self,
         connection_registry: ConnectionRegistry,
-        producer: KafkaProducer,
+        side_effect_executor: KafkaSideEffectExecutor,
     ) -> None:
-        """Initializes the provider with connection configs and a producer adapter."""
+        """Initializes the provider with connection configs and an executor."""
         self._connection_registry = connection_registry
-        self._producer = producer
+        self._side_effect_executor = side_effect_executor
 
     async def execute(
         self,
@@ -87,7 +87,7 @@ class KafkaSideEffectProvider:
         headers = self._headers(rendered_options)
 
         try:
-            await self._producer.publish(
+            await self._side_effect_executor.publish(
                 bootstrap_servers=bootstrap_servers,
                 topic=topic,
                 value=rendered_payload,

@@ -5,7 +5,7 @@ from typing import ClassVar
 import pytest
 
 from app.infra.exceptions import KafkaPublishError
-from app.infra.side_effects.providers import AsyncKafkaProducer
+from app.infra.side_effects.providers import AsyncKafkaSideEffectExecutor
 
 
 @dataclass(slots=True)
@@ -70,16 +70,16 @@ def reset_fake_kafka_producer(monkeypatch: pytest.MonkeyPatch) -> None:
     FakeAioKafkaProducer.send_error = None
     FakeAioKafkaProducer.stop_error_client_ids = set()
     monkeypatch.setattr(
-        "app.infra.side_effects.providers.kafka_client.AIOKafkaProducer",
+        "app.infra.side_effects.providers.kafka_side_effect_executor.AIOKafkaProducer",
         FakeAioKafkaProducer,
     )
 
 
-class TestAsyncKafkaProducer:
+class TestAsyncKafkaSideEffectExecutor:
     async def test_creates_producer_once_for_same_bootstrap_servers_and_client_id(
         self,
     ) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         await asyncio.gather(
             *[
@@ -97,7 +97,7 @@ class TestAsyncKafkaProducer:
         assert len(FakeAioKafkaProducer.created_producers[0].sent_messages) == 5
 
     async def test_reuses_producer(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         await producer.publish(
             bootstrap_servers="localhost:9092",
@@ -116,7 +116,7 @@ class TestAsyncKafkaProducer:
         assert len(FakeAioKafkaProducer.created_producers[0].sent_messages) == 2
 
     async def test_creates_different_producers_for_different_client_id(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         await producer.publish(
             bootstrap_servers="localhost:9092",
@@ -137,7 +137,7 @@ class TestAsyncKafkaProducer:
         ]
 
     async def test_serializes_dict_list_string_and_bytes_values(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         await producer.publish(
             bootstrap_servers="localhost:9092",
@@ -169,7 +169,7 @@ class TestAsyncKafkaProducer:
         ]
 
     async def test_serializes_headers_to_kafka_header_tuples(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         await producer.publish(
             bootstrap_servers="localhost:9092",
@@ -187,7 +187,7 @@ class TestAsyncKafkaProducer:
         ]
 
     async def test_supports_list_bootstrap_servers(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         await producer.publish(
             bootstrap_servers=["kafka-1:9092", "kafka-2:9092"],
@@ -201,7 +201,7 @@ class TestAsyncKafkaProducer:
         ]
 
     async def test_rejects_empty_bootstrap_servers(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         with pytest.raises(KafkaPublishError) as exc_info:
             await producer.publish(
@@ -217,7 +217,7 @@ class TestAsyncKafkaProducer:
 
     async def test_wraps_start_failures_into_kafka_publish_error(self) -> None:
         FakeAioKafkaProducer.start_error = RuntimeError("start failed")
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         with pytest.raises(KafkaPublishError) as exc_info:
             await producer.publish(
@@ -230,7 +230,7 @@ class TestAsyncKafkaProducer:
 
     async def test_wraps_send_failures_into_kafka_publish_error(self) -> None:
         FakeAioKafkaProducer.send_error = RuntimeError("send failed")
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         with pytest.raises(KafkaPublishError) as exc_info:
             await producer.publish(
@@ -242,7 +242,7 @@ class TestAsyncKafkaProducer:
         assert exc_info.value.details == {"stage": "send", "topic": "events"}
 
     async def test_wraps_serialization_failures_into_kafka_publish_error(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
 
         with pytest.raises(KafkaPublishError) as exc_info:
             await producer.publish(
@@ -254,7 +254,7 @@ class TestAsyncKafkaProducer:
         assert exc_info.value.details == {"stage": "serialization"}
 
     async def test_aclose_stops_all_producers_and_clears_cache(self) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
         await producer.publish(
             bootstrap_servers="localhost:9092",
             topic="events",
@@ -279,7 +279,7 @@ class TestAsyncKafkaProducer:
     async def test_aclose_attempts_all_stops_and_clears_cache_when_stop_fails(
         self,
     ) -> None:
-        producer = AsyncKafkaProducer()
+        producer = AsyncKafkaSideEffectExecutor()
         await producer.publish(
             bootstrap_servers="localhost:9092",
             topic="events",

@@ -96,6 +96,23 @@ def kafka_connection_registry() -> ConnectionRegistry:
 
 
 @pytest.fixture
+def mongo_connection_registry() -> ConnectionRegistry:
+    return ConnectionRegistry(
+        connections=[
+            ConnectionConfig(
+                name="main-mongo",
+                provider="mongo",
+                settings={
+                    "uri": "mongodb://localhost:27017",
+                    "database": "devmirror",
+                    "server_selection_timeout_ms": 5000,
+                },
+            ),
+        ],
+    )
+
+
+@pytest.fixture
 def postgres_connection_registry() -> ConnectionRegistry:
     return ConnectionRegistry(
         connections=[

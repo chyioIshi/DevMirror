@@ -7,7 +7,7 @@ import pytest
 
 from app.infra.exceptions import InvalidSideEffectProviderConfigError, PostgresInsertError
 from app.infra.side_effects import ConnectionConfig
-from app.infra.side_effects.providers import AsyncPostgresClient
+from app.infra.side_effects.providers import AsyncPostgresSideEffectExecutor
 
 
 @dataclass(slots=True)
@@ -47,7 +47,7 @@ class FakeAsyncpgPool:
             raise RuntimeError(f"close failed: {self.kwargs['dsn']}")
 
 
-class TestAsyncPostgresClient:
+class TestAsyncPostgresSideEffectExecutor:
     @pytest.fixture(autouse=True)
     def reset_fake_asyncpg_pool(self, monkeypatch: pytest.MonkeyPatch) -> None:
         FakeAsyncpgPool.created_pools.clear()
@@ -62,7 +62,7 @@ class TestAsyncPostgresClient:
             return FakeAsyncpgPool(kwargs=kwargs)
 
         monkeypatch.setattr(
-            "app.infra.side_effects.providers.postgres_client.asyncpg.create_pool",
+            "app.infra.side_effects.providers.postgres_side_effect_executor.asyncpg.create_pool",
             create_pool,
         )
 
@@ -70,7 +70,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
         connection = connection_factory()
 
         result = await executor.execute_insert(
@@ -88,7 +88,7 @@ class TestAsyncPostgresClient:
         ]
 
     async def test_missing_dsn_raises_invalid_config(self) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(
             InvalidSideEffectProviderConfigError,
@@ -108,7 +108,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(
             InvalidSideEffectProviderConfigError,
@@ -124,7 +124,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(
             InvalidSideEffectProviderConfigError,
@@ -140,7 +140,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(
             InvalidSideEffectProviderConfigError,
@@ -156,7 +156,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(
             InvalidSideEffectProviderConfigError,
@@ -172,7 +172,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         await executor.execute_insert(
             connection=connection_factory(
@@ -193,7 +193,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
         connection = connection_factory()
 
         await asyncio.gather(
@@ -214,7 +214,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
         connection = connection_factory()
 
         await executor.execute_insert(
@@ -235,7 +235,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         for connection in [
             connection_factory(name="first-postgres"),
@@ -256,7 +256,7 @@ class TestAsyncPostgresClient:
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
         FakeAsyncpgPool.create_pool_error = RuntimeError("connect failed")
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(PostgresInsertError) as exc_info:
             await executor.execute_insert(
@@ -275,7 +275,7 @@ class TestAsyncPostgresClient:
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
         FakeAsyncpgPool.execute_error = RuntimeError("database failed")
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
 
         with pytest.raises(PostgresInsertError) as exc_info:
             await executor.execute_insert(
@@ -293,7 +293,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
         for connection in [
             connection_factory(name="first-postgres"),
             connection_factory(name="second-postgres"),
@@ -313,7 +313,7 @@ class TestAsyncPostgresClient:
         self,
         connection_factory: Callable[..., ConnectionConfig],
     ) -> None:
-        executor = AsyncPostgresClient()
+        executor = AsyncPostgresSideEffectExecutor()
         for connection in [
             connection_factory(name="first-postgres"),
             connection_factory(

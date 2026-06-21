@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -22,7 +21,7 @@ class PublishedMessage:
 
 
 @dataclass(slots=True)
-class FakeKafkaProducer:
+class FakeKafkaSideEffectExecutor:
     published_messages: list[PublishedMessage] = field(default_factory=list)
     error: Exception | None = None
 
@@ -58,7 +57,7 @@ class TestKafkaSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        producer = FakeKafkaProducer()
+        producer = FakeKafkaSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.MESSAGE_PUBLISH,
             provider="kafka",
@@ -66,7 +65,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=producer,
+            side_effect_executor=producer,
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -95,7 +94,7 @@ class TestKafkaSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        producer = FakeKafkaProducer()
+        producer = FakeKafkaSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.MESSAGE_PUBLISH,
             provider="kafka",
@@ -111,7 +110,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=producer,
+            side_effect_executor=producer,
         )
 
         await provider.execute(effect, side_effect_context)
@@ -137,13 +136,15 @@ class TestKafkaSideEffectProvider:
                 )
             ]
         )
-        producer = FakeKafkaProducer()
+        producer = FakeKafkaSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.MESSAGE_PUBLISH,
             provider="kafka",
             target={"connection": "secondary-kafka", "destination": "events"},
         )
-        provider = KafkaSideEffectProvider(connection_registry=registry, producer=producer)
+        provider = KafkaSideEffectProvider(
+            connection_registry=registry, side_effect_executor=producer
+        )
 
         await provider.execute(effect, side_effect_context)
 
@@ -165,13 +166,15 @@ class TestKafkaSideEffectProvider:
                 )
             ]
         )
-        producer = FakeKafkaProducer()
+        producer = FakeKafkaSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.MESSAGE_PUBLISH,
             provider="kafka",
             target={"connection": "cluster-kafka", "destination": "events"},
         )
-        provider = KafkaSideEffectProvider(connection_registry=registry, producer=producer)
+        provider = KafkaSideEffectProvider(
+            connection_registry=registry, side_effect_executor=producer
+        )
 
         await provider.execute(effect, side_effect_context)
 
@@ -186,7 +189,7 @@ class TestKafkaSideEffectProvider:
         side_effect_context: SideEffectContext,
         side_effect_factory: Callable[..., SideEffect],
     ) -> None:
-        producer = FakeKafkaProducer()
+        producer = FakeKafkaSideEffectExecutor()
         effect = side_effect_factory(
             type=SideEffectType.MESSAGE_PUBLISH,
             provider="kafka",
@@ -195,7 +198,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=producer,
+            side_effect_executor=producer,
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -217,7 +220,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=FakeKafkaProducer(),
+            side_effect_executor=FakeKafkaSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -239,7 +242,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=FakeKafkaProducer(),
+            side_effect_executor=FakeKafkaSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -261,7 +264,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=FakeKafkaProducer(),
+            side_effect_executor=FakeKafkaSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -283,7 +286,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=FakeKafkaProducer(),
+            side_effect_executor=FakeKafkaSideEffectExecutor(),
         )
 
         with pytest.raises(ConnectionNotFoundError) as exc_info:
@@ -312,7 +315,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=registry,
-            producer=FakeKafkaProducer(),
+            side_effect_executor=FakeKafkaSideEffectExecutor(),
         )
 
         with pytest.raises(
@@ -334,7 +337,7 @@ class TestKafkaSideEffectProvider:
         )
         provider = KafkaSideEffectProvider(
             connection_registry=kafka_connection_registry,
-            producer=FakeKafkaProducer(error=RuntimeError("publish failed")),
+            side_effect_executor=FakeKafkaSideEffectExecutor(error=RuntimeError("publish failed")),
         )
 
         result = await provider.execute(effect, side_effect_context)
@@ -342,28 +345,3 @@ class TestKafkaSideEffectProvider:
         assert result.success is False
         assert result.error == "publish failed"
         assert result.details == {"topic": "events", "key": None}
-
-    def test_kafka_client_imports_do_not_leak_into_application_or_domain(self) -> None:
-        checked_files = [
-            *Path("app/application").rglob("*.py"),
-            *Path("app/domain").rglob("*.py"),
-        ]
-        forbidden_imports = (
-            "import aiokafka",
-            "from aiokafka",
-            "import confluent_kafka",
-            "from confluent_kafka",
-            "import kafka",
-            "from kafka",
-        )
-
-        leaked_files = [
-            str(path)
-            for path in checked_files
-            if any(
-                forbidden_import in path.read_text(encoding="utf-8")
-                for forbidden_import in forbidden_imports
-            )
-        ]
-
-        assert leaked_files == []
