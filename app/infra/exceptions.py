@@ -20,6 +20,7 @@ class InfrastructureErrorCode(StrEnum):
     POSTGRES_INSERT_ERROR = "POSTGRES_INSERT_ERROR"
     REDIS_SIDE_EFFECT_ERROR = "REDIS_SIDE_EFFECT_ERROR"
     MONGO_SIDE_EFFECT_ERROR = "MONGO_SIDE_EFFECT_ERROR"
+    RABBITMQ_PUBLISH_ERROR = "RABBITMQ_PUBLISH_ERROR"
 
 
 @dataclass(eq=False)
@@ -189,6 +190,22 @@ class MongoSideEffectError(InfrastructureError):
         """Creates a MongoDB side effect execution error."""
         super().__init__(
             code=InfrastructureErrorCode.MONGO_SIDE_EFFECT_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class RabbitMQPublishError(InfrastructureError):
+    """Error raised when a RabbitMQ message cannot be published."""
+
+    def __init__(
+        self,
+        message: str = "RabbitMQ message publish failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a RabbitMQ publish error."""
+        super().__init__(
+            code=InfrastructureErrorCode.RABBITMQ_PUBLISH_ERROR,
             message=message,
             details=details or {},
         )

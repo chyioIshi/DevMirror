@@ -141,3 +141,21 @@ def redis_connection_registry() -> ConnectionRegistry:
             ),
         ],
     )
+
+
+@pytest.fixture
+def rabbitmq_connection_registry() -> ConnectionRegistry:
+    return ConnectionRegistry(
+        connections=[
+            ConnectionConfig(
+                name="main-rabbitmq",
+                provider="rabbitmq",
+                settings={
+                    "url": "amqp://guest:guest@localhost:5672/",
+                    "exchange": "mock.events",
+                    "exchange_type": "topic",
+                    "timeout_seconds": 5,
+                },
+            ),
+        ],
+    )

@@ -6,6 +6,7 @@ from app.infra.exceptions import (
     InvalidSideEffectProviderConfigError,
     MongoSideEffectError,
     PostgresInsertError,
+    RabbitMQPublishError,
     RepositoryError,
     SideEffectProviderPluginError,
 )
@@ -76,3 +77,10 @@ class TestInfrastructureErrors:
         assert str(error) == "Mongo side effect execution failed"
         assert error.code == InfrastructureErrorCode.MONGO_SIDE_EFFECT_ERROR
         assert error.details == {"stage": "execute"}
+
+    def test_rabbitmq_publish_error_keeps_details(self) -> None:
+        error = RabbitMQPublishError(details={"stage": "publish"})
+
+        assert str(error) == "RabbitMQ message publish failed"
+        assert error.code == InfrastructureErrorCode.RABBITMQ_PUBLISH_ERROR
+        assert error.details == {"stage": "publish"}

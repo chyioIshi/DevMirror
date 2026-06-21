@@ -36,6 +36,14 @@ class FakePostgresSideEffectExecutor:
         self.closed = True
 
 
+class FakeRabbitMQSideEffectExecutor:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
 class FakeRedisSideEffectExecutor:
     def __init__(self) -> None:
         self.closed = False
@@ -135,11 +143,19 @@ class TestDependencyProviders:
 
         assert result.provider == "redis"
 
+    def test_side_effect_provider_registry_registers_rabbitmq_provider(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.side_effect_provider_registry.get("rabbitmq")
+
+        assert result.provider == "rabbitmq"
+
     async def test_aclose_closes_side_effect_executors(self, monkeypatch) -> None:
         clients: list[FakeHttpClient] = []
         kafka_executors: list[FakeKafkaSideEffectExecutor] = []
         mongo_executors: list[FakeMongoSideEffectExecutor] = []
         postgres_executors: list[FakePostgresSideEffectExecutor] = []
+        rabbitmq_executors: list[FakeRabbitMQSideEffectExecutor] = []
         redis_executors: list[FakeRedisSideEffectExecutor] = []
 
         def client_factory() -> FakeHttpClient:
@@ -162,6 +178,11 @@ class TestDependencyProviders:
             postgres_executors.append(executor)
             return executor
 
+        def rabbitmq_executor_factory() -> FakeRabbitMQSideEffectExecutor:
+            executor = FakeRabbitMQSideEffectExecutor()
+            rabbitmq_executors.append(executor)
+            return executor
+
         def redis_executor_factory() -> FakeRedisSideEffectExecutor:
             executor = FakeRedisSideEffectExecutor()
             redis_executors.append(executor)
@@ -181,6 +202,10 @@ class TestDependencyProviders:
             postgres_executor_factory,
         )
         monkeypatch.setattr(
+            "app.di.container.AsyncRabbitMQSideEffectExecutor",
+            rabbitmq_executor_factory,
+        )
+        monkeypatch.setattr(
             "app.di.container.AsyncRedisSideEffectExecutor",
             redis_executor_factory,
         )
@@ -190,6 +215,7 @@ class TestDependencyProviders:
         container.side_effect_provider_registry.get("kafka")
         container.side_effect_provider_registry.get("mongo")
         container.side_effect_provider_registry.get("postgres")
+        container.side_effect_provider_registry.get("rabbitmq")
         container.side_effect_provider_registry.get("redis")
         await container.aclose()
 
@@ -201,6 +227,8 @@ class TestDependencyProviders:
         assert mongo_executors[0].closed is True
         assert len(postgres_executors) == 1
         assert postgres_executors[0].closed is True
+        assert len(rabbitmq_executors) == 1
+        assert rabbitmq_executors[0].closed is True
         assert len(redis_executors) == 1
         assert redis_executors[0].closed is True
 

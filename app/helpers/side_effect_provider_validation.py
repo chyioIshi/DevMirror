@@ -68,6 +68,26 @@ class SideEffectProviderValidation:
         )
 
     @classmethod
+    def optional_bool(
+        cls,
+        mapping: dict[str, Any],
+        key: str,
+        field: str,
+        *,
+        subject: str,
+    ) -> bool | None:
+        """Returns an optional boolean value."""
+        value = mapping.get(key)
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return value
+        raise InvalidSideEffectProviderConfigError(
+            f"{subject} {field} must be a boolean",
+            details={"field": field},
+        )
+
+    @classmethod
     def optional_non_negative_int(
         cls,
         mapping: dict[str, Any],

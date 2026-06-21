@@ -47,11 +47,13 @@ from app.infra.side_effects.providers import (
     AsyncKafkaSideEffectExecutor,
     AsyncMongoSideEffectExecutor,
     AsyncPostgresSideEffectExecutor,
+    AsyncRabbitMQSideEffectExecutor,
     AsyncRedisSideEffectExecutor,
     HttpCallbackSideEffectProvider,
     KafkaSideEffectProvider,
     MongoSideEffectProvider,
     PostgresSideEffectProvider,
+    RabbitMQSideEffectProvider,
     RedisSideEffectProvider,
 )
 from app.infra.tasks import InProcessAsyncTaskScheduler
@@ -90,6 +92,8 @@ class AppContainer:
         self._mongo_side_effect_provider: MongoSideEffectProvider | None = None
         self._postgres_side_effect_executor: AsyncPostgresSideEffectExecutor | None = None
         self._postgres_side_effect_provider: PostgresSideEffectProvider | None = None
+        self._rabbitmq_side_effect_executor: AsyncRabbitMQSideEffectExecutor | None = None
+        self._rabbitmq_side_effect_provider: RabbitMQSideEffectProvider | None = None
         self._redis_side_effect_executor: AsyncRedisSideEffectExecutor | None = None
         self._redis_side_effect_provider: RedisSideEffectProvider | None = None
         self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
@@ -321,6 +325,14 @@ class AppContainer:
                     side_effect_executor=self._postgres_side_effect_executor,
                 )
             registry.register(self._postgres_side_effect_provider)
+            if self._rabbitmq_side_effect_provider is None:
+                if self._rabbitmq_side_effect_executor is None:
+                    self._rabbitmq_side_effect_executor = AsyncRabbitMQSideEffectExecutor()
+                self._rabbitmq_side_effect_provider = RabbitMQSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._rabbitmq_side_effect_executor,
+                )
+            registry.register(self._rabbitmq_side_effect_provider)
             if self._redis_side_effect_provider is None:
                 if self._redis_side_effect_executor is None:
                     self._redis_side_effect_executor = AsyncRedisSideEffectExecutor()
@@ -345,6 +357,8 @@ class AppContainer:
             await self._mongo_side_effect_executor.aclose()
         if self._postgres_side_effect_executor is not None:
             await self._postgres_side_effect_executor.aclose()
+        if self._rabbitmq_side_effect_executor is not None:
+            await self._rabbitmq_side_effect_executor.aclose()
         if self._redis_side_effect_executor is not None:
             await self._redis_side_effect_executor.aclose()
 

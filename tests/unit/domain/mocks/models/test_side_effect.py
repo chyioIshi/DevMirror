@@ -54,8 +54,18 @@ class TestSideEffect:
 
         assert side_effect.target == {"destination": "user-events"}
 
+    def test_message_publish_allows_routing_key_target(self) -> None:
+        side_effect = SideEffect(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="rabbitmq",
+            target={"routing_key": "mock.served"},
+            payload_template={"ok": True},
+        )
+
+        assert side_effect.target == {"routing_key": "mock.served"}
+
     @pytest.mark.parametrize("target", [{}, {"topic": " "}, {"queue": ""}, {"topic": 123}])
-    def test_message_publish_requires_topic_or_queue(self, target: dict[str, object]) -> None:
+    def test_message_publish_requires_routing_target(self, target: dict[str, object]) -> None:
         with pytest.raises(InvalidSideEffectError):
             SideEffect(
                 type=SideEffectType.MESSAGE_PUBLISH,
