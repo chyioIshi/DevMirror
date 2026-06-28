@@ -254,7 +254,7 @@ class SideEffectDispatcherService:
             error = str(last_error)
             result_details: dict[str, Any] = {}
         elif last_result is not None:
-            error = last_result.error
+            error = last_result.error or "Side effect retry attempts failed without error details"
             result_details = last_result.details
         else:
             error = "Side effect retry attempts failed without result"
