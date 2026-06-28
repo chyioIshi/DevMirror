@@ -14,6 +14,19 @@ services:
       retries: 10
       start_period: 10s
 
+  redis:
+    image: redis:7-alpine
+    container_name: devmirror-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
   app:
     build:
       context: .
@@ -22,6 +35,8 @@ services:
     restart: unless-stopped
     depends_on:
       mongo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       MONGO_DSN: mongodb://mongo:27017
@@ -34,8 +49,49 @@ services:
       ADMIN_PREFIX: /admin/mocks
       REQUEST_LOG_PREFIX: /admin/request-logs
       HEALTH_PREFIX: /health
+      ASYNC_TASK_SCHEDULER: celery
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_TASK_QUEUE: side_effects.default
     ports:
       - "8000:8000"
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devmirror-celery-worker
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      MONGO_DSN: mongodb://mongo:27017
+      MONGO_DATABASE: devmirror_mock_service
+      APP_NAME: DevMirror Mock Service
+      APP_VERSION: 0.1.0
+      DEFAULT_SCOPE: global
+      SCOPE_HEADER_NAME: user-id
+      SCOPE_BODY_FIELD_NAME: userId
+      ADMIN_PREFIX: /admin/mocks
+      REQUEST_LOG_PREFIX: /admin/request-logs
+      HEALTH_PREFIX: /health
+      ASYNC_TASK_SCHEDULER: celery
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_TASK_QUEUE: side_effects.default
+    command:
+      [
+        "uv",
+        "run",
+        "celery",
+        "-A",
+        "app.infra.celery.app:celery_app",
+        "worker",
+        "--loglevel=info",
+        "-Q",
+        "side_effects.default,side_effects.kafka,side_effects.http,side_effects.db",
+      ]
 
 volumes:
   mongo_data:

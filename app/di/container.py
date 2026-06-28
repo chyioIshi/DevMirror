@@ -56,7 +56,10 @@ from app.infra.side_effects.providers import (
     RabbitMQSideEffectProvider,
     RedisSideEffectProvider,
 )
-from app.infra.tasks import InProcessAsyncTaskScheduler
+from app.infra.side_effects.schedulers import (
+    CeleryAsyncTaskScheduler,
+    InProcessAsyncTaskScheduler,
+)
 
 
 class AppContainer:
@@ -375,7 +378,18 @@ class AppContainer:
     def async_task_scheduler(self) -> AsyncTaskScheduler:
         """Return the adapter used to schedule background async tasks."""
         if self._async_task_scheduler is None:
-            self._async_task_scheduler = InProcessAsyncTaskScheduler()
+            if self.settings.async_task_scheduler == "in_process":
+                self._async_task_scheduler = InProcessAsyncTaskScheduler(
+                    dispatcher=self.side_effect_dispatcher_service,
+                )
+            elif self.settings.async_task_scheduler == "celery":
+                self._async_task_scheduler = CeleryAsyncTaskScheduler(
+                    queue=self.settings.celery_task_queue,
+                )
+            else:
+                raise AssertionError(
+                    f"Unsupported async_task_scheduler: {self.settings.async_task_scheduler}"
+                )
         return self._async_task_scheduler
 
     @property

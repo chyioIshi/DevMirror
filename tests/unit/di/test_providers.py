@@ -2,6 +2,10 @@ from app.config import AppSettings
 from app.di import providers
 from app.di.container import AppContainer
 from app.infra.side_effects import ConnectionConfig
+from app.infra.side_effects.schedulers import (
+    CeleryAsyncTaskScheduler,
+    InProcessAsyncTaskScheduler,
+)
 
 
 class FakeHttpClient:
@@ -93,6 +97,20 @@ class TestDependencyProviders:
         result = providers.get_side_effect_execution_service(container)
 
         assert result is container.side_effect_execution_service
+
+    def test_async_task_scheduler_uses_in_process_adapter_by_default(self) -> None:
+        container = AppContainer(settings=AppSettings())
+
+        result = container.async_task_scheduler
+
+        assert isinstance(result, InProcessAsyncTaskScheduler)
+
+    def test_async_task_scheduler_uses_celery_adapter_when_configured(self) -> None:
+        container = AppContainer(settings=AppSettings(async_task_scheduler="celery"))
+
+        result = container.async_task_scheduler
+
+        assert isinstance(result, CeleryAsyncTaskScheduler)
 
     def test_connection_registry_uses_settings_connections(self) -> None:
         connection = ConnectionConfig(

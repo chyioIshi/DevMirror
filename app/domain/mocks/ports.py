@@ -1,7 +1,7 @@
 """Ports used by the mocks domain."""
 
-from collections.abc import Coroutine
-from typing import Any, Protocol
+from collections.abc import Sequence
+from typing import Protocol
 
 from app.domain.mocks.models import (
     SideEffect,
@@ -42,8 +42,24 @@ class SideEffectProvider(Protocol):
 
 
 class AsyncTaskScheduler(Protocol):
-    """Port for scheduling background coroutine execution."""
+    """Port for scheduling asynchronous side effect execution."""
 
-    def schedule(self, coroutine: Coroutine[Any, Any, None]) -> None:
-        """Schedule coroutine execution without awaiting it in the caller."""
+    def schedule_side_effects(
+        self,
+        side_effects: Sequence[SideEffect],
+        context: SideEffectContext,
+    ) -> None:
+        """Schedule side effect execution without awaiting it in the caller."""
+        ...
+
+
+class SideEffectDispatcher(Protocol):
+    """Port for dispatching side effects."""
+
+    async def dispatch(
+        self,
+        side_effects: Sequence[SideEffect],
+        context: SideEffectContext,
+    ) -> list[SideEffectExecutionResult]:
+        """Dispatch side effects and return execution results."""
         ...

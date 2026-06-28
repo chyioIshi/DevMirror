@@ -4,7 +4,12 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.domain.mocks.models import SideEffectFailPolicy, SideEffectMode, SideEffectType
+from app.domain.mocks.models import (
+    SideEffectExecutionStrategy,
+    SideEffectFailPolicy,
+    SideEffectMode,
+    SideEffectType,
+)
 
 
 class SideEffectItem(BaseModel):
@@ -21,5 +26,9 @@ class SideEffectItem(BaseModel):
     fail_policy: SideEffectFailPolicy = Field(
         default=SideEffectFailPolicy.IGNORE,
         examples=["ignore"],
+    )
+    execution_strategy: SideEffectExecutionStrategy = Field(
+        default=SideEffectExecutionStrategy.PARALLEL,
+        examples=["parallel"],
     )
     enabled: bool = Field(default=True)

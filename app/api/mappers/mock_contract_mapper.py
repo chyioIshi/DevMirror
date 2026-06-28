@@ -156,6 +156,7 @@ class MockContractMapper:
             options=side_effect.options,
             mode=side_effect.mode,
             fail_policy=side_effect.fail_policy,
+            execution_strategy=side_effect.execution_strategy,
             enabled=side_effect.enabled,
         )
 
@@ -207,5 +208,6 @@ class MockContractMapper:
             options=side_effect.options,
             mode=side_effect.mode,
             fail_policy=side_effect.fail_policy,
+            execution_strategy=side_effect.execution_strategy,
             enabled=side_effect.enabled,
         )

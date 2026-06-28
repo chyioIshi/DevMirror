@@ -81,12 +81,31 @@ class TestSideEffectExecutionService:
 
         assert dispatcher.dispatch_calls == []
         assert len(scheduler.scheduled) == 1
+        assert scheduler.scheduled[0].side_effects == [side_effect]
 
-        await scheduler.scheduled[0]
+    @pytest.mark.asyncio
+    async def test_disabled_async_side_effect_does_not_break_execution(
+        self,
+        mock_factory,
+        request_factory,
+    ) -> None:
+        side_effect = self._message_side_effect(
+            mode=SideEffectMode.ASYNC,
+            enabled=False,
+        )
+        mock = mock_factory.create_mock(response_side_effects=[side_effect])
+        service, dispatcher, scheduler = self._service()
 
-        assert len(dispatcher.dispatch_calls) == 1
-        side_effects, _ = dispatcher.dispatch_calls[0]
-        assert side_effects == [side_effect]
+        await service.execute(
+            side_effects=mock.response.side_effects,
+            request=request_factory.create_request_context(),
+            mock=mock,
+            response=mock.response,
+        )
+
+        assert dispatcher.dispatch_calls == []
+        assert len(scheduler.scheduled) == 1
+        assert scheduler.scheduled[0].side_effects == [side_effect]
 
     @pytest.mark.asyncio
     async def test_ignore_fail_policy_does_not_raise(
@@ -186,6 +205,7 @@ class TestSideEffectExecutionService:
         *,
         mode: SideEffectMode,
         fail_policy: SideEffectFailPolicy = SideEffectFailPolicy.IGNORE,
+        enabled: bool = True,
     ) -> SideEffect:
         return SideEffect(
             type=SideEffectType.MESSAGE_PUBLISH,
@@ -194,4 +214,5 @@ class TestSideEffectExecutionService:
             payload_template={"ok": True},
             mode=mode,
             fail_policy=fail_policy,
+            enabled=enabled,
         )

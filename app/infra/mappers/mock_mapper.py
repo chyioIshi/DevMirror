@@ -55,6 +55,7 @@ class MockMapper:
                         options=side_effect.options,
                         mode=side_effect.mode,
                         fail_policy=side_effect.fail_policy,
+                        execution_strategy=side_effect.execution_strategy,
                         enabled=side_effect.enabled,
                     )
                     for side_effect in document.response.side_effects
@@ -105,6 +106,7 @@ class MockMapper:
                         options=side_effect.options,
                         mode=side_effect.mode,
                         fail_policy=side_effect.fail_policy,
+                        execution_strategy=side_effect.execution_strategy,
                         enabled=side_effect.enabled,
                     )
                     for side_effect in mock.response.side_effects

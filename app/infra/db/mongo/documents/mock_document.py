@@ -7,7 +7,12 @@ from beanie import Document
 from pydantic import BaseModel, Field
 from pymongo import ASCENDING, DESCENDING
 
-from app.domain.mocks.models import SideEffectFailPolicy, SideEffectMode, SideEffectType
+from app.domain.mocks.models import (
+    SideEffectExecutionStrategy,
+    SideEffectFailPolicy,
+    SideEffectMode,
+    SideEffectType,
+)
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
@@ -30,6 +35,7 @@ class SideEffectDocument(BaseModel):
     options: dict[str, Any] = Field(default_factory=dict)
     mode: SideEffectMode = SideEffectMode.ASYNC
     fail_policy: SideEffectFailPolicy = SideEffectFailPolicy.IGNORE
+    execution_strategy: SideEffectExecutionStrategy = SideEffectExecutionStrategy.PARALLEL
     enabled: bool = True
 
 

@@ -12,6 +12,7 @@ DevMirror is a mock service platform inspired by WireMock. It lets you define HT
 - Request logging and request log verification endpoints
 - Admin endpoints for creating, updating, listing, activating, and deleting mocks
 - MongoDB persistence with Beanie
+- Optional async side effect execution through Celery and Redis
 - Async-first application flow
 
 ## Tech Stack
@@ -22,6 +23,8 @@ DevMirror is a mock service platform inspired by WireMock. It lets you define HT
 - Beanie
 - Pydantic
 - AsyncIO
+- Celery
+- Redis
 - Uvicorn
 - Ruff
 
@@ -110,6 +113,13 @@ DevMirror reads configuration from environment variables or a local `.env` file.
 MONGO_DSN=mongodb://localhost:27017
 MONGO_DATABASE=devmirror
 LOG_LEVEL=INFO
+ASYNC_TASK_SCHEDULER=in_process
+CELERY_BROKER_URL=redis://localhost:6379/1
+CELERY_TASK_QUEUE=side_effects.default
+CELERY_TASK_ACKS_LATE=true
+CELERY_TASK_REJECT_ON_WORKER_LOST=true
+# CELERY_TASK_TIME_LIMIT=30
+# CELERY_TASK_SOFT_TIME_LIMIT=25
 ```
 
 Useful defaults are defined in `app/config.py`.
@@ -125,6 +135,41 @@ Health check:
 ```bash
 curl http://localhost:8000/health
 ```
+
+## Running With Celery Side Effects
+
+Async side effects can run through Celery with Redis as the broker. The API process still only calls the application `AsyncTaskScheduler` port; Celery is wired in infrastructure.
+
+Start MongoDB, Redis, the API, and the worker:
+
+```bash
+docker compose up --build app celery-worker
+```
+
+For local development without Docker Compose, start Redis and run:
+
+```bash
+set ASYNC_TASK_SCHEDULER=celery
+set CELERY_BROKER_URL=redis://localhost:6379/1
+set CELERY_TASK_QUEUE=side_effects.default
+uv run uvicorn app.main:app --reload
+```
+
+In another shell:
+
+```bash
+uv run celery -A app.infra.celery.app:celery_app worker --loglevel=info -Q side_effects.default,side_effects.kafka,side_effects.http,side_effects.db
+```
+
+The Celery scheduler always publishes async side effect tasks to the broker. Use
+the in-process scheduler for unit tests that should avoid Redis and a worker.
+Parallel async side effects are fan-out tasks routed by side effect type. Sequential
+async side effects are sent as one ordered batch task and executed by the dispatcher.
+
+Async side effects use Celery's at-least-once delivery model. Providers should be
+written so repeated execution with the same request context is acceptable.
+`fail_policy=fail_mock` is only supported for `mode=sync`, because async side
+effects run after the HTTP response has already been returned.
 
 ## Example API Usage
 

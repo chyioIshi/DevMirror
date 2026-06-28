@@ -34,6 +34,13 @@ class SideEffectFailPolicy(StrEnum):
     RETRY = "retry"
 
 
+class SideEffectExecutionStrategy(StrEnum):
+    """Async scheduling strategies for side effects."""
+
+    PARALLEL = "parallel"
+    SEQUENTIAL = "sequential"
+
+
 @dataclass(slots=True, frozen=True)
 class SideEffect:
     """A side effect declaration attached to a mock response."""
@@ -45,6 +52,7 @@ class SideEffect:
     options: dict[str, Any] = field(default_factory=dict)
     mode: SideEffectMode = SideEffectMode.ASYNC
     fail_policy: SideEffectFailPolicy = SideEffectFailPolicy.IGNORE
+    execution_strategy: SideEffectExecutionStrategy = SideEffectExecutionStrategy.PARALLEL
     enabled: bool = True
 
     def __post_init__(self) -> None:
@@ -53,6 +61,7 @@ class SideEffect:
             raise InvalidSideEffectError("SideEffect provider must be a non-empty string")
 
         self._validate_target()
+        self._validate_async_failure_policy()
         self._validate_fail_policy_options()
 
     def _validate_target(self) -> None:
@@ -77,6 +86,15 @@ class SideEffect:
                 "SideEffect retry fail_policy requires options.max_attempts to be a positive integer",
                 details={"field": "options.max_attempts"},
             )
+
+    def _validate_async_failure_policy(self) -> None:
+        if self.mode != SideEffectMode.ASYNC or self.fail_policy != SideEffectFailPolicy.FAIL_MOCK:
+            return
+
+        raise InvalidSideEffectError(
+            "SideEffect fail_policy=fail_mock is only supported for sync side effects",
+            details={"field": "fail_policy", "mode": self.mode},
+        )
 
     def _require_any_target_key(self, *keys: str) -> None:
         if any(self._has_non_empty_target_value(key) for key in keys):

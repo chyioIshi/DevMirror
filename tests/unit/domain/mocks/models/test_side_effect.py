@@ -3,6 +3,8 @@ import pytest
 from app.domain.mocks import InvalidSideEffectError
 from app.domain.mocks.models import (
     SideEffect,
+    SideEffectExecutionResult,
+    SideEffectExecutionStrategy,
     SideEffectFailPolicy,
     SideEffectMode,
     SideEffectType,
@@ -23,7 +25,23 @@ class TestSideEffect:
         assert side_effect.options == {}
         assert side_effect.mode == SideEffectMode.ASYNC
         assert side_effect.fail_policy == SideEffectFailPolicy.IGNORE
+        assert side_effect.execution_strategy == SideEffectExecutionStrategy.PARALLEL
         assert side_effect.enabled is True
+
+    def test_execution_result_serializes_to_mapping(self) -> None:
+        result = SideEffectExecutionResult(
+            provider="kafka",
+            success=False,
+            details={"topic": "events"},
+            error="failed",
+        )
+
+        assert result.to_mapping() == {
+            "provider": "kafka",
+            "success": False,
+            "details": {"topic": "events"},
+            "error": "failed",
+        }
 
     def test_rejects_blank_provider(self) -> None:
         with pytest.raises(InvalidSideEffectError):
@@ -142,6 +160,29 @@ class TestSideEffect:
                 payload_template={"ok": True},
                 fail_policy=SideEffectFailPolicy.RETRY,
             )
+
+    def test_fail_mock_policy_requires_sync_mode(self) -> None:
+        with pytest.raises(InvalidSideEffectError):
+            SideEffect(
+                type=SideEffectType.HTTP_CALLBACK,
+                provider="http",
+                target={"connection": "main-http"},
+                payload_template={"ok": True},
+                mode=SideEffectMode.ASYNC,
+                fail_policy=SideEffectFailPolicy.FAIL_MOCK,
+            )
+
+    def test_fail_mock_policy_allows_sync_mode(self) -> None:
+        side_effect = SideEffect(
+            type=SideEffectType.HTTP_CALLBACK,
+            provider="http",
+            target={"connection": "main-http"},
+            payload_template={"ok": True},
+            mode=SideEffectMode.SYNC,
+            fail_policy=SideEffectFailPolicy.FAIL_MOCK,
+        )
+
+        assert side_effect.fail_policy == SideEffectFailPolicy.FAIL_MOCK
 
     @pytest.mark.parametrize("max_attempts", [0, -1, True, "3"])
     def test_retry_fail_policy_rejects_invalid_max_attempts(self, max_attempts: object) -> None:

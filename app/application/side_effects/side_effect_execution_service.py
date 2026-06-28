@@ -76,16 +76,7 @@ class SideEffectExecutionService:
         if not async_side_effects:
             return
 
-        self._async_task_scheduler.schedule(
-            self._dispatch_async_side_effects(async_side_effects, context),
-        )
-
-    async def _dispatch_async_side_effects(
-        self,
-        side_effects: Sequence[SideEffect],
-        context: SideEffectContext,
-    ) -> None:
-        await self._dispatcher_service.dispatch(side_effects, context)
+        self._async_task_scheduler.schedule_side_effects(async_side_effects, context)
 
     def _execution_metadata(
         self,

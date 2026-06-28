@@ -10,6 +10,7 @@ from app.domain.mocks.models import (
     SideEffectContext,
     SideEffectExecutionResult,
     SideEffectFailPolicy,
+    SideEffectMode,
     SideEffectType,
 )
 from tests.testkit.fakes.application import FakeSideEffectProvider
@@ -126,6 +127,7 @@ class TestSideEffectDispatcherService:
             provider="fake",
             target={"topic": "events"},
             payload_template={"ok": True},
+            mode=SideEffectMode.SYNC,
             fail_policy=SideEffectFailPolicy.FAIL_MOCK,
         )
 
@@ -231,3 +233,22 @@ class TestSideEffectDispatcherService:
                 details={"sent": True},
             ),
         ]
+
+    @pytest.mark.asyncio
+    async def test_dispatch_executes_providers_directly(
+        self,
+        side_effect_dispatcher: SideEffectDispatcherService,
+        fake_side_effect_provider: FakeSideEffectProvider,
+        side_effect_context: SideEffectContext,
+        side_effect: SideEffect,
+    ) -> None:
+        result = await side_effect_dispatcher.dispatch([side_effect], side_effect_context)
+
+        assert result == [
+            SideEffectExecutionResult(
+                provider="fake",
+                success=True,
+                details={"executions": 1},
+            )
+        ]
+        assert fake_side_effect_provider.executions == [(side_effect, side_effect_context)]

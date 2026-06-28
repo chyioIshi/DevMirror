@@ -5,6 +5,7 @@ from app.domain.mocks.models.mock_response import MockResponse
 from app.domain.mocks.models.resolution.resolved_mock import ResolvedMock
 from app.domain.mocks.models.side_effects.side_effect import (
     SideEffect,
+    SideEffectExecutionStrategy,
     SideEffectFailPolicy,
     SideEffectMode,
     SideEffectType,
@@ -23,6 +24,7 @@ __all__ = [
     "SideEffect",
     "SideEffectContext",
     "SideEffectExecutionResult",
+    "SideEffectExecutionStrategy",
     "SideEffectFailPolicy",
     "SideEffectMode",
     "SideEffectType",
