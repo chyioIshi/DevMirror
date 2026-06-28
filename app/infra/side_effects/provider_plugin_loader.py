@@ -2,7 +2,7 @@
 
 import importlib.metadata
 import logging
-from typing import Any
+from typing import Any, NoReturn, cast
 
 from app.application.exceptions import SideEffectProviderAlreadyRegisteredError
 from app.application.side_effects import SideEffectProviderRegistry
@@ -85,7 +85,7 @@ class SideEffectProviderPluginLoader:
         entry_point: importlib.metadata.EntryPoint,
     ) -> SideEffectProvider:
         try:
-            return factory.create(self._connection_registry)
+            return cast(SideEffectProvider, factory.create(self._connection_registry))
         except Exception as exc:
             self._raise_plugin_error(
                 "Side effect provider factory create(connection_registry) failed",
@@ -152,7 +152,7 @@ class SideEffectProviderPluginLoader:
         *,
         error: Exception | None = None,
         details: dict[str, Any] | None = None,
-    ) -> None:
+    ) -> NoReturn:
         error_details = {
             "entry_point": entry_point.name,
             "entry_point_group": self._entry_point_group,

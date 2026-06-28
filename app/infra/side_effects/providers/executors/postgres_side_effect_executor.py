@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-import asyncpg
+import asyncpg  # type: ignore[import-untyped]
 
 from app.helpers.side_effect_provider_validation import SideEffectProviderValidation
 from app.infra.exceptions import InvalidSideEffectProviderConfigError, PostgresInsertError

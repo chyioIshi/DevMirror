@@ -1,6 +1,6 @@
 """Celery application factory for DevMirror background tasks."""
 
-from celery import Celery
+from celery import Celery  # type: ignore[import-untyped]
 
 from app.config import AppSettings, get_app_settings
 

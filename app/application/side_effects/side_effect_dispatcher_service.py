@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Iterable
 from dataclasses import replace
+from typing import Any
 
 from app.application.exceptions import SideEffectExecutionFailedError
 from app.application.side_effects.registry import SideEffectProviderRegistry
@@ -249,10 +250,17 @@ class SideEffectDispatcherService:
                 },
             )
 
-        details = {
-            "error": str(last_error) if last_error is not None else last_result.error,
-            "details": last_result.details if last_result is not None else {},
-        }
+        if last_error is not None:
+            error = str(last_error)
+            result_details: dict[str, Any] = {}
+        elif last_result is not None:
+            error = last_result.error
+            result_details = last_result.details
+        else:
+            error = "Side effect retry attempts failed without result"
+            result_details = {}
+
+        details = {"error": error, "details": result_details}
         raise SideEffectExecutionFailedError(
             provider=provider.provider,
             attempts=max_attempts,

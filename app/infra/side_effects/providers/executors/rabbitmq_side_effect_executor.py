@@ -78,7 +78,7 @@ class AsyncRabbitMQSideEffectExecutor:
         try:
             message = aio_pika.Message(
                 body=self._serialize_payload(payload),
-                headers=headers,
+                headers=self._message_headers(headers),
                 content_type=content_type,
                 delivery_mode=self._delivery_mode(delivery_mode),
                 message_id=message_id,
@@ -234,14 +234,7 @@ class AsyncRabbitMQSideEffectExecutor:
                 subject="RabbitMQ",
             )
             or False,
-            durable_exchange=SideEffectProviderValidation.optional_bool(
-                settings,
-                "durable_exchange",
-                "connection.settings.durable_exchange",
-                subject="RabbitMQ",
-            )
-            if settings.get("durable_exchange") is not None
-            else True,
+            durable_exchange=self._durable_exchange(settings),
         )
 
     def _serialize_payload(self, payload: Any) -> bytes:
@@ -264,4 +257,21 @@ class AsyncRabbitMQSideEffectExecutor:
         raise RabbitMQPublishError(
             "RabbitMQ delivery mode is not supported",
             details={"stage": "serialization", "delivery_mode": delivery_mode},
+        )
+
+    def _message_headers(self, headers: dict[str, str] | None) -> dict[str, Any] | None:
+        if headers is None:
+            return None
+        return dict(headers)
+
+    def _durable_exchange(self, settings: dict[str, Any]) -> bool:
+        if settings.get("durable_exchange") is None:
+            return True
+        return bool(
+            SideEffectProviderValidation.optional_bool(
+                settings,
+                "durable_exchange",
+                "connection.settings.durable_exchange",
+                subject="RabbitMQ",
+            ),
         )
