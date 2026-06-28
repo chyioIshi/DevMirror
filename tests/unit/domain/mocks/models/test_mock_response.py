@@ -1,7 +1,7 @@
 import pytest
 
 from app.domain.mocks import InvalidMockResponseError
-from app.domain.mocks.models import MockResponse
+from app.domain.mocks.models import MockResponse, SideEffect, SideEffectType
 
 
 class TestMockResponse:
@@ -19,3 +19,20 @@ class TestMockResponse:
         """Проверяет запрет status code вне HTTP-диапазона."""
         with pytest.raises(InvalidMockResponseError):
             MockResponse(status_code=status_code)
+
+    def test_defaults_to_no_side_effects(self) -> None:
+        response = MockResponse(status_code=200)
+
+        assert response.side_effects == []
+
+    def test_attaches_side_effects(self) -> None:
+        side_effect = SideEffect(
+            type=SideEffectType.MESSAGE_PUBLISH,
+            provider="kafka",
+            target={"topic": "events"},
+            payload_template={"ok": True},
+        )
+
+        response = MockResponse(status_code=200, side_effects=[side_effect])
+
+        assert response.side_effects == [side_effect]

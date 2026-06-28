@@ -1,7 +1,8 @@
 from app.api.contracts.mocks import CreateMockRequest, UpdateMockRequest
 from app.api.contracts.mocks.items import MatchRuleItem, MockResponsePayloadItem
 from app.api.mappers import MockContractMapper
-from app.application.commands import UNSET
+from app.application.mocks.commands import UNSET
+from app.domain.mocks.models import SideEffect, SideEffectType
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
@@ -29,6 +30,14 @@ class TestMockContractMapper:
                 status_code=201,
                 headers={"x-response": "ok"},
                 body={"id": 1},
+                side_effects=[
+                    {
+                        "type": "message_publish",
+                        "provider": "kafka",
+                        "target": {"topic": "users"},
+                        "payload_template": {"id": "{{body.id}}"},
+                    },
+                ],
             ),
             tags=["users"],
         )
@@ -51,6 +60,10 @@ class TestMockContractMapper:
         assert mock.response.status_code == 201
         assert mock.response.headers == {"x-response": "ok"}
         assert mock.response.body == {"id": 1}
+        assert mock.response.side_effects[0].type == SideEffectType.MESSAGE_PUBLISH
+        assert mock.response.side_effects[0].provider == "kafka"
+        assert mock.response.side_effects[0].target == {"topic": "users"}
+        assert mock.response.side_effects[0].payload_template == {"id": "{{body.id}}"}
         assert mock.tags == ["users"]
 
     def test_update_request_maps_only_provided_fields(self) -> None:
@@ -85,6 +98,14 @@ class TestMockContractMapper:
                 status_code=202,
                 headers={"x-response": "accepted"},
                 body={"accepted": True},
+                side_effects=[
+                    {
+                        "type": "http_callback",
+                        "provider": "http",
+                        "target": {"connection": "main-http"},
+                        "payload_template": {"accepted": "{{body.accepted}}"},
+                    },
+                ],
             ),
         )
 
@@ -99,6 +120,7 @@ class TestMockContractMapper:
         assert command.response.status_code == 202
         assert command.response.headers == {"x-response": "accepted"}
         assert command.response.body == {"accepted": True}
+        assert command.response.side_effects[0].type == "http_callback"
 
     def test_domain_mock_maps_to_response_item(self, mock_factory) -> None:
         """Проверяет маппинг domain mock в response dto."""
@@ -122,6 +144,14 @@ class TestMockContractMapper:
             response_status_code=201,
             response_headers={"x-response": "ok"},
             response_body={"id": 1},
+            response_side_effects=[
+                SideEffect(
+                    type=SideEffectType.MESSAGE_PUBLISH,
+                    provider="kafka",
+                    target={"topic": "users"},
+                    payload_template={"id": "{{body.id}}"},
+                ),
+            ],
             tags=["users"],
         )
 
@@ -142,4 +172,8 @@ class TestMockContractMapper:
         assert item.response.status_code == 201
         assert item.response.headers == {"x-response": "ok"}
         assert item.response.body == {"id": 1}
+        assert item.response.side_effects[0].type == SideEffectType.MESSAGE_PUBLISH
+        assert item.response.side_effects[0].provider == "kafka"
+        assert item.response.side_effects[0].target == {"topic": "users"}
+        assert item.response.side_effects[0].payload_template == {"id": "{{body.id}}"}
         assert item.tags == ["users"]

@@ -4,13 +4,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.application.services import MockResolverService
+from app.application.mocks import MockResolverService
+from app.application.side_effects import SideEffectExecutionService
 from app.config import AppSettings
 from app.di import (
     get_app_settings,
     get_mock_resolver_service,
     get_mock_response_builder,
     get_request_context_resolver,
+    get_side_effect_execution_service,
 )
 from app.domain.mocks.models.resolution import ResolvedMock
 from app.infra.context import RequestContextResolver
@@ -70,6 +72,10 @@ async def catch_each_request(
         MockResolverService,
         Depends(get_mock_resolver_service),
     ],
+    side_effect_execution_service: Annotated[
+        SideEffectExecutionService,
+        Depends(get_side_effect_execution_service),
+    ],
     mock_response_builder: Annotated[
         MockResponseBuilder,
         Depends(get_mock_response_builder),
@@ -82,6 +88,7 @@ async def catch_each_request(
         settings: Application config.
         request_context_resolver: Adapter that builds the domain request context.
         mock_resolver_service: Service that resolves a matching mock.
+        side_effect_execution_service: Service that executes response side effects.
         mock_response_builder: Adapter that builds an HTTP response from a mock.
 
     Returns:
@@ -101,4 +108,11 @@ async def catch_each_request(
             detail="No active mock matched the request",
         )
 
-    return mock_response_builder.build(resolved_mock.mock)
+    mock_response = resolved_mock.mock.response
+    await side_effect_execution_service.execute(
+        side_effects=mock_response.side_effects,
+        request=request_context,
+        mock=resolved_mock.mock,
+        response=mock_response,
+    )
+    return mock_response_builder.build_response(mock_response)

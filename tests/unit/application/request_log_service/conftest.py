@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.services import RequestLogService
+from app.application.request_logs import RequestLogService
 from tests.testkit.fakes import FakeRequestLogRepository
 
 

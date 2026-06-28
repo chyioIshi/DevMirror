@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.services import RequestLogService
+from app.application.request_logs import RequestLogService
 from app.domain.mocks.models.resolution import ResolvedMock, RuleMatchResult
 from app.domain.shared import HttpMethod
 from tests.testkit.factories import MockFactory, RequestFactory

@@ -14,7 +14,7 @@ from app.api.mappers import (
     RequestLogRecordContractMapper,
     RequestLogVerificationContractMapper,
 )
-from app.application.services import RequestLogService
+from app.application.request_logs import RequestLogService
 from app.di import get_request_log_service
 
 request_log_router = APIRouter(tags=["request-logs"])

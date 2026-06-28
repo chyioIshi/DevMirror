@@ -3,7 +3,7 @@
 from fastapi import Response
 from fastapi.responses import JSONResponse
 
-from app.domain.mocks.models import Mock
+from app.domain.mocks.models import Mock, MockResponse
 
 
 class MockResponseBuilder:
@@ -18,8 +18,10 @@ class MockResponseBuilder:
         Returns:
             FastAPI JSON response matching the mock response configuration.
         """
-        response_definition = mock.response
+        return self.build_response(mock.response)
 
+    def build_response(self, response_definition: MockResponse) -> Response:
+        """Builds an HTTP response from a domain mock response model."""
         if response_definition.body is None:
             return Response(
                 status_code=response_definition.status_code,

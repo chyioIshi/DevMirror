@@ -6,6 +6,7 @@ from app.di.providers import (
     get_mock_response_builder,
     get_request_context_resolver,
     get_request_log_service,
+    get_side_effect_execution_service,
 )
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "get_mock_response_builder",
     "get_request_context_resolver",
     "get_request_log_service",
+    "get_side_effect_execution_service",
 ]

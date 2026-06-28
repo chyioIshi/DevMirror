@@ -7,6 +7,12 @@ from beanie import Document
 from pydantic import BaseModel, Field
 from pymongo import ASCENDING, DESCENDING
 
+from app.domain.mocks.models import (
+    SideEffectExecutionStrategy,
+    SideEffectFailPolicy,
+    SideEffectMode,
+    SideEffectType,
+)
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
@@ -19,12 +25,27 @@ class MatchRuleDocument(BaseModel):
     expected: Any | None = None
 
 
+class SideEffectDocument(BaseModel):
+    """Nested Mongo document describing a declared side effect."""
+
+    type: SideEffectType
+    provider: str
+    target: dict[str, Any]
+    payload_template: dict[str, Any]
+    options: dict[str, Any] = Field(default_factory=dict)
+    mode: SideEffectMode = SideEffectMode.ASYNC
+    fail_policy: SideEffectFailPolicy = SideEffectFailPolicy.IGNORE
+    execution_strategy: SideEffectExecutionStrategy = SideEffectExecutionStrategy.PARALLEL
+    enabled: bool = True
+
+
 class MockResponseDocument(BaseModel):
     """Nested Mongo document describing a mock HTTP response."""
 
     status_code: int
     headers: dict[str, str] = Field(default_factory=dict)
     body: Any | None = None
+    side_effects: list[SideEffectDocument] = Field(default_factory=list)
 
 
 class MockDocument(Document):

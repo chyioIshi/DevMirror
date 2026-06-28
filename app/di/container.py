@@ -2,12 +2,15 @@
 
 from typing import Final, cast
 
+import httpx
 from fastapi import Request
 
-from app.application.services import (
-    MockManagementService,
-    MockResolverService,
-    RequestLogService,
+from app.application.mocks import MockManagementService, MockResolverService
+from app.application.request_logs import RequestLogService
+from app.application.side_effects import (
+    SideEffectDispatcherService,
+    SideEffectExecutionService,
+    SideEffectProviderRegistry,
 )
 from app.config import AppSettings
 from app.domain.mocks import MockRepository
@@ -16,16 +19,17 @@ from app.domain.mocks.policies import (
     MockActivationPolicy,
     MockSelectionPolicy,
 )
+from app.domain.mocks.ports import (
+    AsyncTaskScheduler,
+    ScopeResolutionStrategy,
+    ScopeResolver,
+)
 from app.domain.mocks.services import (
     MockConflictService,
     MockResolutionService,
     RuleMatcherService,
 )
 from app.domain.request_logs import RequestLogRepository
-from app.domain.shared.ports import (
-    ScopeResolutionStrategy,
-    ScopeResolver,
-)
 from app.infra.context import RequestContextResolver
 from app.infra.repositories import (
     MongoMockRepository,
@@ -37,6 +41,24 @@ from app.infra.scope_resolution import (
     DefaultScopeResolutionStrategy,
     HeaderScopeResolutionStrategy,
     JsonBodyFieldScopeResolutionStrategy,
+)
+from app.infra.side_effects import ConnectionRegistry, SideEffectProviderPluginLoader
+from app.infra.side_effects.providers import (
+    AsyncKafkaSideEffectExecutor,
+    AsyncMongoSideEffectExecutor,
+    AsyncPostgresSideEffectExecutor,
+    AsyncRabbitMQSideEffectExecutor,
+    AsyncRedisSideEffectExecutor,
+    HttpCallbackSideEffectProvider,
+    KafkaSideEffectProvider,
+    MongoSideEffectProvider,
+    PostgresSideEffectProvider,
+    RabbitMQSideEffectProvider,
+    RedisSideEffectProvider,
+)
+from app.infra.side_effects.schedulers import (
+    CeleryAsyncTaskScheduler,
+    InProcessAsyncTaskScheduler,
 )
 
 
@@ -64,6 +86,23 @@ class AppContainer:
         self._mock_selection_policy: MockSelectionPolicy | None = None
         self._mock_resolver_service: MockResolverService | None = None
         self._mock_response_builder: MockResponseBuilder | None = None
+        self._connection_registry: ConnectionRegistry | None = None
+        self._http_callback_client: httpx.AsyncClient | None = None
+        self._http_callback_side_effect_provider: HttpCallbackSideEffectProvider | None = None
+        self._kafka_side_effect_executor: AsyncKafkaSideEffectExecutor | None = None
+        self._kafka_side_effect_provider: KafkaSideEffectProvider | None = None
+        self._mongo_side_effect_executor: AsyncMongoSideEffectExecutor | None = None
+        self._mongo_side_effect_provider: MongoSideEffectProvider | None = None
+        self._postgres_side_effect_executor: AsyncPostgresSideEffectExecutor | None = None
+        self._postgres_side_effect_provider: PostgresSideEffectProvider | None = None
+        self._rabbitmq_side_effect_executor: AsyncRabbitMQSideEffectExecutor | None = None
+        self._rabbitmq_side_effect_provider: RabbitMQSideEffectProvider | None = None
+        self._redis_side_effect_executor: AsyncRedisSideEffectExecutor | None = None
+        self._redis_side_effect_provider: RedisSideEffectProvider | None = None
+        self._side_effect_provider_registry: SideEffectProviderRegistry | None = None
+        self._side_effect_dispatcher_service: SideEffectDispatcherService | None = None
+        self._async_task_scheduler: AsyncTaskScheduler | None = None
+        self._side_effect_execution_service: SideEffectExecutionService | None = None
 
     @property
     def request_data_reader(self) -> RequestDataReader:
@@ -242,6 +281,126 @@ class AppContainer:
         if self._mock_response_builder is None:
             self._mock_response_builder = MockResponseBuilder()
         return self._mock_response_builder
+
+    @property
+    def connection_registry(self) -> ConnectionRegistry:
+        """Return the infrastructure connection registry used by plugins."""
+        if self._connection_registry is None:
+            self._connection_registry = ConnectionRegistry(
+                connections=self.settings.side_effect_connections,
+            )
+        return self._connection_registry
+
+    @property
+    def side_effect_provider_registry(self) -> SideEffectProviderRegistry:
+        """Return the registry used to resolve side effect providers."""
+        if self._side_effect_provider_registry is None:
+            registry = SideEffectProviderRegistry()
+            if self._http_callback_side_effect_provider is None:
+                if self._http_callback_client is None:
+                    self._http_callback_client = httpx.AsyncClient()
+                self._http_callback_side_effect_provider = HttpCallbackSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    client=self._http_callback_client,
+                )
+            registry.register(self._http_callback_side_effect_provider)
+            if self._kafka_side_effect_provider is None:
+                if self._kafka_side_effect_executor is None:
+                    self._kafka_side_effect_executor = AsyncKafkaSideEffectExecutor()
+                self._kafka_side_effect_provider = KafkaSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._kafka_side_effect_executor,
+                )
+            registry.register(self._kafka_side_effect_provider)
+            if self._mongo_side_effect_provider is None:
+                if self._mongo_side_effect_executor is None:
+                    self._mongo_side_effect_executor = AsyncMongoSideEffectExecutor()
+                self._mongo_side_effect_provider = MongoSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._mongo_side_effect_executor,
+                )
+            registry.register(self._mongo_side_effect_provider)
+            if self._postgres_side_effect_provider is None:
+                if self._postgres_side_effect_executor is None:
+                    self._postgres_side_effect_executor = AsyncPostgresSideEffectExecutor()
+                self._postgres_side_effect_provider = PostgresSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._postgres_side_effect_executor,
+                )
+            registry.register(self._postgres_side_effect_provider)
+            if self._rabbitmq_side_effect_provider is None:
+                if self._rabbitmq_side_effect_executor is None:
+                    self._rabbitmq_side_effect_executor = AsyncRabbitMQSideEffectExecutor()
+                self._rabbitmq_side_effect_provider = RabbitMQSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._rabbitmq_side_effect_executor,
+                )
+            registry.register(self._rabbitmq_side_effect_provider)
+            if self._redis_side_effect_provider is None:
+                if self._redis_side_effect_executor is None:
+                    self._redis_side_effect_executor = AsyncRedisSideEffectExecutor()
+                self._redis_side_effect_provider = RedisSideEffectProvider(
+                    connection_registry=self.connection_registry,
+                    side_effect_executor=self._redis_side_effect_executor,
+                )
+            registry.register(self._redis_side_effect_provider)
+            SideEffectProviderPluginLoader(
+                connection_registry=self.connection_registry,
+            ).load_into(registry)
+            self._side_effect_provider_registry = registry
+        return self._side_effect_provider_registry
+
+    async def aclose(self) -> None:
+        """Close infrastructure resources owned by the container."""
+        if self._http_callback_client is not None and not self._http_callback_client.is_closed:
+            await self._http_callback_client.aclose()
+        if self._kafka_side_effect_executor is not None:
+            await self._kafka_side_effect_executor.aclose()
+        if self._mongo_side_effect_executor is not None:
+            await self._mongo_side_effect_executor.aclose()
+        if self._postgres_side_effect_executor is not None:
+            await self._postgres_side_effect_executor.aclose()
+        if self._rabbitmq_side_effect_executor is not None:
+            await self._rabbitmq_side_effect_executor.aclose()
+        if self._redis_side_effect_executor is not None:
+            await self._redis_side_effect_executor.aclose()
+
+    @property
+    def side_effect_dispatcher_service(self) -> SideEffectDispatcherService:
+        """Return the app service that dispatches side effects."""
+        if self._side_effect_dispatcher_service is None:
+            self._side_effect_dispatcher_service = SideEffectDispatcherService(
+                registry=self.side_effect_provider_registry,
+            )
+        return self._side_effect_dispatcher_service
+
+    @property
+    def async_task_scheduler(self) -> AsyncTaskScheduler:
+        """Return the adapter used to schedule background async tasks."""
+        if self._async_task_scheduler is None:
+            if self.settings.async_task_scheduler == "in_process":
+                self._async_task_scheduler = InProcessAsyncTaskScheduler(
+                    dispatcher=self.side_effect_dispatcher_service,
+                )
+            elif self.settings.async_task_scheduler == "celery":
+                self._async_task_scheduler = CeleryAsyncTaskScheduler(
+                    queue=self.settings.celery_task_queue,
+                )
+            else:
+                raise AssertionError(
+                    f"Unsupported async_task_scheduler: {self.settings.async_task_scheduler}"
+                )
+        return self._async_task_scheduler
+
+    @property
+    def side_effect_execution_service(self) -> SideEffectExecutionService:
+        """Return the app service that executes response side effects."""
+        if self._side_effect_execution_service is None:
+            self._side_effect_execution_service = SideEffectExecutionService(
+                dispatcher_service=self.side_effect_dispatcher_service,
+                async_task_scheduler=self.async_task_scheduler,
+            )
+        return self._side_effect_execution_service
 
 
 def get_container(request: Request) -> AppContainer:

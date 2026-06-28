@@ -3,7 +3,7 @@ from dataclasses import replace
 from datetime import datetime
 from typing import Any
 
-from app.domain.mocks.models import MatchRule, Mock, MockResponse
+from app.domain.mocks.models import MatchRule, Mock, MockResponse, SideEffect
 from app.domain.shared import HttpMethod, MatchOperator, MatchSource
 
 
@@ -27,6 +27,7 @@ class MockFactory:
         response_status_code: int = 200,
         response_headers: dict[str, str] | None = None,
         response_body: Any | None = None,
+        response_side_effects: Sequence[SideEffect] | None = None,
         tags: Sequence[str] | None = None,
         created_at: datetime | None = None,
         updated_at: datetime | None = None,
@@ -49,6 +50,9 @@ class MockFactory:
                 status_code=response_status_code,
                 headers=response_headers or {},
                 body=response_body,
+                side_effects=list(response_side_effects)
+                if response_side_effects is not None
+                else [],
             ),
             tags=list(tags) if tags is not None else None,
         )

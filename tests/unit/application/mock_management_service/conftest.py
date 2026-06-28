@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.services import MockManagementService
+from app.application.mocks import MockManagementService
 from app.domain.mocks.policies import MockActivationPolicy
 from app.domain.mocks.services import MockConflictService
 from tests.testkit.fakes import FakeMockRepository

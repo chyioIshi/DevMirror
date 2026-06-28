@@ -1,7 +1,7 @@
 import pytest
 
 from app.application.exceptions import MockNotFoundError, ValidationError
-from app.application.use_cases.update_mock import update_mock
+from app.application.mocks.use_cases.update_mock import update_mock
 
 
 class TestUpdateMockValidation:

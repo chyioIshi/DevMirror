@@ -12,7 +12,7 @@ from app.api.contracts.mocks import (
     UpdateMockRequest,
 )
 from app.api.mappers import MockContractMapper
-from app.application.services import MockManagementService
+from app.application.mocks import MockManagementService
 from app.di import get_mock_management_service
 from app.domain.mocks.models import MockListFilters
 from app.domain.shared import HttpMethod

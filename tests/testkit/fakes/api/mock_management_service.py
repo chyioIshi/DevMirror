@@ -1,4 +1,4 @@
-from app.application.commands import UpdateMockCommand
+from app.application.mocks.commands import UpdateMockCommand
 from app.domain.mocks.models import Mock, MockListFilters
 
 

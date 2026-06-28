@@ -4,11 +4,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.application.services import (
-    MockManagementService,
-    MockResolverService,
-    RequestLogService,
-)
+from app.application.mocks import MockManagementService, MockResolverService
+from app.application.request_logs import RequestLogService
+from app.application.side_effects import SideEffectExecutionService
 from app.config import AppSettings
 from app.di.container import AppContainer, get_container
 from app.infra.context import RequestContextResolver
@@ -75,6 +73,11 @@ def get_request_log_service(container: ContainerDep) -> RequestLogService:
         Request log app service.
     """
     return container.request_log_service
+
+
+def get_side_effect_execution_service(container: ContainerDep) -> SideEffectExecutionService:
+    """Return the side effect execution service from the dependency container."""
+    return container.side_effect_execution_service
 
 
 def get_request_context_resolver(container: ContainerDep) -> RequestContextResolver:

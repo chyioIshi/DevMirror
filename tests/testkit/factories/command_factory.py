@@ -1,4 +1,4 @@
-from app.application.commands import UNSET, UpdateMockCommand
+from app.application.mocks.commands import UNSET, UpdateMockCommand
 from app.domain.mocks.models import MatchRule, MockResponse
 from app.domain.shared import HttpMethod
 

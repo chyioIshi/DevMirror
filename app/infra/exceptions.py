@@ -13,6 +13,14 @@ class InfrastructureErrorCode(StrEnum):
     DATABASE_CONNECTION_ERROR = "DATABASE_CONNECTION_ERROR"
     TRANSACTION_ERROR = "TRANSACTION_ERROR"
     SERIALIZATION_ERROR = "SERIALIZATION_ERROR"
+    SIDE_EFFECT_PROVIDER_PLUGIN_ERROR = "SIDE_EFFECT_PROVIDER_PLUGIN_ERROR"
+    CONNECTION_NOT_FOUND = "CONNECTION_NOT_FOUND"
+    INVALID_SIDE_EFFECT_PROVIDER_CONFIG = "INVALID_SIDE_EFFECT_PROVIDER_CONFIG"
+    KAFKA_PUBLISH_ERROR = "KAFKA_PUBLISH_ERROR"
+    POSTGRES_INSERT_ERROR = "POSTGRES_INSERT_ERROR"
+    REDIS_SIDE_EFFECT_ERROR = "REDIS_SIDE_EFFECT_ERROR"
+    MONGO_SIDE_EFFECT_ERROR = "MONGO_SIDE_EFFECT_ERROR"
+    RABBITMQ_PUBLISH_ERROR = "RABBITMQ_PUBLISH_ERROR"
 
 
 @dataclass(eq=False)
@@ -65,6 +73,139 @@ class DatabaseConnectionError(InfrastructureError):
         """
         super().__init__(
             code=InfrastructureErrorCode.DATABASE_CONNECTION_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class SideEffectProviderPluginError(InfrastructureError):
+    """Error raised when a side effect provider plugin cannot be loaded."""
+
+    def __init__(
+        self,
+        message: str = "Side effect provider plugin could not be loaded",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a side effect provider plugin loading error."""
+        super().__init__(
+            code=InfrastructureErrorCode.SIDE_EFFECT_PROVIDER_PLUGIN_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class ConnectionNotFoundError(InfrastructureError):
+    """Error raised when a named side effect provider connection is unknown."""
+
+    def __init__(
+        self,
+        message: str = "Connection was not found",
+        details: dict[str, Any] | None = None,
+        *,
+        name: str | None = None,
+    ) -> None:
+        """Creates a connection-not-found error."""
+        error_details = dict(details or {})
+        if name is not None:
+            error_details.setdefault("name", name)
+        super().__init__(
+            code=InfrastructureErrorCode.CONNECTION_NOT_FOUND,
+            message=message,
+            details=error_details,
+        )
+
+
+class InvalidSideEffectProviderConfigError(InfrastructureError):
+    """Error raised when a side effect provider config is invalid."""
+
+    def __init__(
+        self,
+        message: str = "Invalid side effect provider configuration",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates an invalid side effect provider config error."""
+        super().__init__(
+            code=InfrastructureErrorCode.INVALID_SIDE_EFFECT_PROVIDER_CONFIG,
+            message=message,
+            details=details or {},
+        )
+
+
+class KafkaPublishError(InfrastructureError):
+    """Error raised when a Kafka message cannot be published."""
+
+    def __init__(
+        self,
+        message: str = "Kafka message publish failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a Kafka publish error."""
+        super().__init__(
+            code=InfrastructureErrorCode.KAFKA_PUBLISH_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class PostgresInsertError(InfrastructureError):
+    """Error raised when a Postgres insert cannot be executed."""
+
+    def __init__(
+        self,
+        message: str = "Postgres insert failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a Postgres insert error."""
+        super().__init__(
+            code=InfrastructureErrorCode.POSTGRES_INSERT_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class RedisSideEffectError(InfrastructureError):
+    """Error raised when a Redis side effect command cannot be executed."""
+
+    def __init__(
+        self,
+        message: str = "Redis side effect execution failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a Redis side effect execution error."""
+        super().__init__(
+            code=InfrastructureErrorCode.REDIS_SIDE_EFFECT_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class MongoSideEffectError(InfrastructureError):
+    """Error raised when a MongoDB side effect command cannot be executed."""
+
+    def __init__(
+        self,
+        message: str = "Mongo side effect execution failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a MongoDB side effect execution error."""
+        super().__init__(
+            code=InfrastructureErrorCode.MONGO_SIDE_EFFECT_ERROR,
+            message=message,
+            details=details or {},
+        )
+
+
+class RabbitMQPublishError(InfrastructureError):
+    """Error raised when a RabbitMQ message cannot be published."""
+
+    def __init__(
+        self,
+        message: str = "RabbitMQ message publish failed",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Creates a RabbitMQ publish error."""
+        super().__init__(
+            code=InfrastructureErrorCode.RABBITMQ_PUBLISH_ERROR,
             message=message,
             details=details or {},
         )

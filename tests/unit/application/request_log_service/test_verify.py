@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.services import RequestLogService
+from app.application.request_logs import RequestLogService
 from app.domain.request_logs.models import RequestLogRecord, RequestLogVerificationExpectation
 from app.domain.shared import HttpMethod
 from tests.testkit.factories import RequestFactory

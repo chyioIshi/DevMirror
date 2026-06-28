@@ -2,11 +2,12 @@
 
 from beanie import PydanticObjectId
 
-from app.domain.mocks.models import MatchRule, Mock, MockResponse
+from app.domain.mocks.models import MatchRule, Mock, MockResponse, SideEffect
 from app.infra.db.mongo.documents import (
     MatchRuleDocument,
     MockDocument,
     MockResponseDocument,
+    SideEffectDocument,
 )
 
 
@@ -45,6 +46,20 @@ class MockMapper:
                 status_code=document.response.status_code,
                 headers=document.response.headers,
                 body=document.response.body,
+                side_effects=[
+                    SideEffect(
+                        type=side_effect.type,
+                        provider=side_effect.provider,
+                        target=side_effect.target,
+                        payload_template=side_effect.payload_template,
+                        options=side_effect.options,
+                        mode=side_effect.mode,
+                        fail_policy=side_effect.fail_policy,
+                        execution_strategy=side_effect.execution_strategy,
+                        enabled=side_effect.enabled,
+                    )
+                    for side_effect in document.response.side_effects
+                ],
             ),
             tags=document.tags,
             created_at=document.created_at,
@@ -82,6 +97,20 @@ class MockMapper:
                 status_code=mock.response.status_code,
                 headers=mock.response.headers,
                 body=mock.response.body,
+                side_effects=[
+                    SideEffectDocument(
+                        type=side_effect.type,
+                        provider=side_effect.provider,
+                        target=side_effect.target,
+                        payload_template=side_effect.payload_template,
+                        options=side_effect.options,
+                        mode=side_effect.mode,
+                        fail_policy=side_effect.fail_policy,
+                        execution_strategy=side_effect.execution_strategy,
+                        enabled=side_effect.enabled,
+                    )
+                    for side_effect in mock.response.side_effects
+                ],
             ),
             tags=mock.tags,
             created_at=mock.created_at,

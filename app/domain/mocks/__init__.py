@@ -6,8 +6,10 @@ from app.domain.mocks.exceptions import (
     InvalidMockRouteError,
     InvalidMockStateError,
     InvalidScopeError,
+    InvalidSideEffectError,
     MockConflictError,
     MockInvariantError,
+    SideEffectTemplateRenderError,
 )
 from app.domain.mocks.repository import MockRepository
 
@@ -19,7 +21,9 @@ __all__ = [
     "InvalidMockRouteError",
     "InvalidMockStateError",
     "InvalidScopeError",
+    "InvalidSideEffectError",
     "MockConflictError",
     "MockInvariantError",
     "MockRepository",
+    "SideEffectTemplateRenderError",
 ]

@@ -4,6 +4,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.api.contracts.mocks.items.side_effect_item import SideEffectItem
+
 
 class MockResponsePayloadItem(BaseModel):
     """Nested DTO model for the response described by a mock."""
@@ -19,3 +21,4 @@ class MockResponsePayloadItem(BaseModel):
         default=None,
         examples=[{"message": "hello from mock"}],
     )
+    side_effects: list[SideEffectItem] = Field(default_factory=list)
