@@ -287,3 +287,69 @@ class TestMongoMockRepository:
             "path": "/users",
             "scopes": ["global"],
         }
+
+    async def test_find_latest_by_session_id_maps_first_document(
+        self,
+        mock_factory,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        saved_mock = mock_factory.create_mock(mock_id="000000000000000000000001")
+        mapper = FakeMongoMockMapper
+        mapper.domain_mock = saved_mock
+        query = FakeMongoMockQuery(documents=[object()])
+        FakeCandidateMockDocument.query = query
+
+        monkeypatch.setattr(mongo_mock_repository, "MockDocument", FakeCandidateMockDocument)
+        monkeypatch.setattr(mongo_mock_repository, "MockMapper", mapper)
+
+        result = await MongoMockRepository().find_latest_by_session_id(
+            "GET",
+            "/users",
+            "test-run-123",
+        )
+
+        assert result is saved_mock
+        assert len(FakeCandidateMockDocument.captured_args) == 4
+        assert query.sort_called is True
+        assert query.limit_value == 1
+
+    async def test_find_latest_by_session_id_returns_none_when_missing(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        query = FakeMongoMockQuery(documents=[])
+        FakeCandidateMockDocument.query = query
+
+        monkeypatch.setattr(mongo_mock_repository, "MockDocument", FakeCandidateMockDocument)
+
+        result = await MongoMockRepository().find_latest_by_session_id(
+            "GET",
+            "/users",
+            "test-run-123",
+        )
+
+        assert result is None
+
+    async def test_find_latest_by_session_id_wraps_connection_errors(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        def fake_find(*_: object) -> object:
+            raise NetworkTimeout("timeout")
+
+        monkeypatch.setattr(FakeCandidateMockDocument, "find", fake_find)
+        monkeypatch.setattr(mongo_mock_repository, "MockDocument", FakeCandidateMockDocument)
+
+        with pytest.raises(DatabaseConnectionError) as error:
+            await MongoMockRepository().find_latest_by_session_id(
+                "GET",
+                "/users",
+                "test-run-123",
+            )
+
+        assert error.value.details == {
+            "operation": "find_latest_by_session_id",
+            "method": "GET",
+            "path": "/users",
+            "session_id": "test-run-123",
+        }

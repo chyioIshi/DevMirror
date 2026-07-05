@@ -5,7 +5,12 @@ from typing import Final, cast
 import httpx
 from fastapi import Request
 
-from app.application.mocks import MockManagementService, MockResolverService
+from app.application.mocks import (
+    MockManagementService,
+    MockResolverService,
+    MockSessionResolveStrategy,
+    RuleMatchingResolveStrategy,
+)
 from app.application.request_logs import RequestLogService
 from app.application.side_effects import (
     SideEffectDispatcherService,
@@ -263,11 +268,19 @@ class AppContainer:
         """
         if self._mock_resolver_service is None:
             self._mock_resolver_service = MockResolverService(
-                mock_repository=self.mock_repository,
-                request_log_service=self.request_log_service,
-                scope_resolver=self.scope_resolver,
-                mock_resolution_service=self.mock_resolution_service,
-                default_scope=self.settings.default_scope,
+                strategies=[
+                    MockSessionResolveStrategy(
+                        mock_repository=self.mock_repository,
+                        request_log_service=self.request_log_service,
+                    ),
+                    RuleMatchingResolveStrategy(
+                        mock_repository=self.mock_repository,
+                        request_log_service=self.request_log_service,
+                        scope_resolver=self.scope_resolver,
+                        mock_resolution_service=self.mock_resolution_service,
+                        default_scope=self.settings.default_scope,
+                    ),
+                ],
             )
         return self._mock_resolver_service
 

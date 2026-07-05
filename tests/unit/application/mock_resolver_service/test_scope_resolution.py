@@ -1,5 +1,6 @@
 import pytest
 
+from app.application.exceptions import MockNotFoundError
 from app.application.mocks import MockResolverService
 from app.domain.shared import HttpMethod
 from tests.testkit.factories import RequestFactory
@@ -21,7 +22,8 @@ class TestScopeResolution:
         fake_scope_resolver.scope = "user-a"
         request_context = request_factory.create_request_context(path="/users")
 
-        await mock_resolver_service.resolve(request_context)
+        with pytest.raises(MockNotFoundError):
+            await mock_resolver_service.resolve(request_context)
 
         assert fake_mock_repository.list_candidates_calls == [
             (HttpMethod.GET, "/users", ("user-a", "global")),
@@ -39,7 +41,8 @@ class TestScopeResolution:
         fake_scope_resolver.scope = "global"
         request_context = request_factory.create_request_context(path="/users")
 
-        await mock_resolver_service.resolve(request_context)
+        with pytest.raises(MockNotFoundError):
+            await mock_resolver_service.resolve(request_context)
 
         assert fake_mock_repository.list_candidates_calls == [
             (HttpMethod.GET, "/users", ("global",)),

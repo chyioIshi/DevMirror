@@ -59,6 +59,8 @@ async def update_mock(cmd: UpdateMockCommand, repo: MockRepository) -> Mock:
 
     if cmd.scope is not UNSET:
         current_mock.change_scope(_set_value(cmd.scope))
+    if cmd.mock_session_id is not UNSET:
+        current_mock.set_mock_session_id(_set_value(cmd.mock_session_id))
     if cmd.priority is not UNSET:
         current_mock.change_priority(_set_value(cmd.priority))
     if cmd.tags is not UNSET:

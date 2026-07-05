@@ -58,6 +58,7 @@ class MockDocument(Document):
     priority: int = 0
     active: bool = False
     scope: str = "global"
+    mock_session_id: str | None = None
     match_rules: list[MatchRuleDocument] = Field(default_factory=list)
     response: MockResponseDocument
     tags: list[str] = Field(default_factory=list)
@@ -69,6 +70,14 @@ class MockDocument(Document):
 
         name: str = "mocks"
         indexes: list[list[tuple[str, int]]] = [
+            [
+                ("path", ASCENDING),
+                ("method", ASCENDING),
+                ("mock_session_id", ASCENDING),
+                ("active", ASCENDING),
+                ("updated_at", DESCENDING),
+                ("created_at", DESCENDING),
+            ],
             [
                 ("path", ASCENDING),
                 ("method", ASCENDING),

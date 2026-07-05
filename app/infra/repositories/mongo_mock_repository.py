@@ -252,6 +252,68 @@ class MongoMockRepository:
                 },
             ) from exc
 
+    async def find_latest_by_session_id(
+        self,
+        method: HttpMethod | str,
+        path: str,
+        session_id: str,
+    ) -> Mock | None:
+        """Returns the newest active mock for a route and session id.
+
+        Args:
+            method: Request HTTP method.
+            path: Request path.
+            session_id: Session id from the ``mock-session-id`` header.
+
+        Returns:
+            Latest active session mock when found; otherwise ``None``.
+
+        Raises:
+            DatabaseConnectionError: If MongoDB connection fails.
+            RepositoryError: If query execution fails for another reason.
+        """
+        normalized_method = method if isinstance(method, HttpMethod) else HttpMethod(method)
+
+        try:
+            documents = (
+                await MockDocument.find(
+                    MockDocument.method == normalized_method,
+                    MockDocument.path == path,
+                    MockDocument.mock_session_id == session_id,
+                    MockDocument.active == True,  # noqa: E712
+                )
+                .sort(
+                    [
+                        ("updated_at", SortDirection.DESCENDING),
+                        ("created_at", SortDirection.DESCENDING),
+                        ("_id", SortDirection.DESCENDING),
+                    ],
+                )
+                .limit(1)
+                .to_list()
+            )
+            if not documents:
+                return None
+            return MockMapper.to_domain(documents[0])
+        except _CONNECTION_ERRORS as exc:
+            raise DatabaseConnectionError(
+                details={
+                    "operation": "find_latest_by_session_id",
+                    "method": str(normalized_method),
+                    "path": path,
+                    "session_id": session_id,
+                },
+            ) from exc
+        except Exception as exc:
+            raise RepositoryError(
+                details={
+                    "operation": "find_latest_by_session_id",
+                    "method": str(normalized_method),
+                    "path": path,
+                    "session_id": session_id,
+                },
+            ) from exc
+
     @staticmethod
     def _parse_object_id(mock_id: str) -> PydanticObjectId | None:
         """Safely converts a string identifier to `PydanticObjectId`.

@@ -26,6 +26,12 @@ class CreateMockRequest(BaseModel):
         max_length=200,
         examples=["global"],
     )
+    mock_session_id: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        examples=["test-run-123"],
+    )
     match_rules: list[MatchRuleItem] = Field(
         default_factory=list,
         examples=[

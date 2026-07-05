@@ -33,6 +33,7 @@ class TestMockMapper:
             priority=10,
             active=True,
             scope="user_name",
+            mock_session_id="test-run-123",
             match_rules=[
                 mock_factory.match_rule(
                     source=MatchSource.HEADER,
@@ -67,6 +68,7 @@ class TestMockMapper:
         assert document.priority == 10
         assert document.active is True
         assert document.scope == "user_name"
+        assert document.mock_session_id == "test-run-123"
         assert document.match_rules[0].key == "x-user"
         assert document.response.status_code == 201
         assert document.response.headers == {"x-response": "ok"}
@@ -94,6 +96,7 @@ class TestMockMapper:
             priority=10,
             active=True,
             scope="user_name",
+            mock_session_id="test-run-123",
             match_rules=[
                 MatchRuleDocument(
                     source=MatchSource.HEADER,
@@ -131,6 +134,7 @@ class TestMockMapper:
         assert mock.priority == 10
         assert mock.active is True
         assert mock.scope == "user_name"
+        assert mock.mock_session_id == "test-run-123"
         assert mock.match_rules[0].key == "x-user"
         assert mock.response.status_code == 201
         assert mock.response.headers == {"x-response": "ok"}

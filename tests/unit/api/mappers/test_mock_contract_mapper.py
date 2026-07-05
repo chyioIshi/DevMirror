@@ -18,6 +18,7 @@ class TestMockContractMapper:
             method=HttpMethod.POST,
             priority=10,
             scope="user_name",
+            mock_session_id="test-run-123",
             match_rules=[
                 MatchRuleItem(
                     source=MatchSource.HEADER,
@@ -52,6 +53,7 @@ class TestMockContractMapper:
         assert mock.priority == 10
         assert mock.active is False
         assert mock.scope == "user_name"
+        assert mock.mock_session_id == "test-run-123"
         assert len(mock.match_rules) == 1
         assert mock.match_rules[0].source == MatchSource.HEADER
         assert mock.match_rules[0].key == "x-user"
@@ -79,6 +81,7 @@ class TestMockContractMapper:
         assert command.path is UNSET
         assert command.method is UNSET
         assert command.scope is UNSET
+        assert command.mock_session_id is UNSET
         assert command.match_rules is UNSET
         assert command.response is UNSET
         assert command.tags is UNSET
@@ -122,6 +125,13 @@ class TestMockContractMapper:
         assert command.response.body == {"accepted": True}
         assert command.response.side_effects[0].type == "http_callback"
 
+    def test_update_request_maps_mock_session_id_clear(self) -> None:
+        request = UpdateMockRequest(mock_session_id=None)
+
+        command = MockContractMapper.to_update_mock_command("mock-1", request)
+
+        assert command.mock_session_id is None
+
     def test_domain_mock_maps_to_response_item(self, mock_factory) -> None:
         """Проверяет маппинг domain mock в response dto."""
         mock = mock_factory.create_mock(
@@ -133,6 +143,7 @@ class TestMockContractMapper:
             priority=10,
             active=True,
             scope="user_name",
+            mock_session_id="test-run-123",
             match_rules=[
                 mock_factory.match_rule(
                     source=MatchSource.HEADER,
@@ -165,6 +176,7 @@ class TestMockContractMapper:
         assert item.priority == 10
         assert item.active is True
         assert item.scope == "user_name"
+        assert item.mock_session_id == "test-run-123"
         assert item.match_rules[0].source == MatchSource.HEADER
         assert item.match_rules[0].key == "x-user"
         assert item.match_rules[0].operator == MatchOperator.EQ

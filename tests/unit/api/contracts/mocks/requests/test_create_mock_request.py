@@ -19,3 +19,14 @@ class TestCreateMockRequest:
                 active=True,
                 response=MockResponsePayloadItem(status_code=200),
             )
+
+    def test_accepts_mock_session_id(self) -> None:
+        request = CreateMockRequest(
+            name="test",
+            path="/test",
+            method=HttpMethod.GET,
+            mock_session_id="test-run-123",
+            response=MockResponsePayloadItem(status_code=200),
+        )
+
+        assert request.mock_session_id == "test-run-123"

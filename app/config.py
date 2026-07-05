@@ -22,6 +22,10 @@ class AppSettings(BaseSettings):
     admin_prefix: str = "/admin/mocks"
     request_log_prefix: str = "/admin/request-logs"
     health_prefix: str = "/health"
+    openapi_url: str = "/openapi.json"
+    docs_url: str = "/docs"
+    redoc_url: str = "/redoc"
+    favicon_path: str = "/favicon.ico"
     log_level: str = "INFO"
     side_effect_connections: list[ConnectionConfig] = Field(default_factory=list)
     async_task_scheduler: Literal["in_process", "celery"] = "in_process"

@@ -21,6 +21,7 @@ class MockFactory:
         priority: int = 0,
         active: bool = False,
         scope: str = "global",
+        mock_session_id: str | None = None,
         match_rules: Sequence[MatchRule] | None = None,
         match_rules_count: int = 0,
         response: MockResponse | None = None,
@@ -44,6 +45,7 @@ class MockFactory:
             priority=priority,
             active=active,
             scope=scope,
+            mock_session_id=mock_session_id,
             match_rules=rules,
             response=response
             or MockResponse(

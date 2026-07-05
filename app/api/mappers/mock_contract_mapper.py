@@ -32,6 +32,7 @@ class MockContractMapper:
             priority=request.priority,
             active=False,
             scope=request.scope,
+            mock_session_id=request.mock_session_id,
             match_rules=[
                 MockContractMapper.to_domain_match_rule_model(rule)
                 for rule in request.match_rules  # noqa: E501
@@ -66,6 +67,7 @@ class MockContractMapper:
                 else UNSET
             ),
             scope=request.scope if "scope" in set_fields and request.scope is not None else UNSET,  # noqa: E501
+            mock_session_id=(request.mock_session_id if "mock_session_id" in set_fields else UNSET),
             match_rules=(
                 [MockContractMapper.to_domain_match_rule_model(r) for r in request.match_rules]  # noqa: E501
                 if "match_rules" in set_fields and request.match_rules is not None
@@ -98,6 +100,7 @@ class MockContractMapper:
             priority=mock.priority,
             active=mock.active,
             scope=mock.scope,
+            mock_session_id=mock.mock_session_id,
             match_rules=[
                 MockContractMapper.from_domain_match_rule_model(rule)
                 for rule in mock.match_rules  # noqa: E501

@@ -90,3 +90,21 @@ class MockRepository(Protocol):
             Candidate mocks for request resolution.
         """
         ...
+
+    async def find_latest_by_session_id(
+        self,
+        method: HttpMethod | str,
+        path: str,
+        session_id: str,
+    ) -> Mock | None:
+        """Returns the newest active mock for a route and session id.
+
+        Args:
+            method: Request HTTP method.
+            path: Request path.
+            session_id: Session identifier from the request header.
+
+        Returns:
+            Latest active session mock when found; otherwise ``None``.
+        """
+        ...

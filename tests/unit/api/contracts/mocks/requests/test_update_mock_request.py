@@ -35,3 +35,8 @@ class TestUpdateMockRequest:
         """Проверяет запрет поля active в update request."""
         with pytest.raises(ValidationError):
             UpdateMockRequest(active=True)
+
+    def test_accepts_mock_session_id(self) -> None:
+        request = UpdateMockRequest(mock_session_id="test-run-123")
+
+        assert request.mock_session_id == "test-run-123"
