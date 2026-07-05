@@ -1,4 +1,4 @@
-"""Application service for resolving incoming requests to mocks."""
+"""Rule-matching mock resolver strategy."""
 
 import logging
 from typing import Final
@@ -13,8 +13,8 @@ from app.domain.request_contexts import RequestContext
 logger = logging.getLogger(__name__)
 
 
-class MockResolverService:
-    """Selects the most suitable mock for an incoming request."""
+class RuleMatchingResolveStrategy:
+    """Resolves requests using the standard scope, rule, and priority pipeline."""
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class MockResolverService:
         *,
         default_scope: str = "global",
     ) -> None:
-        """Initializes the mock resolver service.
+        """Initializes the rule-matching resolver strategy.
 
         Args:
             mock_repository: Mock repository used to load candidates.
@@ -41,7 +41,7 @@ class MockResolverService:
         self._default_scope: Final[str] = default_scope
 
     async def resolve(self, request_context: RequestContext) -> ResolvedMock | None:
-        """Orchestrates request-to-mock resolution and request logging.
+        """Runs the default request-to-mock resolution and request logging.
 
         The flow loads candidate mocks, resolves the best match, and writes the request
         log record regardless of whether a mock was found.
@@ -63,10 +63,7 @@ class MockResolverService:
             scopes=candidate_scopes,
         )
         logger.debug(
-            (
-                f"Получено {len(candidates)} кандидатов для запроса "
-                f"{request_context.method} {request_context.path} в scope {scope}"
-            ),
+            "Loaded mock candidates",
             extra={
                 "method": str(request_context.method),
                 "path": request_context.path,
@@ -88,10 +85,7 @@ class MockResolverService:
                 resolved_mock=None,
             )
             logger.debug(
-                (
-                    f"Мок не найден для запроса {request_context.method} "
-                    f"{request_context.path} в scope {scope}"
-                ),
+                "No mock matched request",
                 extra={
                     "method": str(request_context.method),
                     "path": request_context.path,
@@ -107,13 +101,10 @@ class MockResolverService:
             resolved_mock=resolved_mock,
         )
         logger.debug(
-            (
-                f"Найден мок {resolved_mock.mock.name} с id={resolved_mock.mock.id} "
-                f"для запроса {request_context.method} {request_context.path} "
-                f"в scope {scope}"
-            ),
+            "Resolved mock by rule matching",
             extra={
                 "mock_id": resolved_mock.mock.id,
+                "mock_name": resolved_mock.mock.name,
                 "method": str(request_context.method),
                 "path": request_context.path,
                 "scope": scope,
