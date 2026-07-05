@@ -8,6 +8,7 @@ class FakeCandidateMockDocument:
     path = "path"
     active = "active"
     scope = "scope"
+    mock_session_id = "mock_session_id"
     priority = "priority"
     updated_at = "updated_at"
     created_at = "created_at"

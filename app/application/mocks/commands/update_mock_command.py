@@ -27,6 +27,7 @@ class UpdateMockCommand:
     method: HttpMethod | UnsetType = field(default=UNSET)
     priority: int | UnsetType = field(default=UNSET)
     scope: str | UnsetType = field(default=UNSET)
+    mock_session_id: str | None | UnsetType = field(default=UNSET)
     match_rules: list[MatchRule] | UnsetType = field(default=UNSET)
     response: MockResponse | UnsetType = field(default=UNSET)
     tags: list[str] | UnsetType = field(default=UNSET)
@@ -46,6 +47,7 @@ class UpdateMockCommand:
                 self.method,
                 self.priority,
                 self.scope,
+                self.mock_session_id,
                 self.match_rules,
                 self.response,
                 self.tags,

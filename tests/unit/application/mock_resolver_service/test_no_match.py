@@ -1,5 +1,6 @@
 import pytest
 
+from app.application.exceptions import MockNotFoundError
 from app.application.mocks import MockResolverService
 from app.domain.shared import MatchOperator, MatchSource
 from tests.testkit.factories import MockFactory, RequestFactory
@@ -19,9 +20,10 @@ class TestNoMatch:
         """Проверяет, что отсутствие моков-кандидатов возвращает None."""
         request_context = request_factory.create_request_context(path="/missing")
 
-        result = await mock_resolver_service.resolve(request_context)
+        with pytest.raises(MockNotFoundError) as error:
+            await mock_resolver_service.resolve(request_context)
 
-        assert result is None
+        assert error.value.message == "No active mock matched the request"
         assert len(fake_request_log_repository.records) == 1
         assert fake_request_log_repository.records[0].matched_mock is None
         assert fake_request_log_repository.records[0].response_status_code is None
@@ -59,8 +61,9 @@ class TestNoMatch:
             headers={"x-user": "visitor"},
         )
 
-        result = await mock_resolver_service.resolve(request_context)
+        with pytest.raises(MockNotFoundError) as error:
+            await mock_resolver_service.resolve(request_context)
 
-        assert result is None
+        assert error.value.message == "No active mock matched the request"
         assert len(fake_request_log_repository.records) == 1
         assert fake_request_log_repository.records[0].matched_mock is None

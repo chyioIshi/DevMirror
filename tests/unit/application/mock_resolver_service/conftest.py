@@ -1,6 +1,10 @@
 import pytest
 
-from app.application.mocks import MockResolverService
+from app.application.mocks import (
+    MockResolverService,
+    MockSessionResolveStrategy,
+    RuleMatchingResolveStrategy,
+)
 from app.application.request_logs import RequestLogService
 from app.domain.mocks.policies import MockSelectionPolicy
 from app.domain.mocks.services import MockResolutionService, RuleMatcherService
@@ -35,11 +39,19 @@ def mock_resolver_service(
     fake_scope_resolver: FakeScopeResolver,
 ) -> MockResolverService:
     return MockResolverService(
-        mock_repository=fake_mock_repository,
-        request_log_service=request_log_service,
-        scope_resolver=fake_scope_resolver,
-        mock_resolution_service=MockResolutionService(
-            rule_matcher=RuleMatcherService(),
-            selection_policy=MockSelectionPolicy(),
-        ),
+        strategies=[
+            MockSessionResolveStrategy(
+                mock_repository=fake_mock_repository,
+                request_log_service=request_log_service,
+            ),
+            RuleMatchingResolveStrategy(
+                mock_repository=fake_mock_repository,
+                request_log_service=request_log_service,
+                scope_resolver=fake_scope_resolver,
+                mock_resolution_service=MockResolutionService(
+                    rule_matcher=RuleMatcherService(),
+                    selection_policy=MockSelectionPolicy(),
+                ),
+            ),
+        ],
     )

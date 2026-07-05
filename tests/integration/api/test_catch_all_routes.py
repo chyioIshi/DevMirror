@@ -33,7 +33,8 @@ class TestCatchAllRoutes:
         response = await api_client.get("/unknown")
 
         assert response.status_code == 404
-        assert response.json() == {"detail": "No active mock matched the request"}
+        assert response.json()["error"]["code"] == "MOCK_NOT_FOUND"
+        assert response.json()["error"]["message"] == "No active mock matched the request"
 
     async def test_does_not_handle_reserved_paths(
         self,
@@ -44,5 +45,5 @@ class TestCatchAllRoutes:
         response = await api_client.get("/favicon.ico")
 
         assert response.status_code == 404
-        assert response.json() == {"detail": "Not this route!!!"}
+        assert response.json() == {"detail": "Not Found"}
         assert fake_request_context_resolver.resolve_calls == []

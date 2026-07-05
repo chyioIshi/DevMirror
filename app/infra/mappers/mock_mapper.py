@@ -33,6 +33,7 @@ class MockMapper:
             priority=document.priority,
             active=document.active,
             scope=document.scope,
+            mock_session_id=document.mock_session_id,
             match_rules=[
                 MatchRule(
                     source=rule.source,
@@ -84,6 +85,7 @@ class MockMapper:
             priority=mock.priority,
             active=mock.active,
             scope=mock.scope,
+            mock_session_id=mock.mock_session_id,
             match_rules=[
                 MatchRuleDocument(
                     source=rule.source,

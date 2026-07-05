@@ -32,6 +32,9 @@ class TestMainApp:
             admin_prefix="/admin/mocks",
             request_log_prefix="/admin/request-logs",
             health_prefix="/health",
+            openapi_url="/schema.json",
+            docs_url="/api-docs",
+            redoc_url="/api-redoc",
         )
         configured_settings: list[AppSettings] = []
 
@@ -48,6 +51,9 @@ class TestMainApp:
         route_paths = {route.path for route in app.routes}
         assert app.title == "Test DevMirror"
         assert app.version == "1.2.3"
+        assert app.openapi_url == "/schema.json"
+        assert app.docs_url == "/api-docs"
+        assert app.redoc_url == "/api-redoc"
         assert configured_settings == [settings]
         assert any(middleware.cls is RequestLoggingMiddleware for middleware in app.user_middleware)
         assert "/health" in route_paths

@@ -21,6 +21,7 @@ class TestUpdateMockFields:
                 description="old-description",
                 priority=1,
                 scope="old-scope",
+                mock_session_id="old-session",
                 tags=["old"],
             ),
         )
@@ -30,6 +31,7 @@ class TestUpdateMockFields:
             description="new-description",
             priority=10,
             scope="new-scope",
+            mock_session_id="new-session",
             tags=["new", "tag"],
         )
 
@@ -39,6 +41,7 @@ class TestUpdateMockFields:
         assert updated_mock.description == "new-description"
         assert updated_mock.priority == 10
         assert updated_mock.scope == "new-scope"
+        assert updated_mock.mock_session_id == "new-session"
         assert updated_mock.tags == ["new", "tag"]
 
     @pytest.mark.asyncio

@@ -5,6 +5,7 @@ from app.domain.mocks.models import Mock, MockListFilters
 from app.domain.shared import HttpMethod
 
 type ListCandidatesCall = tuple[HttpMethod, str, tuple[str, ...]]
+type FindLatestBySessionIdCall = tuple[HttpMethod | str, str, str]
 
 
 class FakeMockRepository:
@@ -14,6 +15,7 @@ class FakeMockRepository:
         self._store: dict[str, Mock] = {}
         self._counter = 0
         self.list_candidates_calls: list[ListCandidatesCall] = []
+        self.find_latest_by_session_id_calls: list[FindLatestBySessionIdCall] = []
 
         for mock in mocks or ():
             saved = mock if mock.id is not None else replace(mock, id=self._next_id())
@@ -73,6 +75,29 @@ class FakeMockRepository:
             for mock in self._store.values()
             if mock.active and mock.method == method and mock.path == path and mock.scope in scopes
         ]
+
+    async def find_latest_by_session_id(
+        self,
+        method: HttpMethod | str,
+        path: str,
+        session_id: str,
+    ) -> Mock | None:
+        """Returns the latest active session mock for route and session id."""
+        self.find_latest_by_session_id_calls.append((method, path, session_id))
+        normalized_method = method if isinstance(method, HttpMethod) else HttpMethod(method)
+        candidates = [
+            mock
+            for mock in self._store.values()
+            if mock.active
+            and mock.method == normalized_method
+            and mock.path == path
+            and mock.mock_session_id == session_id
+        ]
+        return max(
+            candidates,
+            key=lambda mock: (mock.updated_at, mock.created_at, mock.id or ""),
+            default=None,
+        )
 
     def persisted(self) -> list[Mock]:
         """Возвращает сохраненные Mock."""

@@ -28,6 +28,7 @@ class Mock:
     priority: int = 0
     active: bool = False
     scope: str = "global"
+    mock_session_id: str | None = None
     match_rules: list[MatchRule] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
@@ -49,6 +50,7 @@ class Mock:
         priority: int = 0,
         active: bool = False,
         scope: str = "global",
+        mock_session_id: str | None = None,
         match_rules: list[MatchRule] | None = None,
         tags: list[str] | None = None,
     ) -> Self:
@@ -63,6 +65,7 @@ class Mock:
             priority: Mock priority.
             active: Initial activation state.
             scope: Mock scope.
+            mock_session_id: Optional session id used by session-based resolution.
             match_rules: Optional request matching rules.
             tags: Optional mock tags.
 
@@ -78,6 +81,7 @@ class Mock:
             priority=priority,
             active=active,
             scope=scope,
+            mock_session_id=mock_session_id,
             match_rules=list(match_rules) if match_rules else [],
             response=response,
             tags=list(tags) if tags else [],
@@ -135,6 +139,16 @@ class Mock:
         """
         candidate = self._build_candidate(priority=priority)
         self.priority = candidate.priority
+        self._touch()
+
+    def set_mock_session_id(self, mock_session_id: str | None) -> None:
+        """Sets or clears the session id used by session-based resolution.
+
+        Args:
+            mock_session_id: New session id or ``None``.
+        """
+        candidate = self._build_candidate(mock_session_id=mock_session_id)
+        self.mock_session_id = candidate.mock_session_id
         self._touch()
 
     def set_tags(self, tags: list[str]) -> None:
@@ -217,6 +231,8 @@ class Mock:
             raise MockInvariantError("Mock priority must be non-negative")
         if not self.scope or not self.scope.strip():
             raise InvalidScopeError("Mock scope must not be empty")
+        if self.mock_session_id is not None and not self.mock_session_id.strip():
+            raise MockInvariantError("Mock session id must not be empty")
 
     def _build_candidate(self, **changes: Any) -> Self:
         """Builds and validates a candidate state without mutating the current aggregate.
